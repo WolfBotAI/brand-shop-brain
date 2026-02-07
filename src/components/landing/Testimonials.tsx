@@ -48,16 +48,8 @@ const testimonials = [
 
 export const Testimonials = () => {
   return (
-    <section className="py-24 bg-secondary relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-hero-gradient opacity-50" />
-      <motion.div
-        className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/10 blur-3xl"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 8, repeat: Infinity }}
-      />
-
-      <div className="container mx-auto px-4 relative">
+    <section className="py-24 bg-secondary">
+      <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -66,11 +58,10 @@ export const Testimonials = () => {
           transition={{ duration: 0.5 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6">
-            Trusted by{" "}
-            <span className="text-primary">Leading Distributors</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-secondary-foreground mb-6">
+            Trusted by Leading Distributors
           </h2>
-          <p className="text-xl text-primary-foreground/70">
+          <p className="text-xl text-secondary-foreground/70">
             See what our customers have to say about transforming their business with Brand-Shop.AI
           </p>
         </motion.div>
@@ -94,7 +85,7 @@ export const Testimonials = () => {
               {testimonials.map((testimonial, index) => (
                 <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/2">
                   <div className="h-full">
-                    <div className="glass-card rounded-2xl p-8 h-full bg-card/10 backdrop-blur-xl border-primary-foreground/10">
+                    <div className="rounded-2xl p-8 h-full bg-secondary-foreground/5 border border-secondary-foreground/10">
                       {/* Quote Icon */}
                       <Quote className="w-10 h-10 text-primary mb-4" />
 
@@ -106,22 +97,22 @@ export const Testimonials = () => {
                       </div>
 
                       {/* Quote */}
-                      <p className="text-primary-foreground/90 text-lg mb-6 leading-relaxed">
+                      <p className="text-secondary-foreground/90 text-lg mb-6 leading-relaxed">
                         "{testimonial.quote}"
                       </p>
 
                       {/* Author */}
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
                           <span className="text-lg font-bold text-primary-foreground">
                             {testimonial.author.charAt(0)}
                           </span>
                         </div>
                         <div>
-                          <h4 className="font-bold text-primary-foreground">
+                          <h4 className="font-bold text-secondary-foreground">
                             {testimonial.author}
                           </h4>
-                          <p className="text-sm text-primary-foreground/60">
+                          <p className="text-sm text-secondary-foreground/60">
                             {testimonial.role}
                           </p>
                           <p className="text-sm text-primary font-medium">
@@ -135,8 +126,8 @@ export const Testimonials = () => {
               ))}
             </CarouselContent>
             <div className="flex justify-center gap-4 mt-8">
-              <CarouselPrevious className="static translate-y-0 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20" />
-              <CarouselNext className="static translate-y-0 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20" />
+              <CarouselPrevious className="static translate-y-0 bg-secondary-foreground/10 border-secondary-foreground/20 text-secondary-foreground hover:bg-secondary-foreground/20" />
+              <CarouselNext className="static translate-y-0 bg-secondary-foreground/10 border-secondary-foreground/20 text-secondary-foreground hover:bg-secondary-foreground/20" />
             </div>
           </Carousel>
         </motion.div>

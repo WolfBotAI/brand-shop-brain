@@ -2,14 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Brand-Shop.AI Design System
+/* Brand-Shop.AI Design System - Clean, Minimal
    Colors in HSL format for Tailwind compatibility
 */
 
 @layer base {
   :root {
-    /* Brand Colors */
-    --background: 220 20% 97%;
+    /* Brand Colors - Clean palette */
+    --background: 0 0% 100%;
     --foreground: 220 40% 13%;
 
     --card: 0 0% 100%;
@@ -23,7 +23,7 @@
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: Deep Navy - Trust & Professionalism */
-    --secondary: 220 50% 20%;
+    --secondary: 220 50% 15%;
     --secondary-foreground: 0 0% 100%;
 
     /* Accent: Electric Blue - Tech & Innovation */
@@ -42,17 +42,10 @@
 
     --radius: 0.75rem;
 
-    /* Custom Brand Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(220 50% 15%) 0%, hsl(220 60% 25%) 50%, hsl(18 100% 60% / 0.3) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100% / 0.9) 0%, hsl(0 0% 100% / 0.7) 100%);
-    --gradient-cta: linear-gradient(135deg, hsl(18 100% 55%) 0%, hsl(18 100% 65%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(217 91% 55%) 0%, hsl(217 91% 65%) 100%);
-
-    /* Shadows */
-    --shadow-sm: 0 2px 8px -2px hsl(220 50% 20% / 0.1);
-    --shadow-md: 0 8px 24px -4px hsl(220 50% 20% / 0.15);
-    --shadow-lg: 0 16px 48px -8px hsl(220 50% 20% / 0.2);
-    --shadow-glow: 0 0 40px -10px hsl(18 100% 60% / 0.4);
+    /* Clean Shadows - No glows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 50% 20% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(220 50% 20% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(220 50% 20% / 0.1);
 
     /* Sidebar */
     --sidebar-background: 0 0% 98%;
@@ -78,7 +71,7 @@
     --primary: 18 100% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 50% 25%;
+    --secondary: 220 50% 20%;
     --secondary-foreground: 210 40% 98%;
 
     --accent: 217 91% 60%;
@@ -120,43 +113,9 @@
   }
 }
 
-@layer components {
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg;
-  }
-
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary;
-  }
-
-  .btn-glow {
-    @apply relative overflow-hidden;
-    box-shadow: var(--shadow-glow);
-  }
-
-  .btn-glow::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, hsl(18 100% 70% / 0.3) 0%, transparent 50%);
-  }
-
-  .btn-glow:hover::before {
-    @apply opacity-100;
-  }
-}
-
 @layer utilities {
   .animate-float {
     animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 8s ease infinite;
   }
 
   @keyframes float {
@@ -164,16 +123,7 @@
       transform: translateY(0px);
     }
     50% {
-      transform: translateY(-20px);
-    }
-  }
-
-  @keyframes gradient {
-    0%, 100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
+      transform: translateY(-10px);
     }
   }
 }
