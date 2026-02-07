@@ -1,10 +1,24 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const services = {
-  "For Decorators": ["Order Management", "AI Vision", "Auto-Routing", "Client Portal"],
-  "For Distributors": ["AI Store Builder", "AI Support", "Dashboard & Analytics", "Pricing Controls"],
-  "Platform": ["Multi-Store Management", "AI Suggestions", "KPI Reports", "Site Migration"],
+  "For Decorators": [
+    { label: "Order Management", href: "/features/order-routing" },
+    { label: "AI Vision", href: "/features/ai-vision" },
+    { label: "AI Support", href: "/features/ai-support" },
+    { label: "Client Portal", href: "#" },
+  ],
+  "For Distributors": [
+    { label: "AI Store Builder", href: "/features/store-builder" },
+    { label: "AI Support", href: "/features/ai-support" },
+    { label: "Auto-Routing", href: "/features/order-routing" },
+    { label: "Dashboard & Analytics", href: "/features/dashboard" },
+  ],
+  "Platform": [
+    { label: "Multi-Store Management", href: "/features/dashboard" },
+    { label: "AI Suggestions", href: "/features/ai-vision" },
+    { label: "KPI Reports", href: "/features/dashboard" },
+    { label: "Site Migration", href: "#" },
+  ],
 };
 
 export const Footer = () => {
@@ -30,13 +44,13 @@ export const Footer = () => {
               <h4 className="font-bold text-secondary-foreground mb-4">{title}</h4>
               <ul className="space-y-3">
                 {items.map((item) => (
-                  <li key={item}>
-                    <a 
-                      href="#"
+                  <li key={item.label}>
+                    <Link 
+                      to={item.href}
                       className="text-secondary-foreground/60 hover:text-primary transition-colors text-sm"
                     >
-                      {item}
-                    </a>
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
