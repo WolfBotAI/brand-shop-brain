@@ -1,32 +1,32 @@
 import { motion } from "framer-motion";
-import { Store, Bot, Palette, ShoppingCart } from "lucide-react";
+import { Store, Bot, Users, Route } from "lucide-react";
 
 const features = [
   {
     icon: Store,
     title: "AI Store Builder",
-    description: "Clients build their own stores guided by AI or choose from distributor-approved themes",
+    description: "Your clients build their own stores guided by AI or choose from themes you pre-select",
   },
   {
     icon: Bot,
-    title: "24/7 AI Support",
-    description: "Every store includes AI Chat & Voice for tracking, support, and returns",
+    title: "Built-in AI Support",
+    description: "Every store includes AI Chat & Voice for tracking, support, and returns — you do nothing",
   },
   {
-    icon: Palette,
-    title: "Full Customization",
-    description: "Colors, logos, products - all tailored to your brand identity",
+    icon: Users,
+    title: "Customer Portal",
+    description: "Clients manage orders, billing, and catalogs themselves with AI guidance",
   },
   {
-    icon: ShoppingCart,
+    icon: Route,
     title: "Smart Order Routing",
-    description: "Orders automatically sent to the right decorator based on product or supplier",
+    description: "Orders automatically route to the right decorator based on product or supplier",
   },
 ];
 
 export const IntroducingSection = () => {
   return (
-    <section className="py-24 bg-muted">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -37,12 +37,12 @@ export const IntroducingSection = () => {
           className="text-center max-w-4xl mx-auto mb-16"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-            Introducing{" "}
-            <span className="text-primary">BrandShop.AI</span>
+            Everything Your Clients Need.{" "}
+            <span className="text-primary">Nothing You Have to Manage.</span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            A comprehensive e-commerce platform designed to enhance customer journeys, 
-            build lasting brand loyalty, and drive revenue growth — powered entirely by AI.
+            Give schools, churches, and brands a complete e-commerce experience — 
+            while you focus on growing your distributor business.
           </p>
         </motion.div>
 
@@ -57,7 +57,7 @@ export const IntroducingSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-card rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-card rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow border border-border"
               >
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
                   <Icon className="w-7 h-7 text-primary" />
