@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Mail, MessageCircle, Share2, Smartphone, Bot } from "lucide-react";
 
 const channels = [
-  { icon: Mail, label: "Email" },
-  { icon: MessageCircle, label: "Chat" },
-  { icon: Share2, label: "Social" },
-  { icon: Smartphone, label: "SMS" },
+  { icon: Mail, label: "Email", position: "top-left" },
+  { icon: MessageCircle, label: "Chat", position: "top-right" },
+  { icon: Share2, label: "Social", position: "bottom-left" },
+  { icon: Smartphone, label: "SMS", position: "bottom-right" },
 ];
 
 export const ConnectSection = () => {
@@ -22,75 +22,137 @@ export const ConnectSection = () => {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            {/* Central hub */}
+            {/* Hub Container - Grid Layout */}
             <div className="relative w-80 h-80 mx-auto">
-              {/* Center circle */}
+              {/* Connection Lines SVG - Behind everything */}
+              <svg 
+                className="absolute inset-0 w-full h-full" 
+                viewBox="0 0 320 320"
+                style={{ zIndex: 0 }}
+              >
+                {/* Top-left line (Email to Center) */}
+                <motion.line
+                  x1="64" y1="64"
+                  x2="160" y2="160"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="2"
+                  strokeDasharray="6 4"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 0.5 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                />
+                {/* Top-right line (Chat to Center) */}
+                <motion.line
+                  x1="256" y1="64"
+                  x2="160" y2="160"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="2"
+                  strokeDasharray="6 4"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 0.5 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                />
+                {/* Bottom-left line (Social to Center) */}
+                <motion.line
+                  x1="64" y1="256"
+                  x2="160" y2="160"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="2"
+                  strokeDasharray="6 4"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 0.5 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                />
+                {/* Bottom-right line (SMS to Center) */}
+                <motion.line
+                  x1="256" y1="256"
+                  x2="160" y2="160"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="2"
+                  strokeDasharray="6 4"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 0.5 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                />
+              </svg>
+
+              {/* Center AI Agent Hub */}
               <motion.div
                 initial={{ scale: 0 }}
                 whileInView={{ scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-primary flex items-center justify-center shadow-lg"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-primary flex items-center justify-center shadow-lg z-10"
               >
-                <div className="text-center">
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="text-center"
+                >
                   <Bot className="w-8 h-8 text-primary-foreground mx-auto mb-1" />
-                  <span className="text-primary-foreground font-bold text-xs">
-                    AI Agent
-                  </span>
+                  <span className="text-primary-foreground font-bold text-xs">AI Agent</span>
+                </motion.div>
+              </motion.div>
+
+              {/* Email - Top Left */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                className="absolute top-0 left-0 z-10"
+              >
+                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <Mail className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] text-muted-foreground mt-1">Email</span>
                 </div>
               </motion.div>
 
-              {/* Channel icons orbiting */}
-              {channels.map((channel, index) => {
-                const Icon = channel.icon;
-                const angle = (index * 90) - 45;
-                const radius = 120;
-                const x = Math.cos((angle * Math.PI) / 180) * radius;
-                const y = Math.sin((angle * Math.PI) / 180) * radius;
-                
-                return (
-                  <motion.div
-                    key={channel.label}
-                    initial={{ opacity: 0, scale: 0 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                    style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
-                  >
-                    <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                      <Icon className="w-6 h-6 text-primary" />
-                      <span className="text-[10px] text-muted-foreground mt-1">{channel.label}</span>
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {/* Chat - Top Right */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+                className="absolute top-0 right-0 z-10"
+              >
+                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] text-muted-foreground mt-1">Chat</span>
+                </div>
+              </motion.div>
 
-              {/* Connection lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 320 320">
-                {channels.map((_, index) => {
-                  const angle = (index * 90) - 45;
-                  const radius = 100;
-                  const x = 160 + Math.cos((angle * Math.PI) / 180) * radius;
-                  const y = 160 + Math.sin((angle * Math.PI) / 180) * radius;
-                  return (
-                    <motion.line
-                      key={index}
-                      x1="160"
-                      y1="160"
-                      x2={x}
-                      y2={y}
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="2"
-                      strokeDasharray="4 4"
-                      initial={{ pathLength: 0, opacity: 0 }}
-                      whileInView={{ pathLength: 1, opacity: 0.3 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                    />
-                  );
-                })}
-              </svg>
+              {/* Social - Bottom Left */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+                className="absolute bottom-0 left-0 z-10"
+              >
+                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <Share2 className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] text-muted-foreground mt-1">Social</span>
+                </div>
+              </motion.div>
+
+              {/* SMS - Bottom Right */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.6 }}
+                className="absolute bottom-0 right-0 z-10"
+              >
+                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <Smartphone className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] text-muted-foreground mt-1">SMS</span>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
 

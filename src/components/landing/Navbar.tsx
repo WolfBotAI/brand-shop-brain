@@ -5,9 +5,11 @@ import { Link } from "react-router-dom";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Powering", href: "#powering" },
-  { label: "Contact", href: "#contact" },
-  { label: "Articles", href: "#articles" },
+  { label: "Store Builder", href: "/features/store-builder" },
+  { label: "AI Vision", href: "/features/ai-vision" },
+  { label: "AI Support", href: "/features/ai-support" },
+  { label: "Order Routing", href: "/features/order-routing" },
+  { label: "Dashboard", href: "/features/dashboard" },
 ];
 
 export const Navbar = () => {
