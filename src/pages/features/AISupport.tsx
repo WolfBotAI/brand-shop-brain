@@ -1,9 +1,10 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
-import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
-import { MessageSquare, Phone, Globe, Zap, Brain, Code } from "lucide-react";
+import { ChatDeploymentDemo } from "@/components/features/ChatDeploymentDemo";
+import { FeatureSection } from "@/components/features/FeatureSection";
+import { MessageSquare, Phone, Globe, Zap, Brain, Clock } from "lucide-react";
 
 const AISupport = () => {
   return (
@@ -18,46 +19,51 @@ const AISupport = () => {
           description="Add our AI chat and voice assistant to any website, app, or platform. No migration needed — just embed and go."
         />
 
+        {/* Interactive Deployment Demo */}
+        <ChatDeploymentDemo />
+
+        {/* Multi-Channel Features */}
         <FeatureSection
-          title="Standalone Deployment"
-          description="Use our AI support without switching platforms. Works with your existing tech stack."
+          title="Every Channel, One Brain"
+          description="Your customers can reach you anywhere. The AI remembers everything across all channels."
+          features={[
+            {
+              icon: MessageSquare,
+              title: "Web Chat Widget",
+              description: "Embedded chat that matches your brand. Handles inquiries, order status, and support 24/7.",
+            },
+            {
+              icon: Phone,
+              title: "Voice & Phone",
+              description: "Phone and voice calls handled by the same AI. Real-time tracking lookups during conversations.",
+            },
+            {
+              icon: Brain,
+              title: "Unified Memory",
+              description: "Start on chat, continue on phone — the AI remembers everything. No repetition for customers.",
+            },
+          ]}
+        />
+
+        {/* Deployment Benefits */}
+        <FeatureSection
+          title="Deploy in Minutes, Not Months"
+          description="Works with your existing tech stack. No platform migration required."
           features={[
             {
               icon: Globe,
               title: "Any Website",
-              description: "Simple embed code works on Shopify, WordPress, custom sites, or any platform with HTML access.",
-            },
-            {
-              icon: Code,
-              title: "Easy Integration",
-              description: "Copy-paste installation or use our API for deeper integrations with your systems.",
+              description: "Works on Shopify, WordPress, custom sites, or any platform with HTML access.",
             },
             {
               icon: Zap,
               title: "Instant Activation",
               description: "Go live in minutes. No complex setup, no IT department required.",
             },
-          ]}
-        />
-
-        <FeatureSection
-          title="Multi-Channel AI"
-          description="One AI brain powers every customer touchpoint with unified memory."
-          features={[
             {
-              icon: MessageSquare,
-              title: "Chat Widget",
-              description: "Embedded chat that matches your brand. Handles inquiries, order status, and support 24/7.",
-            },
-            {
-              icon: Phone,
-              title: "Voice Support",
-              description: "Phone and voice calls handled by the same AI. Real-time tracking lookups during conversations.",
-            },
-            {
-              icon: Brain,
-              title: "Unified Memory",
-              description: "The AI remembers every interaction across channels. No repetition for your customers.",
+              icon: Clock,
+              title: "24/7 Availability",
+              description: "Never miss a customer inquiry. AI handles support around the clock.",
             },
           ]}
           reversed
