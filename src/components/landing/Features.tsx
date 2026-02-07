@@ -9,10 +9,34 @@ import {
   Phone,
   Mail,
   MessageCircle,
-  Zap
+  Zap,
+  Globe,
+  Sparkles
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const features = [
+const standaloneProducts = [
+  {
+    icon: MessageSquare,
+    title: "AI Chat & Voice Agent",
+    tagline: "Add to Any Website",
+    description: "Deploy our 24/7 AI assistant on your existing website, app, or platform. No migration needed.",
+    features: ["Embeddable widget", "Voice + text support", "Works with any tech stack", "Custom branding"],
+    gradient: "from-accent to-accent/60",
+    cta: "Get the Widget",
+  },
+  {
+    icon: Eye,
+    title: "AI Vision Agent",
+    tagline: "Standalone Solution",
+    description: "Eliminate manual data entry. Our AI reads handwriting, PDFs, emails, and images — integrates with any system.",
+    features: ["No platform change required", "API integration", "Learns your formats", "99%+ accuracy"],
+    gradient: "from-primary to-primary/60",
+    cta: "Try Vision AI",
+  },
+];
+
+const platformFeatures = [
   {
     icon: Store,
     title: "AI-Powered Store Builder",
@@ -26,24 +50,6 @@ const features = [
     gradient: "from-primary to-primary/60",
   },
   {
-    icon: MessageSquare,
-    title: "Multi-Channel AI Support",
-    description: "Your clients get 24/7 support. You focus on growth.",
-    details: [
-      "Chat, Phone, Email, SMS — one brain",
-      "Real-time shipment tracking",
-      "Instant customer support",
-      "DISC personality-aware responses"
-    ],
-    gradient: "from-accent to-accent/60",
-    channels: [
-      { icon: MessageCircle, label: "Chat" },
-      { icon: Phone, label: "Phone" },
-      { icon: Mail, label: "Email" },
-      { icon: MessageSquare, label: "SMS" },
-    ]
-  },
-  {
     icon: Route,
     title: "Smart Order Routing",
     description: "One order, infinite routing options",
@@ -52,18 +58,6 @@ const features = [
       "Assign by product, region, or capacity",
       "Automatic or manual override",
       "Real-time sync status"
-    ],
-    gradient: "from-primary to-accent",
-  },
-  {
-    icon: Eye,
-    title: "AI Vision PO Processing",
-    description: "Stop paying humans to type. Let AI read anything.",
-    details: [
-      "Reads emails, PDFs, images, handwriting",
-      "Extracts order data automatically",
-      "Integrates with Printavo, DecoNetwork",
-      "Learns and improves over time"
     ],
     gradient: "from-accent to-primary",
   },
@@ -119,78 +113,176 @@ export const Features = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-3xl" />
       
       <div className="container mx-auto px-4 relative">
-        {/* Section Header */}
+        {/* Standalone Products Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-3xl mx-auto mb-20"
+          className="text-center max-w-3xl mx-auto mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6">
-            <Zap className="w-4 h-4" />
-            <span className="text-sm font-medium">Everything You Need</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent mb-6">
+            <Globe className="w-4 h-4" />
+            <span className="text-sm font-medium">Works Anywhere</span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-            One Platform.{" "}
-            <span className="text-primary">Complete Solution.</span>
+            AI That Goes{" "}
+            <span className="text-accent">Where You Are</span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Replace spreadsheets, chaos, and disconnected tools with the most intelligent 
-            e-commerce ecosystem for apparel distributors.
+            Don't want the full platform? Our AI Chat, Voice, and Vision agents work as 
+            standalone solutions on <strong>any website or system</strong>.
           </p>
         </motion.div>
 
-        {/* Features Grid */}
+        {/* Standalone Products Cards */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-24"
         >
-          {features.map((feature, index) => (
+          {standaloneProducts.map((product) => (
+            <motion.div
+              key={product.title}
+              variants={itemVariants}
+              className="group relative"
+            >
+              <div className="relative rounded-2xl p-8 h-full bg-secondary text-secondary-foreground overflow-hidden">
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+                
+                {/* Badge */}
+                <div className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium mb-4">
+                  <Sparkles className="w-3 h-3" />
+                  {product.tagline}
+                </div>
+
+                {/* Icon */}
+                <div className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${product.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <product.icon className="w-8 h-8 text-primary-foreground" />
+                </div>
+
+                {/* Content */}
+                <h3 className="relative text-2xl font-bold text-secondary-foreground mb-3">
+                  {product.title}
+                </h3>
+                <p className="relative text-secondary-foreground/80 mb-6 text-lg">
+                  {product.description}
+                </p>
+
+                {/* Features */}
+                <div className="relative grid grid-cols-2 gap-3 mb-8">
+                  {product.features.map((feature, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm text-secondary-foreground/70">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <Button 
+                  className="relative bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 shadow-glow btn-glow"
+                >
+                  {product.cta}
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Multi-Channel Support Highlight */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="max-w-4xl mx-auto mb-24"
+        >
+          <div className="glass-card rounded-2xl p-8 md:p-12 text-center">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              One AI Brain. Every Channel.
+            </h3>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Whether on our platform or yours, the AI maintains unified memory across all channels. 
+              Your customers get consistent, intelligent support everywhere.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {[
+                { icon: MessageCircle, label: "Chat Widget", desc: "Any website" },
+                { icon: Phone, label: "Voice Calls", desc: "Phone support" },
+                { icon: Mail, label: "Email", desc: "Auto-responses" },
+                { icon: MessageSquare, label: "SMS", desc: "Text support" },
+              ].map((channel) => (
+                <div key={channel.label} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <channel.icon className="w-6 h-6 text-accent" />
+                  </div>
+                  <span className="font-semibold text-foreground">{channel.label}</span>
+                  <span className="text-xs text-muted-foreground">{channel.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Platform Features Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center max-w-3xl mx-auto mb-16"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6">
+            <Zap className="w-4 h-4" />
+            <span className="text-sm font-medium">Full Platform Features</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+            Or Get the{" "}
+            <span className="text-primary">Complete Solution</span>
+          </h2>
+          <p className="text-xl text-muted-foreground">
+            For distributors who want everything — acquisition, store creation, 
+            order routing, and AI support in one unified platform.
+          </p>
+        </motion.div>
+
+        {/* Platform Features Grid */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          {platformFeatures.map((feature) => (
             <motion.div
               key={feature.title}
               variants={itemVariants}
               className="group relative"
             >
-              <div className="glass-card rounded-2xl p-8 h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div className="glass-card rounded-2xl p-6 h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 {/* Icon */}
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="w-7 h-7 text-primary-foreground" />
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="w-6 h-6 text-primary-foreground" />
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-bold text-foreground mb-2">
+                <h3 className="text-lg font-bold text-foreground mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-primary font-medium mb-4">
+                <p className="text-primary font-medium text-sm mb-3">
                   {feature.description}
                 </p>
 
-                {/* Channel Icons (for Multi-Channel feature) */}
-                {feature.channels && (
-                  <div className="flex gap-3 mb-4">
-                    {feature.channels.map((channel) => (
-                      <div 
-                        key={channel.label}
-                        className="flex flex-col items-center gap-1"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                          <channel.icon className="w-5 h-5 text-accent" />
-                        </div>
-                        <span className="text-xs text-muted-foreground">{channel.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
                 {/* Details */}
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {feature.details.map((detail, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
                       {detail}
                     </li>
                   ))}
