@@ -1,13 +1,16 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Mail, Phone, MapPin, Linkedin, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const footerLinks = {
-  Product: [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Integrations", href: "#integrations" },
-    { label: "API Docs", href: "#" },
+  Features: [
+    { label: "AI Store Builder", href: "/features/store-builder" },
+    { label: "AI Chat & Voice", href: "/features/ai-support" },
+    { label: "AI Vision", href: "/features/ai-vision" },
+    { label: "Order Routing", href: "/features/order-routing" },
+    { label: "Dashboard", href: "/features/dashboard" },
+    { label: "Acquisition Engine", href: "/features/acquisition" },
   ],
   Company: [
     { label: "About Us", href: "#" },
@@ -17,15 +20,14 @@ const footerLinks = {
   ],
   Resources: [
     { label: "Help Center", href: "#" },
+    { label: "Integrations", href: "#integrations" },
     { label: "Case Studies", href: "#" },
-    { label: "Webinars", href: "#" },
     { label: "Partners", href: "#" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "#" },
     { label: "Terms of Service", href: "#" },
     { label: "Cookie Policy", href: "#" },
-    { label: "GDPR", href: "#" },
   ],
 };
 
@@ -53,7 +55,7 @@ export const Footer = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button 
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full shadow-glow btn-glow group"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
               >
                 Book Strategy Call
                 <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
@@ -63,7 +65,7 @@ export const Footer = () => {
                 variant="outline"
                 className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10 px-8 py-6 text-lg rounded-full"
               >
-                Start Free Trial
+                Contact Sales
               </Button>
             </div>
           </motion.div>
@@ -75,12 +77,12 @@ export const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8">
           {/* Brand Column */}
           <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                 <span className="text-xl font-bold text-primary-foreground">B</span>
               </div>
               <span className="text-2xl font-bold">Brand-Shop.AI</span>
-            </div>
+            </Link>
             <p className="text-secondary-foreground/60 mb-6 max-w-xs">
               The smartest e-commerce platform for apparel distributors. 
               Powered by WolfBot.AI unified intelligence.
@@ -108,12 +110,21 @@ export const Footer = () => {
               <ul className="space-y-3">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <a 
-                      href={link.href}
-                      className="text-secondary-foreground/60 hover:text-primary transition-colors text-sm"
-                    >
-                      {link.label}
-                    </a>
+                    {link.href.startsWith('/') ? (
+                      <Link 
+                        to={link.href}
+                        className="text-secondary-foreground/60 hover:text-primary transition-colors text-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a 
+                        href={link.href}
+                        className="text-secondary-foreground/60 hover:text-primary transition-colors text-sm"
+                      >
+                        {link.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
