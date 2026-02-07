@@ -1,125 +1,171 @@
 
-# Fix ConnectSection to Show Actual Product Features
+# Comprehensive Fix: All Feature Pages + ConnectSection
 
-## The Problem
+## Issues Identified from Your Feedback
 
-The current ConnectSection shows:
-- Email, Chat, Social, SMS as "engagement channels"
+### 1. ConnectSection Graphic - Lines Are Off-Center/Crossing
+The AI Agent hub is visually off-center and lines don't connect properly to the corner nodes.
 
-This is **WRONG**. The product offers:
-- **AI Chat Support** - Handles customer inquiries, order tracking, returns
-- **AI Voice Support** - Phone calls handled by AI
-- **AI Vision** - Extracts data from POs, handwritten notes, PDFs
-- **Web Widget** - Deploys on any website
+**Fix**: Recalculate SVG coordinates so lines connect from the CENTER of each corner node to the CENTER of the hub. Current coordinates (64, 256) don't account for the node size offsets.
 
-The graphic should show these 4 actual AI capabilities feeding into the "AI Agent" brain, NOT generic marketing channels.
+### 2. Store Builder - Missing AI Intelligence
+Current demo is a basic wizard that "any Tom Dick or Harry has." Missing:
+- **AI-powered product suggestions** based on vertical, branding, weather, trending items
+- **Distributor can also build for clients** or assign pre-approved themes/products
+- Should show the AI actively suggesting, not just asking questions
 
----
+**Fix**: 
+- Add AI product recommendation step showing: "Based on your high school vertical, I recommend these trending items for spring..."
+- Add toggle showing "Distributor Mode" where they pre-configure themes and catalogs
+- AI suggestions based on vertical + season + trends
 
-## Current vs Correct
+### 3. AI Vision - Wrong Flow
+Current flow: Document arrives → Scan → Extract → Error → Integrate
 
-| Current (Wrong) | Should Be (Correct) |
-|-----------------|---------------------|
-| Email | AI Chat Support |
-| Chat | AI Voice Support |
-| Social | AI Vision (POs) |
-| SMS | Web Widget |
-| "engagement" | "Customer Support" |
-| "Proactive engagement via Email, Chat, Social, and SMS" | "AI Chat, Voice, and Vision handle every customer interaction" |
+**Correct flow per your description:**
+1. Client sends email to decorator
+2. AI Vision reads the email + attachments
+3. AI scans for errors in the PO
+4. AI communicates WITH THE CLIENT to resolve discrepancies
+5. AI submits corrected order to decorator platform (Printavo)
 
----
+**Fix**: Rebuild VisionAgentFlow to show:
+- Email arriving from client
+- AI reading email body + PDF attachment
+- Error detection with AI auto-response TO CLIENT
+- Client confirms correction
+- Order pushed to Printavo
 
-## Visual Concept
+### 4. AI Support - Missing Voice Features
+Missing critical voice capabilities:
+- **20+ languages** with natural-sounding speech
+- AI knows EVERYTHING about the account when client calls
+- Shared memory across chat, voice, SMS, email
+- Facebook Messenger + Instagram Messenger integration
 
-```text
-     [AI Chat]          [AI Voice]
-     (Live Support)     (Phone Calls)
-            \              /
-             \            /
-              [AI Agent]  ← Central Brain
-             /            \
-            /              \
-     [AI Vision]        [Web Widget]
-     (PO Extraction)    (Any Website)
-```
+Current demo only shows web chat. Missing:
+- Voice call simulation
+- Multi-language support highlight
+- Social channel integration (Facebook, Instagram, SMS, Email)
 
-Each node represents a real capability that the AI Agent provides:
-- **AI Chat Support**: Handles tracking, returns, billing via chat
-- **AI Voice Support**: Phone calls handled by AI (real-time lookups)
-- **AI Vision**: Reads handwritten POs, PDFs, emails - extracts order data
-- **Web Widget**: Embed on any website (Shopify, WordPress, custom)
+**Fix**:
+- Add voice demo showing AI answering phone in multiple languages
+- Show unified memory: "I see you messaged on Instagram earlier about order #456..."
+- Add channel icons for Facebook, Instagram, SMS, Email (not just web chat)
+
+### 5. Order Routing - WRONG INFO (Capacity/Geographic)
+You did NOT mention capacity-based or geographic routing. I invented that.
+
+**What you actually described:**
+- Route orders based on **product type** or **supplier rules**
+- Distributor configures which decorator gets which products
+- Smart routing based on rules YOU set, not capacity or geography
+
+**Fix**: Remove capacity-based and geographic routing. Replace with:
+- Product-based routing (t-shirts → Decorator A, embroidery → Decorator B)
+- Supplier-based routing (Brand X products → Supplier Y)
+- Decorator-specific rules
+
+### 6. Dashboard - No BI Analytics Visuals
+Current dashboard page has NO visual charts or analytics. Just text descriptions.
+
+**What's needed:**
+- Real-time BI analytics visualizations
+- Charts showing sales, orders, revenue
+- Multi-store performance comparisons
+- Visual dashboard mockup with actual chart components
+
+**Fix**: Add interactive dashboard demo with:
+- Line/bar charts using recharts (already installed)
+- Store performance comparison cards
+- Revenue and order volume metrics
+- Real BI analytics visuals, not just text
 
 ---
 
 ## Files to Modify
 
 ### 1. `src/components/landing/ConnectSection.tsx`
+- Fix SVG line coordinates to properly center on nodes
+- Ensure AI Agent hub is truly centered in the container
+- Lines should go from node centers to hub center without crossing
 
-Replace the current channels with the actual product features:
+### 2. `src/components/features/StoreBuilderJourney.tsx`
+Complete rebuild:
+- Add AI recommendation step: "Based on your high school, trending items for spring include..."
+- Show weather-based suggestions: "It's getting warm - lightweight tees are popular now"
+- Add distributor mode toggle: "Build for client" vs "Let client self-serve"
+- Show pre-approved theme selection from distributor catalog
 
-```typescript
-const capabilities = [
-  { icon: MessageSquare, label: "AI Chat", sublabel: "Live Support", position: "top-left" },
-  { icon: Phone, label: "AI Voice", sublabel: "Phone Calls", position: "top-right" },
-  { icon: Eye, label: "AI Vision", sublabel: "PO Extraction", position: "bottom-left" },
-  { icon: Globe, label: "Web Widget", sublabel: "Any Website", position: "bottom-right" },
-];
-```
+### 3. `src/components/features/VisionAgentFlow.tsx`
+Rebuild flow:
+- Step 1: Email arrives from client to decorator
+- Step 2: AI reads email + scans PDF attachment
+- Step 3: AI detects error (quantity mismatch)
+- Step 4: AI sends response TO CLIENT asking for clarification
+- Step 5: Client confirms → AI submits to Printavo
 
-Update the bullet points to reflect actual support capabilities:
-- "AI Chat handles order tracking, returns, and billing questions"
-- "AI Voice takes phone calls with real-time order lookups"
-- "AI Vision extracts data from handwritten POs and PDFs"
-- "Deploy on any website - Shopify, WordPress, or custom"
+### 4. `src/components/features/ChatDeploymentDemo.tsx` + `src/pages/features/AISupport.tsx`
+Major additions:
+- Voice demo with language selector (Spanish, French, Mandarin, etc.)
+- "AI knows who you are" - shows caller ID → account lookup
+- Add Facebook, Instagram, SMS, Email channel icons
+- Unified memory demo: "I see your Instagram message from earlier..."
+- Highlight: "20+ languages, natural-sounding, shared memory"
 
-### 2. Update section title and description
+### 5. `src/pages/features/OrderRouting.tsx`
+Remove invented features. Replace with:
+- Product-based routing rules
+- Supplier-based routing rules  
+- Decorator assignment by product category
+- Remove "Geographic Routing" and "Capacity-Based" sections
 
-From: "Your Clients Get White-Glove Service. You Do Nothing."
-To: Keep this, but update the description and bullets to match actual capabilities.
-
-Update description to:
-"AI Chat, Voice, and Vision handle every customer interaction. Your clients get 24/7 support — you never lift a finger."
-
-### 3. Link "See It In Action" button to feature pages
-
-The button should link to `/features/ai-support` where the interactive demo lives.
-
----
-
-## Updated Bullet Points
-
-Current (wrong - sounds like marketing automation):
-- "Order tracking, returns, and billing updates — all automated"
-- "Private catalogs with AI navigation"  
-- "Proactive engagement via Email, Chat, Social, and SMS"
-- "Clients feel supported 24/7, you scale without hiring"
-
-New (correct - actual support features):
-- "AI Chat answers questions, tracks orders, handles returns"
-- "AI Voice takes phone calls with real-time order lookups"
-- "AI Vision reads POs, PDFs, and handwritten notes automatically"
-- "Deploy on any website in minutes with a single line of code"
+### 6. `src/pages/features/Dashboard.tsx`
+Add visual BI components:
+- Revenue chart (line chart)
+- Orders by store (bar chart)
+- Store performance cards
+- Real-time metrics visualization
+- Use recharts library (already installed)
 
 ---
 
-## Icon Changes
+## Visual/Animation Updates
 
-| Position | Old | New |
-|----------|-----|-----|
-| Top Left | Mail (Email) | MessageSquare (AI Chat) |
-| Top Right | MessageCircle (Chat) | Phone (AI Voice) |
-| Bottom Left | Share2 (Social) | Eye (AI Vision) |
-| Bottom Right | Smartphone (SMS) | Globe (Web Widget) |
+### ConnectSection Hub Fix
+Current SVG viewBox is 320x320 with nodes at positions 0,0 / 0,320 / 320,0 / 320,320
+But the node circles are 80px (w-20), so their centers are at 40px from edge.
+
+**Corrected coordinates:**
+- Top-left node center: (40, 40)
+- Top-right node center: (280, 40)
+- Bottom-left node center: (40, 280)
+- Bottom-right node center: (280, 280)
+- Hub center: (160, 160)
+
+### AI Voice Demo
+Add animated waveform visualization when "AI is speaking"
+Show language switcher with flags
+Display: "Hola, gracias por llamar a Lincoln High School Store..."
+
+### Dashboard Charts
+Use recharts components:
+- `<LineChart>` for revenue over time
+- `<BarChart>` for store comparisons
+- `<PieChart>` for order distribution
+- Animate on scroll into view
 
 ---
 
-## Summary
+## Summary of Changes
 
-This changes the ConnectSection from showing generic "engagement channels" to showing the **actual AI capabilities** the platform provides:
+| Component | Current (Wrong) | Fix |
+|-----------|-----------------|-----|
+| ConnectSection | Lines off-center, crossing | Fix SVG coordinates |
+| Store Builder | Generic wizard, no AI smarts | Add AI suggestions, distributor mode |
+| AI Vision | Wrong flow | Email→Scan→Error→Client comms→Submit |
+| AI Support | Web chat only | Voice (20+ languages), FB, IG, SMS, Email |
+| Order Routing | Capacity/Geographic (invented) | Product/Supplier rules only |
+| Dashboard | No visuals | Add recharts BI analytics |
 
-1. **AI Chat Support** - Live customer support
-2. **AI Voice Support** - Phone call handling
-3. **AI Vision** - Document/PO extraction
-4. **Web Widget** - Deploy anywhere
-
-The central "AI Agent" brain connects all four capabilities, showing that one AI system powers all customer interactions.
+This plan addresses every issue you raised and removes all invented content.
