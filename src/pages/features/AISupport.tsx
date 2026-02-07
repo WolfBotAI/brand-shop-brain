@@ -4,7 +4,7 @@ import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
 import { ChatDeploymentDemo } from "@/components/features/ChatDeploymentDemo";
 import { FeatureSection } from "@/components/features/FeatureSection";
-import { MessageSquare, Phone, Globe, Zap, Brain, Clock } from "lucide-react";
+import { MessageSquare, Phone, Globe, Brain, Languages, Mail } from "lucide-react";
 
 const AISupport = () => {
   return (
@@ -13,60 +13,83 @@ const AISupport = () => {
       <main>
         <FeatureHero
           icon={MessageSquare}
-          badge="Works on Any Website"
+          badge="AI-Powered Customer Support"
           title="24/7 AI Support Agent —"
-          highlight="Deployed Anywhere"
-          description="Add our AI chat and voice assistant to any website, app, or platform. No migration needed — just embed and go."
+          highlight="Voice, Chat & Social"
+          description="AI handles every customer interaction across voice, chat, SMS, email, Facebook & Instagram. 20+ languages, shared memory, natural conversations."
         />
 
         {/* Interactive Deployment Demo */}
         <ChatDeploymentDemo />
 
-        {/* Multi-Channel Features */}
+        {/* Voice Features */}
+        <FeatureSection
+          title="AI Voice That Speaks Their Language"
+          description="Phone calls handled by AI in 20+ languages. Natural-sounding, knows the customer, instant responses."
+          features={[
+            {
+              icon: Phone,
+              title: "Natural Voice Calls",
+              description: "AI answers phone calls with natural speech. Customers think they're talking to a real person.",
+            },
+            {
+              icon: Languages,
+              title: "20+ Languages",
+              description: "Spanish, Mandarin, French, and more. Automatically detects and responds in the caller's language.",
+            },
+            {
+              icon: Brain,
+              title: "Caller Recognition",
+              description: "AI knows who's calling instantly. Order history, preferences, and past conversations at the ready.",
+            },
+          ]}
+        />
+
+        {/* All Channels */}
         <FeatureSection
           title="Every Channel, One Brain"
           description="Your customers can reach you anywhere. The AI remembers everything across all channels."
           features={[
             {
               icon: MessageSquare,
-              title: "Web Chat Widget",
-              description: "Embedded chat that matches your brand. Handles inquiries, order status, and support 24/7.",
+              title: "Facebook & Instagram",
+              description: "AI handles DMs on Facebook and Instagram. Same knowledge, same memory as every other channel.",
             },
             {
-              icon: Phone,
-              title: "Voice & Phone",
-              description: "Phone and voice calls handled by the same AI. Real-time tracking lookups during conversations.",
+              icon: Mail,
+              title: "SMS & Email",
+              description: "Text messages and emails handled automatically. Customers get instant responses 24/7.",
             },
-            {
-              icon: Brain,
-              title: "Unified Memory",
-              description: "Start on chat, continue on phone — the AI remembers everything. No repetition for customers.",
-            },
-          ]}
-        />
-
-        {/* Deployment Benefits */}
-        <FeatureSection
-          title="Deploy in Minutes, Not Months"
-          description="Works with your existing tech stack. No platform migration required."
-          features={[
             {
               icon: Globe,
-              title: "Any Website",
-              description: "Works on Shopify, WordPress, custom sites, or any platform with HTML access.",
-            },
-            {
-              icon: Zap,
-              title: "Instant Activation",
-              description: "Go live in minutes. No complex setup, no IT department required.",
-            },
-            {
-              icon: Clock,
-              title: "24/7 Availability",
-              description: "Never miss a customer inquiry. AI handles support around the clock.",
+              title: "Web Chat Widget",
+              description: "Embedded chat on any website. Works on Shopify, WordPress, or custom sites with one line of code.",
             },
           ]}
           reversed
+        />
+
+        {/* Shared Memory */}
+        <FeatureSection
+          title="Shared Memory Across All Channels"
+          description="Start on Instagram, continue on phone — the AI remembers everything. No repetition, no frustration."
+          features={[
+            {
+              icon: Brain,
+              title: "Unified Memory",
+              description: "Every conversation, every channel, remembered. AI picks up right where you left off.",
+            },
+            {
+              icon: Phone,
+              title: "Seamless Handoffs",
+              description: "Customer mentions their Instagram message on a phone call? AI already knows about it.",
+            },
+            {
+              icon: MessageSquare,
+              title: "Full Context",
+              description: "Order history, preferences, past issues — AI has complete context for every interaction.",
+            },
+          ]}
         />
 
         <FeatureCTA

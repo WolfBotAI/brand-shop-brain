@@ -3,23 +3,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mail, 
   FileText, 
-  Image, 
-  FileSpreadsheet, 
   ArrowRight, 
   AlertTriangle,
   Check,
   Send,
-  ExternalLink
+  ExternalLink,
+  Eye,
+  MessageSquare,
+  User
 } from "lucide-react";
 import { ChatBubble } from "./ChatBubble";
-import { Button } from "@/components/ui/button";
-
-const documentTypes = [
-  { id: "email", icon: Mail, label: "Email", color: "bg-blue-500" },
-  { id: "pdf", icon: FileText, label: "PDF PO", color: "bg-red-500" },
-  { id: "image", icon: Image, label: "Handwritten", color: "bg-green-500" },
-  { id: "spreadsheet", icon: FileSpreadsheet, label: "Spreadsheet", color: "bg-emerald-600" },
-];
 
 const extractedFields = [
   { label: "Customer", value: "Lincoln High School", hasError: false },
@@ -39,11 +32,10 @@ const printavoOrder = [
   { label: "Total", value: "$450.00" },
 ];
 
-type Phase = "input" | "scanning" | "extraction" | "error" | "resolved" | "integration";
+type Phase = "email_arrives" | "ai_reads" | "error_detected" | "client_comms" | "client_confirms" | "submit_order";
 
 export const VisionAgentFlow = () => {
-  const [phase, setPhase] = useState<Phase>("input");
-  const [activeDoc, setActiveDoc] = useState(0);
+  const [phase, setPhase] = useState<Phase>("email_arrives");
   const [scanProgress, setScanProgress] = useState(0);
   const [extractedCount, setExtractedCount] = useState(0);
 
@@ -51,46 +43,54 @@ export const VisionAgentFlow = () => {
   useEffect(() => {
     const timers: NodeJS.Timeout[] = [];
     
-    // Phase 1: Documents arrive
-    timers.push(setTimeout(() => setActiveDoc(1), 500));
-    timers.push(setTimeout(() => setActiveDoc(2), 1000));
-    timers.push(setTimeout(() => setActiveDoc(1), 1500));
+    // Phase 1: Email arrives (client sends to decorator)
+    // Already showing
     
-    // Phase 2: Start scanning
-    timers.push(setTimeout(() => setPhase("scanning"), 2500));
+    // Phase 2: AI reads email + attachment
+    timers.push(setTimeout(() => setPhase("ai_reads"), 2500));
     
     // Scanning progress
     for (let i = 1; i <= 100; i += 5) {
-      timers.push(setTimeout(() => setScanProgress(i), 2500 + (i * 20)));
+      timers.push(setTimeout(() => setScanProgress(i), 2500 + (i * 15)));
     }
-    
-    // Phase 3: Extraction
-    timers.push(setTimeout(() => setPhase("extraction"), 4500));
     
     // Extract fields one by one
     for (let i = 1; i <= 6; i++) {
-      timers.push(setTimeout(() => setExtractedCount(i), 4500 + (i * 300)));
+      timers.push(setTimeout(() => setExtractedCount(i), 4000 + (i * 250)));
     }
     
-    // Phase 4: Error detected
-    timers.push(setTimeout(() => setPhase("error"), 7000));
+    // Phase 3: Error detected
+    timers.push(setTimeout(() => setPhase("error_detected"), 6000));
     
-    // Phase 5: Resolved
-    timers.push(setTimeout(() => setPhase("resolved"), 9500));
+    // Phase 4: AI communicates with client
+    timers.push(setTimeout(() => setPhase("client_comms"), 8000));
     
-    // Phase 6: Integration
-    timers.push(setTimeout(() => setPhase("integration"), 11500));
+    // Phase 5: Client confirms
+    timers.push(setTimeout(() => setPhase("client_confirms"), 10500));
+    
+    // Phase 6: Submit to Printavo
+    timers.push(setTimeout(() => setPhase("submit_order"), 12500));
     
     // Reset
     timers.push(setTimeout(() => {
-      setPhase("input");
-      setActiveDoc(0);
+      setPhase("email_arrives");
       setScanProgress(0);
       setExtractedCount(0);
-    }, 15000));
+    }, 16000));
 
     return () => timers.forEach(clearTimeout);
-  }, [phase === "input"]);
+  }, [phase === "email_arrives"]);
+
+  const phases: { id: Phase; label: string }[] = [
+    { id: "email_arrives", label: "Email Arrives" },
+    { id: "ai_reads", label: "AI Reads" },
+    { id: "error_detected", label: "Error Found" },
+    { id: "client_comms", label: "Contact Client" },
+    { id: "client_confirms", label: "Confirmed" },
+    { id: "submit_order", label: "Submit Order" },
+  ];
+
+  const currentPhaseIndex = phases.findIndex(p => p.id === phase);
 
   return (
     <section className="py-20 bg-background">
@@ -100,29 +100,27 @@ export const VisionAgentFlow = () => {
             See the AI Vision Agent in Action
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Watch documents get processed, errors flagged, and orders created automatically.
+            Client sends email → AI reads & detects errors → AI contacts client to resolve → Submits to decorator.
           </p>
         </div>
 
         <div className="max-w-5xl mx-auto">
           {/* Phase Indicator */}
-          <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
-            {["Input", "Scan", "Extract", "Validate", "Integrate"].map((label, index) => {
-              const phases: Phase[] = ["input", "scanning", "extraction", "error", "integration"];
-              const currentIndex = phases.indexOf(phase);
-              const isActive = index <= currentIndex;
+          <div className="flex items-center justify-center gap-1 mb-8 flex-wrap">
+            {phases.map((p, index) => {
+              const isActive = index <= currentPhaseIndex;
               
               return (
-                <div key={label} className="flex items-center">
-                  <div className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                <div key={p.id} className="flex items-center">
+                  <div className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                     isActive 
                       ? "bg-primary text-primary-foreground" 
                       : "bg-muted text-muted-foreground"
                   }`}>
-                    {label}
+                    {p.label}
                   </div>
-                  {index < 4 && (
-                    <ArrowRight className={`w-4 h-4 mx-1 ${
+                  {index < phases.length - 1 && (
+                    <ArrowRight className={`w-3 h-3 mx-1 ${
                       isActive ? "text-primary" : "text-muted-foreground"
                     }`} />
                   )}
@@ -133,240 +131,292 @@ export const VisionAgentFlow = () => {
 
           <div className="bg-card border border-border rounded-2xl p-6 md:p-8 min-h-[500px]">
             <AnimatePresence mode="wait">
-              {/* Input Phase */}
-              {phase === "input" && (
+              {/* Phase 1: Email Arrives from Client */}
+              {phase === "email_arrives" && (
                 <motion.div
-                  key="input"
+                  key="email_arrives"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="space-y-6"
                 >
-                  <ChatBubble message="I'm watching for incoming orders from any source..." />
+                  <ChatBubble message="Watching for incoming orders from clients..." />
                   
-                  <div className="flex items-center justify-center gap-6 py-8 flex-wrap">
-                    {documentTypes.map((doc, index) => (
-                      <motion.div
-                        key={doc.id}
-                        className={`flex flex-col items-center gap-2 p-6 rounded-xl border-2 transition-all ${
-                          activeDoc === index 
-                            ? "border-primary scale-110 shadow-lg" 
-                            : "border-border"
-                        }`}
-                        animate={{ 
-                          y: activeDoc === index ? -10 : 0,
-                          scale: activeDoc === index ? 1.05 : 1
-                        }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                      >
-                        <div className={`w-14 h-14 rounded-lg ${doc.color} flex items-center justify-center`}>
-                          <doc.icon className="w-7 h-7 text-white" />
-                        </div>
-                        <span className="text-sm font-medium text-card-foreground">{doc.label}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                  
-                  <p className="text-center text-muted-foreground">
-                    Documents arriving from email, uploads, and integrations...
-                  </p>
+                  <motion.div 
+                    className="max-w-lg mx-auto bg-muted rounded-xl p-6"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-card-foreground">New Email Received</p>
+                        <p className="text-sm text-muted-foreground">From: john.smith@lhs.edu</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-background p-4 rounded-lg space-y-3">
+                      <p className="text-sm text-card-foreground">
+                        <span className="font-medium">Subject:</span> PO for Spring Spirit Wear
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Hi, please find attached our purchase order for the spring spirit wear order. 
+                        We need 1000 navy t-shirts in sizes S-XL by March 15th.
+                      </p>
+                      <div className="flex items-center gap-2 p-2 bg-muted rounded border border-border">
+                        <FileText className="w-5 h-5 text-red-500" />
+                        <span className="text-sm text-card-foreground">PurchaseOrder_LHS.pdf</span>
+                      </div>
+                    </div>
+                  </motion.div>
                 </motion.div>
               )}
 
-              {/* Scanning Phase */}
-              {phase === "scanning" && (
+              {/* Phase 2: AI Reads Email + Attachment */}
+              {phase === "ai_reads" && (
                 <motion.div
-                  key="scanning"
+                  key="ai_reads"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="space-y-6"
                 >
-                  <ChatBubble message="New PDF received! Scanning document..." />
+                  <ChatBubble message="Reading email and scanning PDF attachment for order details..." />
                   
-                  <div className="max-w-md mx-auto">
-                    <div className="bg-muted rounded-xl p-6 relative overflow-hidden">
-                      {/* Scanning line */}
-                      <motion.div
-                        className="absolute left-0 right-0 h-1 bg-primary"
-                        style={{ top: `${scanProgress}%` }}
-                        animate={{ opacity: [1, 0.5, 1] }}
-                        transition={{ duration: 0.5, repeat: Infinity }}
-                      />
-                      
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
-                          <FileText className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-card-foreground">PurchaseOrder_LHS.pdf</p>
-                          <p className="text-sm text-muted-foreground">Scanning... {scanProgress}%</p>
-                        </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Email Being Read */}
+                    <div className="bg-muted rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Eye className="w-4 h-4 text-primary animate-pulse" />
+                        <span className="text-sm font-medium text-card-foreground">Reading Email</span>
                       </div>
-                      
-                      {/* Progress bar */}
-                      <div className="h-2 bg-background rounded-full overflow-hidden">
+                      <div className="bg-background p-3 rounded-lg text-sm text-muted-foreground">
+                        <motion.span
+                          className="bg-primary/20 px-1"
+                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 1, repeat: Infinity }}
+                        >
+                          1000 navy t-shirts
+                        </motion.span>
+                        {" "}in sizes S-XL by{" "}
+                        <motion.span
+                          className="bg-primary/20 px-1"
+                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: 0.3 }}
+                        >
+                          March 15th
+                        </motion.span>
+                      </div>
+                    </div>
+                    
+                    {/* PDF Being Scanned */}
+                    <div className="bg-muted rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="w-4 h-4 text-red-500" />
+                        <span className="text-sm font-medium text-card-foreground">Scanning PDF... {scanProgress}%</span>
+                      </div>
+                      <div className="h-2 bg-background rounded-full overflow-hidden mb-4">
                         <motion.div 
                           className="h-full bg-primary"
                           style={{ width: `${scanProgress}%` }}
                         />
                       </div>
+                      
+                      {/* Extracted fields */}
+                      <div className="space-y-2">
+                        {extractedFields.slice(0, extractedCount).map((field, index) => (
+                          <motion.div
+                            key={field.label}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className={`flex justify-between p-2 rounded text-sm ${
+                              field.hasError 
+                                ? "bg-destructive/10 border border-destructive/30" 
+                                : "bg-primary/5"
+                            }`}
+                          >
+                            <span className="text-muted-foreground">{field.label}</span>
+                            <span className={field.hasError ? "text-destructive font-medium" : "text-card-foreground"}>
+                              {field.value}
+                            </span>
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* Extraction Phase */}
-              {phase === "extraction" && (
+              {/* Phase 3: Error Detected */}
+              {phase === "error_detected" && (
                 <motion.div
-                  key="extraction"
+                  key="error_detected"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="space-y-6"
                 >
-                  <ChatBubble message="Extracting order details from the document..." />
-                  
-                  <div className="max-w-lg mx-auto bg-muted rounded-xl p-6">
-                    <p className="text-sm font-medium text-muted-foreground mb-4">Extracted Fields:</p>
-                    <div className="space-y-3">
-                      {extractedFields.slice(0, extractedCount).map((field, index) => (
-                        <motion.div
-                          key={field.label}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className={`flex items-center justify-between p-3 rounded-lg ${
-                            field.hasError 
-                              ? "bg-destructive/10 border border-destructive/30" 
-                              : "bg-primary/5 border border-primary/20"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            {field.hasError ? (
-                              <AlertTriangle className="w-4 h-4 text-destructive" />
-                            ) : (
-                              <Check className="w-4 h-4 text-primary" />
-                            )}
-                            <span className="text-sm text-muted-foreground">{field.label}</span>
-                          </div>
-                          <span className={`text-sm font-medium ${
-                            field.hasError ? "text-destructive" : "text-card-foreground"
-                          }`}>
-                            {field.value}
-                          </span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Error Detection Phase */}
-              {phase === "error" && (
-                <motion.div
-                  key="error"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
-                  <ChatBubble message="⚠️ I noticed a potential issue. Quantity '1000' seems high for a school order. Let me verify with the customer..." />
-                  
-                  <div className="max-w-lg mx-auto space-y-4">
-                    {/* Error highlight */}
-                    <motion.div 
-                      className="p-4 bg-destructive/10 border-2 border-destructive rounded-xl"
-                      animate={{ scale: [1, 1.02, 1] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-destructive" />
-                        <span className="font-medium text-destructive">Potential Error Detected</span>
-                      </div>
-                      <p className="text-sm text-card-foreground">
-                        Quantity: <span className="line-through text-destructive">1000</span> → Did you mean <span className="text-primary font-bold">100</span>?
-                      </p>
-                    </motion.div>
-                    
-                    {/* Auto-response email */}
-                    <motion.div 
-                      className="p-4 bg-muted rounded-xl border border-border"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <Send className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium text-card-foreground">AI Auto-Response Sent</span>
-                      </div>
-                      <div className="bg-background p-3 rounded-lg text-sm">
-                        <p className="text-muted-foreground mb-2">To: john.smith@lhs.edu</p>
-                        <p className="text-card-foreground">
-                          Hi John, I noticed your order shows 1000 t-shirts. Based on typical school orders, 
-                          did you mean 100? Please confirm and I'll process immediately.
-                        </p>
-                      </div>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Resolved Phase */}
-              {phase === "resolved" && (
-                <motion.div
-                  key="resolved"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
-                  <ChatBubble message="✅ Customer confirmed: 100 units is correct! Order updated and ready to process." />
+                  <ChatBubble message="⚠️ I detected a suspicious quantity! 1000 t-shirts is unusually high for a school order. I'll verify with the client before proceeding." />
                   
                   <motion.div 
-                    className="max-w-md mx-auto p-6 bg-primary/5 border-2 border-primary rounded-xl text-center"
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
+                    className="max-w-lg mx-auto p-6 bg-destructive/10 border-2 border-destructive rounded-xl"
+                    animate={{ scale: [1, 1.02, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
                   >
-                    <motion.div
-                      className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: [0, 1.2, 1] }}
-                    >
-                      <Check className="w-8 h-8 text-primary-foreground" />
-                    </motion.div>
-                    <h3 className="text-xl font-bold text-card-foreground mb-2">Issue Resolved!</h3>
-                    <p className="text-muted-foreground">
-                      Error caught before reaching decorator. $4,050 billing mistake prevented.
-                    </p>
+                    <div className="flex items-center gap-2 mb-4">
+                      <AlertTriangle className="w-6 h-6 text-destructive" />
+                      <span className="font-bold text-destructive text-lg">Potential Error Detected</span>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between p-3 bg-background rounded-lg">
+                        <span className="text-muted-foreground">Quantity in PO:</span>
+                        <span className="text-destructive font-bold line-through">1000</span>
+                      </div>
+                      <div className="flex justify-between p-3 bg-background rounded-lg">
+                        <span className="text-muted-foreground">Typical school order:</span>
+                        <span className="text-card-foreground font-medium">50-150 units</span>
+                      </div>
+                      <div className="flex justify-between p-3 bg-primary/10 rounded-lg border border-primary">
+                        <span className="text-muted-foreground">AI Suggestion:</span>
+                        <span className="text-primary font-bold">100 units?</span>
+                      </div>
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
 
-              {/* Integration Phase */}
-              {phase === "integration" && (
+              {/* Phase 4: AI Contacts Client */}
+              {phase === "client_comms" && (
                 <motion.div
-                  key="integration"
+                  key="client_comms"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="space-y-6"
                 >
-                  <ChatBubble message="Perfect! Pushing the verified order to Printavo now..." />
+                  <ChatBubble message="Sending verification email to the client to confirm the correct quantity..." />
+                  
+                  <motion.div 
+                    className="max-w-lg mx-auto bg-muted rounded-xl overflow-hidden"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                  >
+                    {/* Email Header */}
+                    <div className="bg-primary px-4 py-3 flex items-center gap-2">
+                      <Send className="w-4 h-4 text-primary-foreground" />
+                      <span className="text-sm font-medium text-primary-foreground">AI Auto-Response Sent</span>
+                    </div>
+                    
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">To:</span>
+                        <span className="text-card-foreground">john.smith@lhs.edu</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">Subject:</span>
+                        <span className="text-card-foreground">Quick Question About Your Order</span>
+                      </div>
+                      
+                      <div className="bg-background p-4 rounded-lg text-sm text-card-foreground">
+                        <p className="mb-3">Hi John,</p>
+                        <p className="mb-3">
+                          Thank you for your order! I noticed the quantity shows <strong>1,000 t-shirts</strong>. 
+                          Based on typical orders from Lincoln High, I wanted to confirm — did you mean <strong>100 units</strong>?
+                        </p>
+                        <p className="mb-3">
+                          Just reply with the correct quantity and I'll process your order immediately.
+                        </p>
+                        <p className="text-muted-foreground">Best,<br/>AI Order Assistant</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {/* Phase 5: Client Confirms */}
+              {phase === "client_confirms" && (
+                <motion.div
+                  key="client_confirms"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  <ChatBubble message="✅ Client confirmed: They meant 100 units! Typo caught, $4,050 billing error prevented." />
+                  
+                  <div className="max-w-lg mx-auto space-y-4">
+                    {/* Client Response */}
+                    <motion.div 
+                      className="bg-muted rounded-xl p-4"
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-card-foreground">John Smith</span>
+                          <span className="text-xs text-muted-foreground ml-2">just now</span>
+                        </div>
+                      </div>
+                      <div className="bg-background p-3 rounded-lg text-sm text-card-foreground">
+                        "Yes, sorry about that! It should be 100 t-shirts. Thanks for catching that!"
+                      </div>
+                    </motion.div>
+                    
+                    {/* Confirmation */}
+                    <motion.div 
+                      className="p-6 bg-primary/5 border-2 border-primary rounded-xl text-center"
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <motion.div
+                        className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: [0, 1.2, 1] }}
+                      >
+                        <Check className="w-8 h-8 text-primary-foreground" />
+                      </motion.div>
+                      <h3 className="text-xl font-bold text-card-foreground mb-2">Issue Resolved!</h3>
+                      <p className="text-muted-foreground">
+                        Error caught before reaching decorator. <span className="text-primary font-bold">$4,050</span> billing mistake prevented.
+                      </p>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Phase 6: Submit to Printavo */}
+              {phase === "submit_order" && (
+                <motion.div
+                  key="submit_order"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  <ChatBubble message="Submitting the verified order to Printavo now..." />
                   
                   <div className="grid md:grid-cols-2 gap-6">
-                    {/* Source Document */}
+                    {/* Original Messy PO */}
                     <div className="p-4 bg-muted rounded-xl">
-                      <p className="text-sm font-medium text-muted-foreground mb-3">Original PO (Messy)</p>
-                      <div className="bg-background p-4 rounded-lg space-y-2">
-                        <p className="text-sm text-card-foreground font-mono">Lincoln High...</p>
-                        <p className="text-sm text-card-foreground font-mono">100 navy tees S-XL</p>
-                        <p className="text-sm text-card-foreground font-mono">need by 3/15</p>
-                        <p className="text-sm text-card-foreground font-mono">john smith</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-3">Original Email + PO (Messy)</p>
+                      <div className="bg-background p-4 rounded-lg space-y-2 text-sm font-mono">
+                        <p className="text-card-foreground">From: john.smith@lhs.edu</p>
+                        <p className="text-muted-foreground">---</p>
+                        <p className="text-card-foreground">Lincoln High...</p>
+                        <p className="text-destructive line-through">1000 navy tees S-XL</p>
+                        <p className="text-card-foreground">need by 3/15</p>
                       </div>
                     </div>
                     
-                    {/* Printavo Order */}
+                    {/* Clean Printavo Order */}
                     <motion.div 
                       className="p-4 bg-primary/5 border-2 border-primary rounded-xl"
                       initial={{ x: 50, opacity: 0 }}
@@ -391,19 +441,17 @@ export const VisionAgentFlow = () => {
                           </motion.div>
                         ))}
                       </div>
+                      
+                      <motion.div 
+                        className="mt-4 pt-4 border-t border-border flex items-center justify-center gap-2 text-sm text-primary"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1 }}
+                      >
+                        <Check className="w-4 h-4" />
+                        <span className="font-medium">Order Submitted Successfully</span>
+                      </motion.div>
                     </motion.div>
-                  </div>
-
-                  {/* Platform logos */}
-                  <div className="flex items-center justify-center gap-6 pt-4">
-                    <p className="text-sm text-muted-foreground">Also integrates with:</p>
-                    <div className="flex gap-4">
-                      {["Printavo", "DecoNetwork", "InkSoft"].map((platform) => (
-                        <span key={platform} className="px-3 py-1 bg-muted rounded-full text-sm font-medium text-muted-foreground">
-                          {platform}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </motion.div>
               )}
