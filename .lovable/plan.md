@@ -1,115 +1,125 @@
 
-# Fix ConnectSection Graphic + Clarify Feature Page Structure
+# Fix ConnectSection to Show Actual Product Features
 
-## Problem 1: Broken ConnectSection Graphic
+## The Problem
 
-The current graphic shows crossing X lines because the SVG coordinates and CSS transforms are misaligned. The visualization should show:
-- Central "AI Agent" hub (orange circle)
-- 4 channels (Email, Chat, Social, SMS) positioned around it
-- Clean lines radiating FROM center TO each channel (not crossing)
+The current ConnectSection shows:
+- Email, Chat, Social, SMS as "engagement channels"
 
-### Fix Approach
-Replace the complex SVG/transform hybrid with a cleaner layout:
-- Use a grid or flexbox layout with the AI Agent in the true center
-- Position channel icons in 4 corners or cardinal directions
-- Draw simple straight lines from center to each icon using absolute positioning or SVG with correct coordinates
+This is **WRONG**. The product offers:
+- **AI Chat Support** - Handles customer inquiries, order tracking, returns
+- **AI Voice Support** - Phone calls handled by AI
+- **AI Vision** - Extracts data from POs, handwritten notes, PDFs
+- **Web Widget** - Deploys on any website
 
-### Visual Design (matching your screenshot intent)
-```
-      Email          Chat
-         \            /
-          \          /
-           [AI Agent]
-          /          \
-         /            \
-      Social         SMS
-```
-
-Lines should be dashed, animated, and flow FROM the channels TO the center brain (not crossing).
+The graphic should show these 4 actual AI capabilities feeding into the "AI Agent" brain, NOT generic marketing channels.
 
 ---
 
-## Problem 2: Interactive Feature Pages Structure
+## Current vs Correct
 
-The interactive demos DO exist and ARE integrated:
+| Current (Wrong) | Should Be (Correct) |
+|-----------------|---------------------|
+| Email | AI Chat Support |
+| Chat | AI Voice Support |
+| Social | AI Vision (POs) |
+| SMS | Web Widget |
+| "engagement" | "Customer Support" |
+| "Proactive engagement via Email, Chat, Social, and SMS" | "AI Chat, Voice, and Vision handle every customer interaction" |
 
-| Feature Page | Interactive Component | Status |
-|--------------|----------------------|--------|
-| `/features/store-builder` | `StoreBuilderJourney.tsx` | EXISTS - 5-step animated walkthrough |
-| `/features/ai-vision` | `VisionAgentFlow.tsx` | EXISTS - Document scanning + error detection demo |
-| `/features/ai-support` | `ChatDeploymentDemo.tsx` | EXISTS - Embed + Unified Brain + Live Chat demo |
+---
 
-**However**, these pages may not be easily accessible from the homepage. The Navbar should link to these feature pages so users can explore them.
+## Visual Concept
 
-### Navbar Updates Needed
-Current navigation doesn't clearly link to the feature pages. Need to add:
-- "Store Builder" → `/features/store-builder`
-- "AI Vision" → `/features/ai-vision`  
-- "AI Support" → `/features/ai-support`
-- "Order Routing" → `/features/order-routing`
-- "Dashboard" → `/features/dashboard`
+```text
+     [AI Chat]          [AI Voice]
+     (Live Support)     (Phone Calls)
+            \              /
+             \            /
+              [AI Agent]  ← Central Brain
+             /            \
+            /              \
+     [AI Vision]        [Web Widget]
+     (PO Extraction)    (Any Website)
+```
+
+Each node represents a real capability that the AI Agent provides:
+- **AI Chat Support**: Handles tracking, returns, billing via chat
+- **AI Voice Support**: Phone calls handled by AI (real-time lookups)
+- **AI Vision**: Reads handwritten POs, PDFs, emails - extracts order data
+- **Web Widget**: Embed on any website (Shopify, WordPress, custom)
 
 ---
 
 ## Files to Modify
 
 ### 1. `src/components/landing/ConnectSection.tsx`
-Completely rewrite the graphic:
-- Remove broken SVG line calculation
-- Use a proper centered layout with the AI Agent hub
-- Position 4 channel icons (Email, Chat, Social, SMS) at corners
-- Draw clean connecting lines using CSS or simplified SVG
-- Animate pulses flowing from channels to center
 
-### 2. `src/components/landing/Navbar.tsx`
-Add dropdown or visible links to feature pages:
-- Store Builder (AI-powered store creation)
-- AI Vision (Document extraction)
-- AI Support (Chat + Voice)
-- Order Routing
-- Dashboard
+Replace the current channels with the actual product features:
+
+```typescript
+const capabilities = [
+  { icon: MessageSquare, label: "AI Chat", sublabel: "Live Support", position: "top-left" },
+  { icon: Phone, label: "AI Voice", sublabel: "Phone Calls", position: "top-right" },
+  { icon: Eye, label: "AI Vision", sublabel: "PO Extraction", position: "bottom-left" },
+  { icon: Globe, label: "Web Widget", sublabel: "Any Website", position: "bottom-right" },
+];
+```
+
+Update the bullet points to reflect actual support capabilities:
+- "AI Chat handles order tracking, returns, and billing questions"
+- "AI Voice takes phone calls with real-time order lookups"
+- "AI Vision extracts data from handwritten POs and PDFs"
+- "Deploy on any website - Shopify, WordPress, or custom"
+
+### 2. Update section title and description
+
+From: "Your Clients Get White-Glove Service. You Do Nothing."
+To: Keep this, but update the description and bullets to match actual capabilities.
+
+Update description to:
+"AI Chat, Voice, and Vision handle every customer interaction. Your clients get 24/7 support — you never lift a finger."
+
+### 3. Link "See It In Action" button to feature pages
+
+The button should link to `/features/ai-support` where the interactive demo lives.
 
 ---
 
-## Technical Implementation
+## Updated Bullet Points
 
-### ConnectSection New Layout
+Current (wrong - sounds like marketing automation):
+- "Order tracking, returns, and billing updates — all automated"
+- "Private catalogs with AI navigation"  
+- "Proactive engagement via Email, Chat, Social, and SMS"
+- "Clients feel supported 24/7, you scale without hiring"
 
-```text
-Layout Structure:
-┌──────────────────────────────────────────┐
-│                                          │
-│    [Email]─────────[Chat]                │
-│        \              /                  │
-│         \            /                   │
-│          \          /                    │
-│           [AI Agent]  ← Orange Hub       │
-│          /          \                    │
-│         /            \                   │
-│        /              \                  │
-│    [Social]────────[SMS]                 │
-│                                          │
-└──────────────────────────────────────────┘
-```
+New (correct - actual support features):
+- "AI Chat answers questions, tracks orders, handles returns"
+- "AI Voice takes phone calls with real-time order lookups"
+- "AI Vision reads POs, PDFs, and handwritten notes automatically"
+- "Deploy on any website in minutes with a single line of code"
 
-The lines will be:
-- Straight, not crossing
-- Dashed with animation
-- Color: Primary (orange)
-- Flow direction indicated by animation
+---
 
-### Animation Details
-- Each channel pulses when "active"
-- Lines animate with a flow effect toward center
-- Central AI Agent has subtle breathing animation
-- Cycle through highlighting each channel to show "any channel, one brain"
+## Icon Changes
+
+| Position | Old | New |
+|----------|-----|-----|
+| Top Left | Mail (Email) | MessageSquare (AI Chat) |
+| Top Right | MessageCircle (Chat) | Phone (AI Voice) |
+| Bottom Left | Share2 (Social) | Eye (AI Vision) |
+| Bottom Right | Smartphone (SMS) | Globe (Web Widget) |
 
 ---
 
 ## Summary
 
-1. **Fix ConnectSection**: Replace broken X-line graphic with proper radial hub layout
-2. **Verify feature pages work**: They exist with interactive demos, just need navigation access
-3. **Update Navbar**: Add clear links to feature pages so users can explore the interactive demos
+This changes the ConnectSection from showing generic "engagement channels" to showing the **actual AI capabilities** the platform provides:
 
-This will make the homepage graphic visually correct AND ensure the interactive feature pages are discoverable.
+1. **AI Chat Support** - Live customer support
+2. **AI Voice Support** - Phone call handling
+3. **AI Vision** - Document/PO extraction
+4. **Web Widget** - Deploy anywhere
+
+The central "AI Agent" brain connects all four capabilities, showing that one AI system powers all customer interactions.
