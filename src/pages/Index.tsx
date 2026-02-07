@@ -1,8 +1,10 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
-import { Features } from "@/components/landing/Features";
-import { Integrations } from "@/components/landing/Integrations";
-import { Testimonials } from "@/components/landing/Testimonials";
+import { IntroSection } from "@/components/landing/IntroSection";
+import { IntroducingSection } from "@/components/landing/IntroducingSection";
+import { SeamlessSection } from "@/components/landing/SeamlessSection";
+import { ConnectSection } from "@/components/landing/ConnectSection";
+import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/landing/Footer";
 
 const Index = () => {
@@ -11,13 +13,11 @@ const Index = () => {
       <Navbar />
       <main>
         <Hero />
-        <section id="features">
-          <Features />
-        </section>
-        <section id="integrations">
-          <Integrations />
-        </section>
-        <Testimonials />
+        <IntroSection />
+        <IntroducingSection />
+        <SeamlessSection />
+        <ConnectSection />
+        <CTASection />
       </main>
       <Footer />
     </div>
