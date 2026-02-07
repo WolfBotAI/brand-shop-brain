@@ -1,13 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Mail, MessageCircle, Share2, Smartphone, Bot } from "lucide-react";
-
-const channels = [
-  { icon: Mail, label: "Email", position: "top-left" },
-  { icon: MessageCircle, label: "Chat", position: "top-right" },
-  { icon: Share2, label: "Social", position: "bottom-left" },
-  { icon: Smartphone, label: "SMS", position: "bottom-right" },
-];
+import { ArrowRight, MessageSquare, Phone, Eye, Globe, Bot } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const ConnectSection = () => {
   return (
@@ -30,7 +24,7 @@ export const ConnectSection = () => {
                 viewBox="0 0 320 320"
                 style={{ zIndex: 0 }}
               >
-                {/* Top-left line (Email to Center) */}
+                {/* Top-left line (AI Chat to Center) */}
                 <motion.line
                   x1="64" y1="64"
                   x2="160" y2="160"
@@ -42,7 +36,7 @@ export const ConnectSection = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.3 }}
                 />
-                {/* Top-right line (Chat to Center) */}
+                {/* Top-right line (AI Voice to Center) */}
                 <motion.line
                   x1="256" y1="64"
                   x2="160" y2="160"
@@ -54,7 +48,7 @@ export const ConnectSection = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.4 }}
                 />
-                {/* Bottom-left line (Social to Center) */}
+                {/* Bottom-left line (AI Vision to Center) */}
                 <motion.line
                   x1="64" y1="256"
                   x2="160" y2="160"
@@ -66,7 +60,7 @@ export const ConnectSection = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.5 }}
                 />
-                {/* Bottom-right line (SMS to Center) */}
+                {/* Bottom-right line (Web Widget to Center) */}
                 <motion.line
                   x1="256" y1="256"
                   x2="160" y2="160"
@@ -98,7 +92,7 @@ export const ConnectSection = () => {
                 </motion.div>
               </motion.div>
 
-              {/* Email - Top Left */}
+              {/* AI Chat - Top Left */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -106,13 +100,14 @@ export const ConnectSection = () => {
                 transition={{ duration: 0.4, delay: 0.3 }}
                 className="absolute top-0 left-0 z-10"
               >
-                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Mail className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] text-muted-foreground mt-1">Email</span>
+                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] font-medium text-foreground mt-1">AI Chat</span>
+                  <span className="text-[8px] text-muted-foreground">Live Support</span>
                 </div>
               </motion.div>
 
-              {/* Chat - Top Right */}
+              {/* AI Voice - Top Right */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -120,13 +115,14 @@ export const ConnectSection = () => {
                 transition={{ duration: 0.4, delay: 0.4 }}
                 className="absolute top-0 right-0 z-10"
               >
-                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <MessageCircle className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] text-muted-foreground mt-1">Chat</span>
+                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <Phone className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] font-medium text-foreground mt-1">AI Voice</span>
+                  <span className="text-[8px] text-muted-foreground">Phone Calls</span>
                 </div>
               </motion.div>
 
-              {/* Social - Bottom Left */}
+              {/* AI Vision - Bottom Left */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -134,13 +130,14 @@ export const ConnectSection = () => {
                 transition={{ duration: 0.4, delay: 0.5 }}
                 className="absolute bottom-0 left-0 z-10"
               >
-                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Share2 className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] text-muted-foreground mt-1">Social</span>
+                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <Eye className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] font-medium text-foreground mt-1">AI Vision</span>
+                  <span className="text-[8px] text-muted-foreground">PO Extraction</span>
                 </div>
               </motion.div>
 
-              {/* SMS - Bottom Right */}
+              {/* Web Widget - Bottom Right */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -148,9 +145,10 @@ export const ConnectSection = () => {
                 transition={{ duration: 0.4, delay: 0.6 }}
                 className="absolute bottom-0 right-0 z-10"
               >
-                <div className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Smartphone className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] text-muted-foreground mt-1">SMS</span>
+                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
+                  <Globe className="w-6 h-6 text-primary" />
+                  <span className="text-[10px] font-medium text-foreground mt-1">Web Widget</span>
+                  <span className="text-[8px] text-muted-foreground">Any Website</span>
                 </div>
               </motion.div>
             </div>
@@ -168,15 +166,15 @@ export const ConnectSection = () => {
               <span className="text-primary">You Do Nothing.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-6">
-              AI agents handle all customer interactions across every channel. 
-              Your clients feel supported 24/7 — you never lift a finger.
+              AI Chat, Voice, and Vision handle every customer interaction. 
+              Your clients get 24/7 support — you never lift a finger.
             </p>
             <ul className="space-y-4 mb-8">
               {[
-                "Order tracking, returns, and billing updates — all automated",
-                "Private catalogs with AI navigation",
-                "Proactive engagement via Email, Chat, Social, and SMS",
-                "Clients feel supported 24/7, you scale without hiring",
+                "AI Chat answers questions, tracks orders, handles returns",
+                "AI Voice takes phone calls with real-time order lookups",
+                "AI Vision reads POs, PDFs, and handwritten notes automatically",
+                "Deploy on any website in minutes with a single line of code",
               ].map((item, index) => (
                 <motion.li
                   key={index}
@@ -194,11 +192,14 @@ export const ConnectSection = () => {
               ))}
             </ul>
             <Button 
+              asChild
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
             >
-              See It In Action
-              <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+              <Link to="/features/ai-support">
+                See It In Action
+                <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
           </motion.div>
         </div>
