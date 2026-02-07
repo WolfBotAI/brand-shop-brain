@@ -24,9 +24,9 @@ export const ConnectSection = () => {
                 viewBox="0 0 320 320"
                 style={{ zIndex: 0 }}
               >
-                {/* Top-left line (AI Chat to Center) */}
+                {/* Top-left line (AI Chat to Center) - node center at 40,40 */}
                 <motion.line
-                  x1="64" y1="64"
+                  x1="40" y1="40"
                   x2="160" y2="160"
                   stroke="hsl(var(--primary))"
                   strokeWidth="2"
@@ -36,9 +36,9 @@ export const ConnectSection = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.3 }}
                 />
-                {/* Top-right line (AI Voice to Center) */}
+                {/* Top-right line (AI Voice to Center) - node center at 280,40 */}
                 <motion.line
-                  x1="256" y1="64"
+                  x1="280" y1="40"
                   x2="160" y2="160"
                   stroke="hsl(var(--primary))"
                   strokeWidth="2"
@@ -48,9 +48,9 @@ export const ConnectSection = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.4 }}
                 />
-                {/* Bottom-left line (AI Vision to Center) */}
+                {/* Bottom-left line (AI Vision to Center) - node center at 40,280 */}
                 <motion.line
-                  x1="64" y1="256"
+                  x1="40" y1="280"
                   x2="160" y2="160"
                   stroke="hsl(var(--primary))"
                   strokeWidth="2"
@@ -60,9 +60,9 @@ export const ConnectSection = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.5 }}
                 />
-                {/* Bottom-right line (Web Widget to Center) */}
+                {/* Bottom-right line (Web Widget to Center) - node center at 280,280 */}
                 <motion.line
-                  x1="256" y1="256"
+                  x1="280" y1="280"
                   x2="160" y2="160"
                   stroke="hsl(var(--primary))"
                   strokeWidth="2"

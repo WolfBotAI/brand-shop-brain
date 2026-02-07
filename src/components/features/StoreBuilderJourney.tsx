@@ -9,7 +9,11 @@ import {
   Layout, 
   Rocket,
   Check,
-  Upload
+  Sparkles,
+  Sun,
+  TrendingUp,
+  Users,
+  Settings
 } from "lucide-react";
 import { StepIndicator } from "./AnimatedStep";
 import { ChatBubble } from "./ChatBubble";
@@ -17,8 +21,7 @@ import { Button } from "@/components/ui/button";
 
 const steps = [
   { title: "Organization Type", icon: Building2 },
-  { title: "Brand Colors", icon: Palette },
-  { title: "Select Products", icon: ShoppingBag },
+  { title: "AI Product Suggestions", icon: Sparkles },
   { title: "Choose Theme", icon: Layout },
   { title: "Go Live!", icon: Rocket },
 ];
@@ -29,43 +32,60 @@ const organizationTypes = [
   { id: "business", label: "B2B Brands", icon: Briefcase, color: "bg-emerald-500" },
 ];
 
-const brandColors = [
-  { name: "Navy Blue", primary: "#1e3a5f", secondary: "#3b82f6" },
-  { name: "Forest Green", primary: "#166534", secondary: "#22c55e" },
-  { name: "Royal Purple", primary: "#581c87", secondary: "#a855f7" },
-  { name: "Crimson Red", primary: "#991b1b", secondary: "#ef4444" },
-];
-
-const products = [
-  { id: "tshirt", name: "T-Shirts", image: "👕", selected: false },
-  { id: "hoodie", name: "Hoodies", image: "🧥", selected: false },
-  { id: "cap", name: "Caps", image: "🧢", selected: false },
-  { id: "mug", name: "Mugs", image: "☕", selected: false },
-  { id: "bag", name: "Tote Bags", image: "👜", selected: false },
-  { id: "jacket", name: "Jackets", image: "🧥", selected: false },
-];
+const aiSuggestions = {
+  school: [
+    { id: "tshirt", name: "Spirit T-Shirts", reason: "Best seller for schools", icon: "👕", trending: true },
+    { id: "hoodie", name: "Team Hoodies", reason: "Popular for fall sports", icon: "🧥", weather: true },
+    { id: "cap", name: "Baseball Caps", reason: "Trending in your region", icon: "🧢", trending: true },
+    { id: "polo", name: "Staff Polos", reason: "Requested by admin", icon: "👔", recommended: true },
+  ],
+  church: [
+    { id: "tshirt", name: "Event Tees", reason: "VBS & retreats", icon: "👕", trending: true },
+    { id: "mug", name: "Ministry Mugs", reason: "Popular for volunteers", icon: "☕", recommended: true },
+    { id: "bag", name: "Tote Bags", reason: "Eco-friendly choice", icon: "👜", weather: false },
+    { id: "hat", name: "Embroidered Hats", reason: "Trending for outreach", icon: "🧢", trending: true },
+  ],
+  business: [
+    { id: "polo", name: "Corporate Polos", reason: "Professional look", icon: "👔", recommended: true },
+    { id: "jacket", name: "Quarter Zips", reason: "Executive favorite", icon: "🧥", weather: true },
+    { id: "notebook", name: "Branded Notebooks", reason: "Client gifts", icon: "📓", trending: true },
+    { id: "bag", name: "Laptop Bags", reason: "Trade show essential", icon: "💼", recommended: true },
+  ],
+};
 
 const themes = [
-  { id: "modern", name: "Modern", description: "Clean lines, bold typography" },
-  { id: "classic", name: "Classic", description: "Traditional, timeless feel" },
-  { id: "bold", name: "Bold", description: "Vibrant, eye-catching design" },
+  { id: "modern", name: "Modern", description: "Clean lines, bold typography", locked: false },
+  { id: "classic", name: "Classic", description: "Traditional, timeless feel", locked: false },
+  { id: "bold", name: "Bold", description: "Vibrant, eye-catching", locked: true, lockedBy: "Distributor" },
 ];
 
-const aiMessages: Record<number, string> = {
-  0: "Let's start! What type of organization is this store for?",
-  1: "Great choice! Now let's pick your brand colors. I'll suggest options based on your logo.",
-  2: "Most schools choose t-shirts, hoodies, and caps. What products do you want to offer?",
-  3: "Almost there! Pick a theme that matches your brand personality.",
-  4: "🎉 Your store is ready! Click 'Launch Store' to go live instantly.",
+const aiMessages: Record<number, Record<string, string>> = {
+  0: {
+    default: "Let's start! What type of organization is this store for?",
+    distributor: "Select the organization type to configure their store.",
+  },
+  1: {
+    school: "🎓 Based on Lincoln High's vertical and current trends, I recommend these products for your store. The weather is warming up, so lightweight options are trending!",
+    church: "⛪ For Grace Community Church, I've analyzed similar churches and current trends. These products perform best for ministry stores!",
+    business: "💼 For corporate stores, I've selected products that balance professionalism with brand visibility. Q1 trade show season is approaching!",
+    default: "Based on your organization type, here are AI-recommended products...",
+  },
+  2: {
+    default: "Almost there! Pick a theme that matches your brand. Some themes are locked by your distributor.",
+    distributor: "Assign a pre-approved theme from your catalog.",
+  },
+  3: {
+    default: "🎉 Your store is ready! AI will continue suggesting trending products based on season and demand.",
+  },
 };
 
 export const StoreBuilderJourney = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isDistributorMode, setIsDistributorMode] = useState(false);
 
   // Auto-advance demo
   useEffect(() => {
@@ -77,26 +97,21 @@ export const StoreBuilderJourney = () => {
     timers.push(setTimeout(() => setSelectedOrg("school"), 1500));
     timers.push(setTimeout(() => setCurrentStep(1), 2500));
     
-    // Step 1: Select color
-    timers.push(setTimeout(() => setSelectedColor(0), 3500));
-    timers.push(setTimeout(() => setCurrentStep(2), 4500));
+    // Step 1: AI suggests products (auto-select based on AI recommendations)
+    timers.push(setTimeout(() => setSelectedProducts(["tshirt", "hoodie", "cap"]), 4000));
+    timers.push(setTimeout(() => setCurrentStep(2), 5500));
     
-    // Step 2: Select products
-    timers.push(setTimeout(() => setSelectedProducts(["tshirt", "hoodie", "cap"]), 5500));
-    timers.push(setTimeout(() => setCurrentStep(3), 6500));
-    
-    // Step 3: Select theme
-    timers.push(setTimeout(() => setSelectedTheme("modern"), 7500));
-    timers.push(setTimeout(() => setCurrentStep(4), 8500));
+    // Step 2: Select theme
+    timers.push(setTimeout(() => setSelectedTheme("modern"), 6500));
+    timers.push(setTimeout(() => setCurrentStep(3), 7500));
     
     // Reset and loop
     timers.push(setTimeout(() => {
       setCurrentStep(0);
       setSelectedOrg(null);
-      setSelectedColor(null);
       setSelectedProducts([]);
       setSelectedTheme(null);
-    }, 12000));
+    }, 11000));
 
     return () => timers.forEach(clearTimeout);
   }, [isAutoPlaying, currentStep === 0]);
@@ -115,16 +130,62 @@ export const StoreBuilderJourney = () => {
     );
   };
 
+  const getCurrentMessage = () => {
+    const stepMessages = aiMessages[currentStep];
+    if (currentStep === 1 && selectedOrg) {
+      return stepMessages[selectedOrg] || stepMessages.default;
+    }
+    return isDistributorMode && stepMessages.distributor 
+      ? stepMessages.distributor 
+      : stepMessages.default;
+  };
+
+  const currentSuggestions = selectedOrg 
+    ? aiSuggestions[selectedOrg as keyof typeof aiSuggestions] 
+    : [];
+
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Watch the AI-Guided Journey
+            Watch the AI-Powered Store Builder
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Your clients build their own stores in minutes. The AI guides every step.
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            AI suggests products based on vertical, weather, and trends. Distributors can build for clients or let them self-serve.
           </p>
+          
+          {/* Mode Toggle */}
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => {
+                setIsDistributorMode(false);
+                setIsAutoPlaying(false);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                !isDistributorMode 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              Client Self-Serve
+            </button>
+            <button
+              onClick={() => {
+                setIsDistributorMode(true);
+                setIsAutoPlaying(false);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                isDistributorMode 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              Distributor Mode
+            </button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-8 max-w-6xl mx-auto">
@@ -144,8 +205,8 @@ export const StoreBuilderJourney = () => {
               <div className="mb-6">
                 <AnimatePresence mode="wait">
                   <ChatBubble 
-                    key={currentStep} 
-                    message={aiMessages[currentStep]} 
+                    key={`${currentStep}-${selectedOrg}`} 
+                    message={getCurrentMessage()} 
                   />
                 </AnimatePresence>
               </div>
@@ -196,99 +257,99 @@ export const StoreBuilderJourney = () => {
                     </div>
                   )}
 
-                  {/* Step 1: Brand Colors */}
+                  {/* Step 1: AI Product Suggestions */}
                   {currentStep === 1 && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4 p-4 bg-muted rounded-xl">
-                        <div className="w-16 h-16 bg-muted-foreground/20 rounded-lg flex items-center justify-center">
-                          <Upload className="w-6 h-6 text-muted-foreground" />
+                    <div className="space-y-4">
+                      {/* AI Context Bar */}
+                      <div className="flex items-center gap-4 p-3 bg-muted rounded-xl text-sm flex-wrap">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <TrendingUp className="w-4 h-4 text-primary" />
+                          <span>Trending</span>
                         </div>
-                        <div>
-                          <p className="font-medium text-card-foreground">school_logo.png</p>
-                          <p className="text-sm text-muted-foreground">Logo uploaded successfully</p>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Sun className="w-4 h-4 text-amber-500" />
+                          <span>Weather: 72°F, Sunny</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Sparkles className="w-4 h-4 text-purple-500" />
+                          <span>AI Recommended</span>
                         </div>
                       </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {brandColors.map((color, index) => (
+
+                      <div className="grid grid-cols-2 gap-4">
+                        {currentSuggestions.map((product) => (
                           <motion.button
-                            key={color.name}
-                            onClick={() => {
-                              setIsAutoPlaying(false);
-                              setSelectedColor(index);
-                            }}
-                            className={`p-4 rounded-xl border-2 transition-all ${
-                              selectedColor === index 
-                                ? "border-primary" 
+                            key={product.id}
+                            onClick={() => toggleProduct(product.id)}
+                            className={`p-4 rounded-xl border-2 transition-all text-left relative ${
+                              selectedProducts.includes(product.id)
+                                ? "border-primary bg-primary/5" 
                                 : "border-border hover:border-primary/50"
                             }`}
                             whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                           >
-                            <div className="flex gap-2 mb-2">
-                              <div 
-                                className="w-8 h-8 rounded-full" 
-                                style={{ backgroundColor: color.primary }}
-                              />
-                              <div 
-                                className="w-8 h-8 rounded-full" 
-                                style={{ backgroundColor: color.secondary }}
-                              />
+                            {/* Badges */}
+                            <div className="absolute top-2 right-2 flex gap-1">
+                              {product.trending && (
+                                <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full flex items-center gap-1">
+                                  <TrendingUp className="w-3 h-3" />
+                                  Trending
+                                </span>
+                              )}
+                              {product.weather && (
+                                <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 text-xs rounded-full flex items-center gap-1">
+                                  <Sun className="w-3 h-3" />
+                                  Season
+                                </span>
+                              )}
                             </div>
-                            <p className="text-sm font-medium text-card-foreground">{color.name}</p>
+                            
+                            <div className="text-3xl mb-2">{product.icon}</div>
+                            <p className="font-medium text-card-foreground">{product.name}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{product.reason}</p>
+                            
+                            {selectedProducts.includes(product.id) && (
+                              <motion.div 
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute bottom-2 right-2"
+                              >
+                                <Check className="w-5 h-5 text-primary" />
+                              </motion.div>
+                            )}
                           </motion.button>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Step 2: Product Selection */}
+                  {/* Step 2: Theme Selection */}
                   {currentStep === 2 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {products.map((product) => (
-                        <motion.button
-                          key={product.id}
-                          onClick={() => toggleProduct(product.id)}
-                          className={`p-4 rounded-xl border-2 transition-all ${
-                            selectedProducts.includes(product.id)
-                              ? "border-primary bg-primary/5" 
-                              : "border-border hover:border-primary/50"
-                          }`}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <div className="text-4xl mb-2">{product.image}</div>
-                          <p className="font-medium text-card-foreground">{product.name}</p>
-                          {selectedProducts.includes(product.id) && (
-                            <motion.div 
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="mt-2"
-                            >
-                              <Check className="w-5 h-5 text-primary mx-auto" />
-                            </motion.div>
-                          )}
-                        </motion.button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Step 3: Theme Selection */}
-                  {currentStep === 3 && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {themes.map((theme) => (
                         <motion.button
                           key={theme.id}
                           onClick={() => {
-                            setIsAutoPlaying(false);
-                            setSelectedTheme(theme.id);
+                            if (!theme.locked || isDistributorMode) {
+                              setIsAutoPlaying(false);
+                              setSelectedTheme(theme.id);
+                            }
                           }}
-                          className={`p-6 rounded-xl border-2 transition-all text-left ${
-                            selectedTheme === theme.id 
-                              ? "border-primary bg-primary/5" 
-                              : "border-border hover:border-primary/50"
+                          className={`p-6 rounded-xl border-2 transition-all text-left relative ${
+                            theme.locked && !isDistributorMode
+                              ? "border-border bg-muted/50 cursor-not-allowed opacity-60"
+                              : selectedTheme === theme.id 
+                                ? "border-primary bg-primary/5" 
+                                : "border-border hover:border-primary/50"
                           }`}
-                          whileHover={{ scale: 1.02 }}
+                          whileHover={{ scale: theme.locked && !isDistributorMode ? 1 : 1.02 }}
                         >
+                          {theme.locked && !isDistributorMode && (
+                            <div className="absolute top-2 right-2 px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full">
+                              Locked by {theme.lockedBy}
+                            </div>
+                          )}
                           <div className="w-full h-20 bg-muted rounded-lg mb-4 flex items-center justify-center">
                             <Layout className="w-8 h-8 text-muted-foreground" />
                           </div>
@@ -308,8 +369,8 @@ export const StoreBuilderJourney = () => {
                     </div>
                   )}
 
-                  {/* Step 4: Launch */}
-                  {currentStep === 4 && (
+                  {/* Step 3: Launch */}
+                  {currentStep === 3 && (
                     <motion.div 
                       className="text-center py-8"
                       initial={{ scale: 0.9 }}
@@ -324,11 +385,15 @@ export const StoreBuilderJourney = () => {
                         <Rocket className="w-10 h-10 text-primary-foreground" />
                       </motion.div>
                       <h3 className="text-2xl font-bold text-card-foreground mb-2">
-                        Your Store is Ready!
+                        Your AI-Powered Store is Ready!
                       </h3>
-                      <p className="text-muted-foreground mb-6">
-                        Lincoln High School Spirit Store is configured and ready to launch.
+                      <p className="text-muted-foreground mb-4">
+                        Lincoln High School Spirit Store is configured with AI product recommendations.
                       </p>
+                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-6">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                        <span>AI will continuously suggest new products based on trends & weather</span>
+                      </div>
                       <Button size="lg" className="rounded-full px-8">
                         Launch Store
                         <Rocket className="ml-2 w-4 h-4" />

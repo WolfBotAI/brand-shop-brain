@@ -1,8 +1,9 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
-import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
+import { DashboardDemo } from "@/components/features/DashboardDemo";
+import { FeatureSection } from "@/components/features/FeatureSection";
 import { BarChart3, Store, DollarSign, Settings, TrendingUp, Users } from "lucide-react";
 
 const Dashboard = () => {
@@ -17,6 +18,9 @@ const Dashboard = () => {
           highlight="Every Store"
           description="Monitor performance, manage settings, and control margins across all your client stores from one powerful dashboard."
         />
+
+        {/* Interactive Dashboard Demo */}
+        <DashboardDemo />
 
         <FeatureSection
           title="Analytics & Insights"

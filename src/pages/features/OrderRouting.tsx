@@ -3,7 +3,7 @@ import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
-import { Route, Settings, MapPin, Zap, RefreshCw, Shield } from "lucide-react";
+import { Route, Settings, Package, RefreshCw, Shield, Truck } from "lucide-react";
 
 const OrderRouting = () => {
   return (
@@ -14,28 +14,28 @@ const OrderRouting = () => {
           icon={Route}
           badge="Smart Order Routing"
           title="One Order —"
-          highlight="Infinite Routing Options"
-          description="Automatically distribute orders to the right decorators and suppliers based on your rules. No manual assignment needed."
+          highlight="Routed Automatically"
+          description="Orders automatically flow to the right decorator or supplier based on your rules. Set it once, never think about it again."
         />
 
         <FeatureSection
-          title="Intelligent Distribution"
-          description="Set up rules once and let the system handle order flow automatically."
+          title="Product-Based Routing"
+          description="Route orders based on what's being ordered. You define the rules, the system handles the rest."
           features={[
             {
+              icon: Package,
+              title: "By Product Type",
+              description: "T-shirts go to Decorator A, embroidery to Decorator B. Each product category has its home.",
+            },
+            {
               icon: Settings,
-              title: "Custom Rules",
-              description: "Route by product type, order size, turnaround time, or any criteria that matters to your business.",
+              title: "By Supplier",
+              description: "Brand X products automatically route to Supplier Y. Maintain vendor relationships effortlessly.",
             },
             {
-              icon: MapPin,
-              title: "Geographic Routing",
-              description: "Send orders to the nearest decorator for faster delivery and lower shipping costs.",
-            },
-            {
-              icon: Zap,
-              title: "Capacity-Based",
-              description: "Balance workload across decorators based on their current capacity and availability.",
+              icon: Truck,
+              title: "By Decoration Method",
+              description: "Screen print, DTG, embroidery — each method routes to specialists who do it best.",
             },
           ]}
         />
@@ -56,7 +56,7 @@ const OrderRouting = () => {
             },
             {
               icon: Route,
-              title: "Multi-Supplier Support",
+              title: "Multi-Decorator Support",
               description: "Work with any number of decorators and suppliers from one central dashboard.",
             },
           ]}
