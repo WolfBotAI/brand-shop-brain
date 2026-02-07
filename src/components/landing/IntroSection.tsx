@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 
 export const IntroSection = () => {
   return (
-    <section className="py-20 bg-background">
+    <section className="py-20 bg-muted">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left - Image */}
@@ -15,10 +15,10 @@ export const IntroSection = () => {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted">
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-card">
               <img 
-                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&q=80" 
-                alt="Team collaboration"
+                src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80" 
+                alt="Distributor managing client stores"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -30,8 +30,8 @@ export const IntroSection = () => {
               transition={{ duration: 0.4, delay: 0.3 }}
               className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground px-6 py-4 rounded-xl shadow-lg"
             >
-              <p className="text-lg font-bold">"We are going with</p>
-              <p className="text-2xl font-bold">BrandShop.AI"</p>
+              <p className="text-lg font-bold">Zero Support</p>
+              <p className="text-2xl font-bold">100% Autopilot</p>
             </motion.div>
           </motion.div>
 
@@ -44,23 +44,19 @@ export const IntroSection = () => {
             className="lg:pl-8"
           >
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              The First{" "}
-              <span className="text-primary">A.I. Powered</span>{" "}
-              Brand E-commerce Store System
+              Eliminate Customer Support.{" "}
+              <span className="text-primary">Increase Revenue.</span>
             </h2>
-            <p className="text-xl text-muted-foreground mb-6">
-              For Schools, Religious Organizations, and B2B/B2C Brands.
+            <p className="text-xl text-muted-foreground mb-8">
+              Your clients get AI-powered stores that run themselves. 
+              You get growth without the overhead.
             </p>
-            <p className="text-lg text-muted-foreground mb-8">
-              Includes chat and telephone Autonomous Agents that elevate customer experience, 
-              build brand loyalty, and increase revenues — all on autopilot!
-            </p>
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-4 mb-8">
               {[
-                "AI-guided store building or pre-selected themes",
-                "Real-time order tracking via SMS, Email, Messenger",
-                "Eliminates customer support burden for distributors",
-                "Customer portal with full AI guidance",
+                "Your clients build stores guided by AI or from themes you configure",
+                "Every store includes AI Chat + Voice handling tracking, support, and returns",
+                "Available via SMS, Email, Facebook Messenger, Instagram Messenger",
+                "Zero support tickets. 100% autopilot.",
               ].map((item, index) => (
                 <motion.li 
                   key={index}
@@ -70,7 +66,7 @@ export const IntroSection = () => {
                   transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
                   className="flex items-start gap-3"
                 >
-                  <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                  <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
                   <span className="text-foreground">{item}</span>
                 </motion.li>
               ))}
@@ -79,7 +75,7 @@ export const IntroSection = () => {
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
             >
-              Start Now
+              See It In Action
               <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
           </motion.div>

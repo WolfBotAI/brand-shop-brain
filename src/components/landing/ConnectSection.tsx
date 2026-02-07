@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Mail, MessageCircle, Share2, Smartphone } from "lucide-react";
+import { ArrowRight, Mail, MessageCircle, Share2, Smartphone, Bot } from "lucide-react";
 
 const channels = [
   { icon: Mail, label: "Email" },
   { icon: MessageCircle, label: "Chat" },
-  { icon: Share2, label: "Social Media" },
+  { icon: Share2, label: "Social" },
   { icon: Smartphone, label: "SMS" },
 ];
 
 export const ConnectSection = () => {
   return (
-    <section className="py-24 bg-background">
+    <section className="py-24 bg-muted">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left - Visual */}
@@ -30,17 +30,20 @@ export const ConnectSection = () => {
                 whileInView={{ scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-primary flex items-center justify-center shadow-lg"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-primary flex items-center justify-center shadow-lg"
               >
-                <span className="text-primary-foreground font-bold text-center text-sm">
-                  AI<br/>Brain
-                </span>
+                <div className="text-center">
+                  <Bot className="w-8 h-8 text-primary-foreground mx-auto mb-1" />
+                  <span className="text-primary-foreground font-bold text-xs">
+                    AI Agent
+                  </span>
+                </div>
               </motion.div>
 
               {/* Channel icons orbiting */}
               {channels.map((channel, index) => {
                 const Icon = channel.icon;
-                const angle = (index * 90) - 45; // Distribute around the circle
+                const angle = (index * 90) - 45;
                 const radius = 120;
                 const x = Math.cos((angle * Math.PI) / 180) * radius;
                 const y = Math.sin((angle * Math.PI) / 180) * radius;
@@ -99,19 +102,19 @@ export const ConnectSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Connect, Engage,{" "}
-              <span className="text-primary">Convert</span>
+              Your Clients Get White-Glove Service.{" "}
+              <span className="text-primary">You Do Nothing.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-6">
-              Proactive audience engagement via Email, Chat, Social Media, and SMS — 
-              all done for you, entirely on autopilot.
+              AI agents handle all customer interactions across every channel. 
+              Your clients feel supported 24/7 — you never lift a finger.
             </p>
             <ul className="space-y-4 mb-8">
               {[
-                "Customers view orders and submit requests in their portal",
-                "Update billing and access private catalogs with AI guidance",
-                "Real-time support across all messaging platforms",
-                "Zero customer support burden for distributors",
+                "Order tracking, returns, and billing updates — all automated",
+                "Private catalogs with AI navigation",
+                "Proactive engagement via Email, Chat, Social, and SMS",
+                "Clients feel supported 24/7, you scale without hiring",
               ].map((item, index) => (
                 <motion.li
                   key={index}
@@ -132,7 +135,7 @@ export const ConnectSection = () => {
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
             >
-              Start Now!
+              See It In Action
               <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
           </motion.div>
