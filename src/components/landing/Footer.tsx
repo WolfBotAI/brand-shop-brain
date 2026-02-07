@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const services = {
-  "Ecommerce Sellers": ["Schools", "Churches", "B2B Brands", "B2C Brands"],
-  "Decorators": ["Order Management", "Auto-Routing", "Client Portal"],
-  "Selling Platforms": ["AI Store Builder", "AI Support", "Pricing Controls"],
+  "For Decorators": ["Order Management", "AI Vision", "Auto-Routing", "Client Portal"],
+  "For Distributors": ["AI Store Builder", "AI Support", "Dashboard & Analytics", "Pricing Controls"],
+  "Platform": ["Multi-Store Management", "AI Suggestions", "KPI Reports", "Site Migration"],
 };
 
 export const Footer = () => {
@@ -19,13 +19,9 @@ export const Footer = () => {
               <span className="text-2xl font-bold">BRAND-SHOP.AI</span>
             </Link>
             <p className="text-secondary-foreground/70 mb-6 max-w-sm">
-              Our mission is to offer solutions that bridge the gap between decorators and sellers, 
-              powered by AI automation.
+              The all-in-one platform for distributors and decorators to manage client stores, 
+              automate support, and grow with AI-powered insights.
             </p>
-            <div className="flex items-center gap-2 text-sm text-secondary-foreground/50">
-              <span>Powered by</span>
-              <span className="font-bold text-primary">WolfBot.AI</span>
-            </div>
           </div>
 
           {/* Service Columns */}
