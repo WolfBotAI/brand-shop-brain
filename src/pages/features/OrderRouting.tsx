@@ -3,6 +3,7 @@ import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
+import OrderRoutingDemo from "@/components/features/OrderRoutingDemo";
 import { Route, Settings, Package, RefreshCw, Shield, Truck } from "lucide-react";
 
 const OrderRouting = () => {
@@ -15,8 +16,25 @@ const OrderRouting = () => {
           badge="Smart Order Routing"
           title="One Order —"
           highlight="Routed Automatically"
-          description="Orders automatically flow to the right decorator or supplier based on your rules. Set it once, never think about it again."
+          description="AI analyzes each order and routes it to the right decorator based on your rules. Product type, supplier, decoration method — set it once, never think about it again."
         />
+
+        {/* Interactive Demo */}
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+                Watch AI Route Orders in Real-Time
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Orders flow in, AI reads the product type, and instantly sends to the right decorator — no manual assignment needed.
+              </p>
+            </div>
+            <div className="max-w-4xl mx-auto">
+              <OrderRoutingDemo />
+            </div>
+          </div>
+        </section>
 
         <FeatureSection
           title="Product-Based Routing"
@@ -65,7 +83,7 @@ const OrderRouting = () => {
 
         <FeatureCTA
           title="Automate Your Order Flow"
-          description="Stop manually assigning orders. Let smart routing handle the logistics."
+          description="Stop manually assigning orders. Let AI-powered routing handle the logistics."
         />
       </main>
       <Footer />
