@@ -1,58 +1,80 @@
 
-# Update Footer to Target Distributors & Decorators
+# Fix Footer: Correct Categories + Working Links
 
-## Changes Required
+## Issues to Fix
 
-### 1. Remove "Ecommerce Sellers" Column
-The current column lists "Schools, Churches, B2B Brands, B2C Brands" which incorrectly implies we're targeting those businesses directly. We're targeting **distributors and decorators** who serve those clients.
+### 1. Wrong Category Assignments
+| Item | Current Location | Correct Location |
+|------|------------------|------------------|
+| Auto-Routing | For Decorators | For Distributors |
+| AI Support | For Distributors only | BOTH Decorators AND Distributors |
 
-### 2. Remove "Powered by WolfBot.AI"
-Delete the entire "Powered by" section (lines 25-28).
-
-### 3. Restructure Footer Columns
-Replace the three service columns with distributor/decorator-focused categories:
-
-| Current (Wrong) | New (Correct) |
-|-----------------|---------------|
-| Ecommerce Sellers: Schools, Churches, B2B, B2C | **REMOVE** |
-| Decorators: Order Management, Auto-Routing, Client Portal | **For Decorators**: Order Management, AI Vision, Auto-Routing, Client Portal |
-| Selling Platforms: AI Store Builder, AI Support, Pricing Controls | **For Distributors**: AI Store Builder, AI Support, Dashboard & Analytics, Pricing Controls |
-
-### 4. Add New Column: Platform Features
-Add a column highlighting cross-platform capabilities:
-- **Platform**: Multi-Store Management, AI Suggestions, KPI Reports, Site Migration
-
-### 5. Update Brand Description
-Current: "bridge the gap between decorators and sellers"
-New: "The all-in-one platform for distributors and decorators to manage client stores, automate support, and grow with AI-powered insights."
+### 2. Broken Links
+All footer links currently use `href="#"` which goes nowhere. Need to map each item to its correct route.
 
 ---
 
-## File to Modify
+## Implementation
 
-**`src/components/landing/Footer.tsx`**
+### Updated Services Structure with Routes
 
-Updated services object:
 ```typescript
 const services = {
-  "For Decorators": ["Order Management", "AI Vision", "Auto-Routing", "Client Portal"],
-  "For Distributors": ["AI Store Builder", "AI Support", "Dashboard & Analytics", "Pricing Controls"],
-  "Platform": ["Multi-Store Management", "AI Suggestions", "KPI Reports", "Site Migration"],
+  "For Decorators": [
+    { label: "Order Management", href: "/features/order-routing" },
+    { label: "AI Vision", href: "/features/ai-vision" },
+    { label: "AI Support", href: "/features/ai-support" },
+    { label: "Client Portal", href: "#" },
+  ],
+  "For Distributors": [
+    { label: "AI Store Builder", href: "/features/store-builder" },
+    { label: "AI Support", href: "/features/ai-support" },
+    { label: "Auto-Routing", href: "/features/order-routing" },
+    { label: "Dashboard & Analytics", href: "/features/dashboard" },
+  ],
+  "Platform": [
+    { label: "Multi-Store Management", href: "/features/dashboard" },
+    { label: "AI Suggestions", href: "/features/ai-vision" },
+    { label: "KPI Reports", href: "/features/dashboard" },
+    { label: "Site Migration", href: "#" },
+  ],
 };
 ```
 
-Remove lines 25-28 (Powered by WolfBot section).
+### Replace `<a href="#">` with `<Link to={...}>`
 
-Update description to focus on distributors managing all their client websites in one place with analytics and AI suggestions.
+Convert all footer links to use React Router's `Link` component for proper navigation:
+
+```tsx
+{items.map((item) => (
+  <li key={item.label}>
+    <Link 
+      to={item.href}
+      className="text-secondary-foreground/60 hover:text-primary transition-colors text-sm"
+    >
+      {item.label}
+    </Link>
+  </li>
+))}
+```
 
 ---
 
-## Summary
+## Summary of Changes
 
-| Element | Action |
-|---------|--------|
-| "Ecommerce Sellers" column | Remove entirely |
-| "Powered by WolfBot.AI" | Remove entirely |
-| Column categories | Rename to "For Decorators", "For Distributors", "Platform" |
-| Brand description | Focus on all-in-one platform for distributors/decorators |
-| Add new items | AI Suggestions, KPI Reports, Site Migration, Multi-Store Management |
+| Change | Before | After |
+|--------|--------|-------|
+| Auto-Routing | Under Decorators | Under Distributors |
+| AI Support | Distributors only | Both columns |
+| Links | `href="#"` (broken) | `Link to="/features/..."` |
+| Data structure | String array | Object array with label + href |
+
+---
+
+## File Modified
+
+**`src/components/landing/Footer.tsx`**
+- Restructure services object to include route paths
+- Move Auto-Routing to Distributors column
+- Add AI Support to Decorators column
+- Replace all `<a href="#">` with `<Link to={route}>` for proper navigation
