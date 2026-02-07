@@ -1,9 +1,10 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
-import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
-import { Store, Palette, ShoppingBag, Sparkles, Clock, Settings } from "lucide-react";
+import { StoreBuilderJourney } from "@/components/features/StoreBuilderJourney";
+import { FeatureSection } from "@/components/features/FeatureSection";
+import { Store, Settings, Shield, BarChart3, Palette, Lock } from "lucide-react";
 
 const StoreBuilder = () => {
   return (
@@ -18,39 +19,43 @@ const StoreBuilder = () => {
           description="AI-powered onboarding guides your clients through store creation step by step. No coding, no design skills, no hand-holding required."
         />
 
+        {/* Interactive Journey Demo */}
+        <StoreBuilderJourney />
+
+        {/* Distributor Controls Section */}
         <FeatureSection
-          title="How It Works"
-          description="A simple, guided process that gets stores live in minutes instead of weeks."
+          title="You Stay in Control"
+          description="Pre-configure everything. Your clients customize within the boundaries you set."
           features={[
             {
-              icon: Sparkles,
-              title: "AI-Guided Setup",
-              description: "Our AI assistant walks clients through every step with voice or chat guidance, answering questions in real-time.",
-            },
-            {
               icon: Palette,
-              title: "Brand Customization",
-              description: "Logo upload, color selection, and theme presets make each store feel unique to the client's brand.",
-            },
-            {
-              icon: ShoppingBag,
-              title: "Product Selection",
-              description: "Clients choose from your catalog with size/color configurations already set up by you.",
+              title: "Theme Presets",
+              description: "Create approved themes clients can choose from. Lock fonts, layouts, and brand elements.",
             },
             {
               icon: Settings,
-              title: "Distributor Controls",
-              description: "Pre-configure themes, products, margins, and lock settings as needed for consistency.",
+              title: "Product Catalog",
+              description: "Define which products are available. Set margins, pricing rules, and decoration options.",
             },
             {
-              icon: Clock,
-              title: "Go Live Fast",
-              description: "Stores launch in minutes. Clients can start selling same-day with zero setup fees.",
+              icon: Lock,
+              title: "Lock Settings",
+              description: "Prevent clients from changing critical settings while giving them creative freedom.",
+            },
+            {
+              icon: Shield,
+              title: "Brand Compliance",
+              description: "Ensure every store meets your brand standards automatically.",
+            },
+            {
+              icon: BarChart3,
+              title: "Performance Tracking",
+              description: "Monitor all stores from one dashboard. See sales, orders, and client activity.",
             },
             {
               icon: Store,
-              title: "Scalable Architecture",
-              description: "Support hundreds of client stores from one dashboard with centralized management.",
+              title: "Unlimited Stores",
+              description: "Scale to hundreds of client stores without additional management overhead.",
             },
           ]}
         />

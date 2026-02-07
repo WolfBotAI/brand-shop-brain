@@ -1,9 +1,10 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
-import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
-import { Eye, FileText, Mail, Image, CheckCircle, Zap } from "lucide-react";
+import { VisionAgentFlow } from "@/components/features/VisionAgentFlow";
+import { FeatureSection } from "@/components/features/FeatureSection";
+import { Eye, FileText, Mail, Image, AlertTriangle, Zap, ExternalLink } from "lucide-react";
 
 const AIVision = () => {
   return (
@@ -18,19 +19,23 @@ const AIVision = () => {
           description="Eliminate manual data entry. Our AI extracts order data from handwritten notes, PDFs, emails, and images with 99%+ accuracy."
         />
 
+        {/* Interactive Extraction Demo */}
+        <VisionAgentFlow />
+
+        {/* Document Types */}
         <FeatureSection
-          title="Document Types Supported"
-          description="The AI Vision agent handles any format your customers or suppliers send."
+          title="Handles Any Input"
+          description="No matter how your customers send orders, the AI Vision agent can process them."
           features={[
-            {
-              icon: FileText,
-              title: "PDFs & Documents",
-              description: "Purchase orders, invoices, and contracts in any PDF format are parsed automatically.",
-            },
             {
               icon: Mail,
               title: "Email Attachments",
-              description: "Connect to your inbox and let AI extract orders from incoming emails and attachments.",
+              description: "Connect to your inbox and let AI extract orders from incoming emails and attachments automatically.",
+            },
+            {
+              icon: FileText,
+              title: "PDFs & Documents",
+              description: "Purchase orders, invoices, and contracts in any PDF format are parsed with high accuracy.",
             },
             {
               icon: Image,
@@ -40,24 +45,30 @@ const AIVision = () => {
           ]}
         />
 
+        {/* Error Detection & Integration */}
         <FeatureSection
-          title="Works With Your Systems"
-          description="Push extracted data directly to your existing tools — no manual copying."
+          title="Catches Errors Before They Cost You"
+          description="The AI doesn't just extract — it validates and verifies."
           features={[
             {
-              icon: Zap,
+              icon: AlertTriangle,
+              title: "Error Detection",
+              description: "Unusual quantities, mismatched prices, and potential typos are flagged before processing.",
+            },
+            {
+              icon: Mail,
+              title: "Auto-Response",
+              description: "AI can email customers directly to clarify issues, resolving problems before they reach your decorator.",
+            },
+            {
+              icon: ExternalLink,
               title: "Printavo Integration",
-              description: "Orders flow directly into Printavo for production scheduling and tracking.",
+              description: "Verified orders flow directly into Printavo as new orders with all details pre-filled.",
             },
             {
               icon: Zap,
               title: "DecoNetwork Sync",
               description: "Seamless sync with DecoNetwork for decorator and supplier management.",
-            },
-            {
-              icon: CheckCircle,
-              title: "Review Before Commit",
-              description: "AI extracts the data, you approve it. Full control with minimal effort.",
             },
           ]}
           reversed
