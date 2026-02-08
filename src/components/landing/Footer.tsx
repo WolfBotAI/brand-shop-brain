@@ -14,9 +14,9 @@ const services = {
     { label: "Dashboard & Analytics", href: "/features/dashboard" },
   ],
   "Platform": [
-    { label: "Multi-Store Management", href: "/features/dashboard" },
-    { label: "AI Suggestions", href: "/features/ai-vision" },
-    { label: "KPI Reports", href: "/features/dashboard" },
+    { label: "Multi-Store Management", href: "/features/multi-store" },
+    { label: "AI Suggestions", href: "/features/ai-suggestions" },
+    { label: "KPI Reports", href: "/features/kpi-reports" },
     { label: "Site Migration", href: "#" },
   ],
 };
