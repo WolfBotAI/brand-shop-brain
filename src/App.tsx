@@ -11,6 +11,9 @@ import AIVision from "./pages/features/AIVision";
 import OrderRouting from "./pages/features/OrderRouting";
 import Dashboard from "./pages/features/Dashboard";
 import Acquisition from "./pages/features/Acquisition";
+import MultiStoreManagement from "./pages/features/MultiStoreManagement";
+import AISuggestions from "./pages/features/AISuggestions";
+import KPIReports from "./pages/features/KPIReports";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +31,9 @@ const App = () => (
           <Route path="/features/order-routing" element={<OrderRouting />} />
           <Route path="/features/dashboard" element={<Dashboard />} />
           <Route path="/features/acquisition" element={<Acquisition />} />
+          <Route path="/features/multi-store" element={<MultiStoreManagement />} />
+          <Route path="/features/ai-suggestions" element={<AISuggestions />} />
+          <Route path="/features/kpi-reports" element={<KPIReports />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
