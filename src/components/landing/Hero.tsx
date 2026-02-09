@@ -10,7 +10,7 @@ export const Hero = () => {
         <div 
           className="absolute inset-0 bg-muted"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1920&q=80')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1558171813-4c088753af8f?w=1920&q=80')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             opacity: 0.1,
@@ -57,7 +57,7 @@ export const Hero = () => {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="px-8 py-6 text-lg rounded-full"
+                className="px-8 py-6 text-lg rounded-full border-foreground/50 text-foreground hover:bg-foreground/10"
               >
                 Book a Demo
               </Button>

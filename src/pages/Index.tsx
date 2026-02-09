@@ -4,6 +4,7 @@ import { IntroSection } from "@/components/landing/IntroSection";
 import { IntroducingSection } from "@/components/landing/IntroducingSection";
 import { SeamlessSection } from "@/components/landing/SeamlessSection";
 import { ConnectSection } from "@/components/landing/ConnectSection";
+import { Integrations } from "@/components/landing/Integrations";
 import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/landing/Footer";
 
@@ -17,6 +18,7 @@ const Index = () => {
         <IntroducingSection />
         <SeamlessSection />
         <ConnectSection />
+        <Integrations />
         <CTASection />
       </main>
       <Footer />
