@@ -1,144 +1,182 @@
 
-# Create Dedicated Feature Pages for Platform Section
 
-## Overview
+# Homepage & Navigation Improvements Plan
 
-Create 3 new feature pages for the Platform section items and update the footer links to point to them:
+## Issues Identified
 
-1. **Multi-Store Management** - Focus on managing all client stores from one place
-2. **AI Suggestions** - Focus on AI recommending products to distributors/clients  
-3. **KPI Reports** - Focus on best sellers, margins, per-product/store/category analytics
+### 1. Irrelevant Inline Images on Homepage
+The following Unsplash stock photos are not relevant to apparel distributors/decorators:
 
----
+| Location | Current Image | Problem |
+|----------|---------------|---------|
+| Hero background | `photo-1556761175-4b46a572b786` | Generic office meeting, not apparel-related |
+| IntroSection | `photo-1556761175-5973dc0f32e7` | Office collaboration, not relevant |
+| IntroducingSection | `photo-1441986300917-64674bd600d8` | Generic retail store, not branded apparel |
 
-## New Pages to Create
-
-### 1. Multi-Store Management (`/features/multi-store`)
-
-**Purpose**: Showcase the ability to manage all client websites in one centralized dashboard
-
-**Content**:
-- Hero: "One Dashboard — Every Store"
-- Interactive Demo: Visual showing multiple store cards with quick actions (settings, view, analytics)
-- Feature sections:
-  - Centralized Control: Manage themes, products, and pricing across all stores
-  - Site Migration: Connect existing client sites or create new ones
-  - Bulk Operations: Update pricing, products, or settings across multiple stores at once
+**Solution**: Replace with apparel/print shop relevant imagery or remove entirely and rely on the UI mockups already present.
 
 ---
 
-### 2. AI Suggestions (`/features/ai-suggestions`)
+### 2. CTA Button Font Visibility Issues
+The outline buttons have poor contrast making text hard to read:
 
-**Purpose**: Highlight AI-powered product recommendations for distributors and their clients
+**Hero.tsx (line 57-63)**:
+```tsx
+<Button variant="outline" className="px-8 py-6 text-lg rounded-full">
+```
+- Uses default outline variant which may have low contrast
 
-**Content**:
-- Hero: "AI That Knows — What Sells Next"
-- Interactive Demo: Animated flow showing AI analyzing sales data and suggesting products
-- Feature sections:
-  - Smart Recommendations: AI suggests trending products based on sales patterns
-  - Distributor Insights: Get suggestions on which products to recommend to clients
-  - Client Upsells: AI can suggest complementary products to end customers
+**CTASection.tsx (line 66-70)**:
+```tsx
+<Button variant="outline" 
+  className="border-[hsl(var(--section-dark-foreground))]/30 text-[hsl(var(--section-dark-foreground))]"
+>
+```
+- Text uses 30% opacity border which is very faint
+- Section uses `--section-dark` (dark navy #1A1A2E) background
+
+**FeatureCTA.tsx (line 35-39)**:
+```tsx
+<Button variant="outline"
+  className="border-secondary-foreground/30 text-secondary-foreground"
+>
+```
+- Similar issue with low opacity borders on dark backgrounds
+
+**Solution**: Increase border opacity and ensure text uses full color contrast.
 
 ---
 
-### 3. KPI Reports (`/features/kpi-reports`)
+### 3. Navbar Not Always Visible/Sticky
+The navbar IS already position fixed (`fixed top-0 left-0 right-0 z-50`), but when not scrolled, it uses `bg-transparent`, making it invisible against certain section backgrounds.
 
-**Purpose**: Deep dive into analytics, best sellers, margins, and performance metrics
+**Current behavior** (Navbar.tsx lines 33-37):
+```tsx
+className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+  isScrolled 
+    ? "bg-background/95 backdrop-blur-sm shadow-md" 
+    : "bg-transparent"
+}`}
+```
 
-**Content**:
-- Hero: "Know Your Numbers — Down to Every Detail"
-- Interactive Demo: Charts showing best sellers, margin analysis, category breakdowns
-- Feature sections:
-  - Best Sellers: Track top-performing products across stores
-  - Margin Analysis: See profitability per product, store, or category
-  - Custom Reports: Filter by date range, store, category, or product type
+**Solution**: Always apply a visible background (with blur/transparency for elegance) regardless of scroll position.
 
 ---
 
-## Files to Create
+### 4. Integration API Verification
 
-| File | Description |
-|------|-------------|
-| `src/pages/features/MultiStoreManagement.tsx` | Multi-store management page |
-| `src/pages/features/AISuggestions.tsx` | AI suggestions page |
-| `src/pages/features/KPIReports.tsx` | KPI reports page |
-| `src/components/features/MultiStoreDemo.tsx` | Interactive demo for multi-store |
-| `src/components/features/AISuggestionsDemo.tsx` | Interactive demo for AI suggestions |
-| `src/components/features/KPIReportsDemo.tsx` | Interactive demo for KPI reports |
+| Brand | Has Public API? | Documentation |
+|-------|-----------------|---------------|
+| **Printavo** | YES | GraphQL API v2.0 at printavo.com/docs/api/v2 |
+| **DecoNetwork** | YES | Order Management API, Purchase Order API, Product API, Inventory API (Enterprise plans) |
+| **InkSoft** | YES | API2 with GitHub samples at github.com/InkSoft/api |
+| **GraphicsFlow** | UNCLEAR | No public developer API found - appears to be a product by InkSoft with design tools, not an open API |
+| **ShopWorks** | YES | Custom integrations via PromoLink, shopping cart integrations, payment processing |
+| **TaxJar** | YES | Well-documented tax API |
+| **QuickBooks** | YES | Extensive Intuit developer platform |
+
+**Recommendation**: Remove or reword GraphicsFlow entry since it doesn't appear to have a public integration API. All others are confirmed valid.
+
+---
+
+### 5. Highlight Integration Capabilities
+
+The Integrations component exists (`src/components/landing/Integrations.tsx`) but is **NOT imported on the homepage** (`src/pages/Index.tsx`).
+
+**Solution**: 
+- Add Integrations section to the homepage
+- Update messaging to emphasize "integrates into almost any system"
+- Add prominent "API Access" messaging
 
 ---
 
 ## Files to Modify
 
-### `src/App.tsx`
-Add 3 new routes:
-- `/features/multi-store` → MultiStoreManagement
-- `/features/ai-suggestions` → AISuggestions  
-- `/features/kpi-reports` → KPIReports
+### 1. `src/components/landing/Navbar.tsx`
+- Always show background (semi-transparent with blur) regardless of scroll state
+- Remove the `bg-transparent` condition for unscrolled state
 
-### `src/components/landing/Footer.tsx`
-Update Platform section links:
-- Multi-Store Management → `/features/multi-store`
-- AI Suggestions → `/features/ai-suggestions`
-- KPI Reports → `/features/kpi-reports`
+### 2. `src/components/landing/Hero.tsx`
+- Replace irrelevant stock photo with apparel-relevant imagery
+- Fix outline button contrast
+
+### 3. `src/components/landing/IntroSection.tsx`
+- Replace stock photo with relevant apparel/print shop imagery
+
+### 4. `src/components/landing/IntroducingSection.tsx`
+- Replace generic retail image with branded merchandise/apparel display imagery
+
+### 5. `src/components/landing/CTASection.tsx`
+- Fix outline button border/text contrast
+- Remove "Powered by WolfBot.AI Intelligence" text (per brand memory)
+
+### 6. `src/components/features/FeatureCTA.tsx`
+- Fix outline button contrast on dark secondary background
+
+### 7. `src/components/landing/Integrations.tsx`
+- Remove or update GraphicsFlow entry (no confirmed public API)
+- Strengthen "integrates with any system" messaging
+
+### 8. `src/pages/Index.tsx`
+- Import and add Integrations section to homepage
 
 ---
 
-## Technical Details
+## Technical Implementation Details
 
-### Page Structure (consistent with existing feature pages)
-
-Each page follows this pattern:
-```text
-+---------------------------+
-|         Navbar            |
-+---------------------------+
-|       FeatureHero         |
-|  (icon, badge, title,     |
-|   highlight, description) |
-+---------------------------+
-|     Interactive Demo      |
-|  (animated visualization) |
-+---------------------------+
-|     FeatureSection 1      |
-|    (3 feature cards)      |
-+---------------------------+
-|     FeatureSection 2      |
-|    (3 feature cards)      |
-+---------------------------+
-|       FeatureCTA          |
-+---------------------------+
-|         Footer            |
-+---------------------------+
+### Navbar Fix
+Change from conditional background to always-visible:
+```tsx
+className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 
+  bg-background/90 backdrop-blur-sm ${
+  isScrolled ? "shadow-md" : ""
+}`}
 ```
 
-### Interactive Demos
+### Button Contrast Fix
+Update outline buttons on dark backgrounds:
+```tsx
+// Before
+className="border-[hsl(var(--section-dark-foreground))]/30 text-[hsl(var(--section-dark-foreground))]"
 
-1. **MultiStoreDemo**: Grid of store cards with hover states, showing quick actions and status indicators
+// After
+className="border-white/50 text-white hover:bg-white/10"
+```
 
-2. **AISuggestionsDemo**: Animated flow with:
-   - Sales data analysis visualization
-   - AI "thinking" state
-   - Product recommendations appearing with confidence scores
+### Recommended Replacement Images
+Use Unsplash images relevant to apparel/print industry:
+- Screen printing process
+- Embroidered apparel
+- Branded merchandise displays
+- Print shop environments
 
-3. **KPIReportsDemo**: Dashboard-style with:
-   - Best sellers bar chart
-   - Margin donut chart
-   - Category breakdown table
-   - Filter controls (visual only)
+Example searches:
+- "screen printing tshirt"
+- "embroidery machine"  
+- "branded merchandise corporate"
+- "custom apparel production"
 
-### Icons to Use (from lucide-react)
-- Multi-Store: `LayoutGrid` or `Store`
-- AI Suggestions: `Sparkles` or `Lightbulb`
-- KPI Reports: `PieChart` or `FileBarChart`
+### Homepage Integration Section
+Add between ConnectSection and CTASection:
+```tsx
+import { Integrations } from "@/components/landing/Integrations";
+
+// In component:
+<ConnectSection />
+<Integrations />
+<CTASection />
+```
 
 ---
 
 ## Summary
 
-| Task | Action |
-|------|--------|
-| Create 3 new pages | MultiStoreManagement, AISuggestions, KPIReports |
-| Create 3 demo components | Visual demos for each feature |
-| Add routes to App.tsx | 3 new routes |
-| Update Footer.tsx | Fix Platform section links |
+| Issue | Fix |
+|-------|-----|
+| Irrelevant images | Replace 3 stock photos with apparel industry imagery |
+| CTA button visibility | Increase border opacity, ensure full text contrast |
+| Navbar not always visible | Always apply semi-transparent background with blur |
+| Integration verification | GraphicsFlow lacks public API - remove or reword |
+| Integration visibility | Add Integrations section to homepage |
+| WolfBot branding | Remove "Powered by WolfBot.AI" from CTASection |
+
