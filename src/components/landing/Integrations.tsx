@@ -19,6 +19,26 @@ const integrations = [
     description: "Connect existing InkSoft stores",
   },
   {
+    name: "SanMar",
+    category: "Supplier",
+    description: "Real-time inventory and pricing sync",
+  },
+  {
+    name: "AlphaBroder",
+    category: "Supplier",
+    description: "Full product catalog access",
+  },
+  {
+    name: "S&S Activewear",
+    category: "Supplier",
+    description: "Inventory and product sync",
+  },
+  {
+    name: "Augusta",
+    category: "Supplier",
+    description: "Sports and team apparel integration",
+  },
+  {
     name: "Zapier",
     category: "Automation",
     description: "Connect to 5,000+ apps",

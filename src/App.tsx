@@ -14,6 +14,7 @@ import Acquisition from "./pages/features/Acquisition";
 import MultiStoreManagement from "./pages/features/MultiStoreManagement";
 import AISuggestions from "./pages/features/AISuggestions";
 import KPIReports from "./pages/features/KPIReports";
+import SiteMigration from "./pages/features/SiteMigration";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/features/multi-store" element={<MultiStoreManagement />} />
           <Route path="/features/ai-suggestions" element={<AISuggestions />} />
           <Route path="/features/kpi-reports" element={<KPIReports />} />
+          <Route path="/features/site-migration" element={<SiteMigration />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
