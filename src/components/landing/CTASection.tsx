@@ -66,22 +66,11 @@ export const CTASection = () => {
             <Button 
               size="lg"
               variant="outline"
-              className="px-12 py-7 text-xl rounded-full border-[hsl(var(--section-dark-foreground))]/30 text-[hsl(var(--section-dark-foreground))] hover:bg-[hsl(var(--section-dark-foreground))]/10"
+              className="px-12 py-7 text-xl rounded-full border-white/50 text-white hover:bg-white/10"
             >
               See How It Works
             </Button>
           </motion.div>
-
-          {/* Trust indicator */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.6 }}
-            className="mt-8 text-sm text-[hsl(var(--section-dark-foreground))]/50"
-          >
-            Powered by WolfBot.AI Intelligence
-          </motion.p>
         </motion.div>
       </div>
     </section>

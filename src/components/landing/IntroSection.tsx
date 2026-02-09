@@ -17,8 +17,8 @@ export const IntroSection = () => {
           >
             <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-card">
               <img 
-                src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80" 
-                alt="Distributor managing client stores"
+                src="https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&q=80" 
+                alt="Screen printing custom apparel"
                 className="w-full h-full object-cover"
               />
             </div>

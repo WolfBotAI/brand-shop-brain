@@ -83,8 +83,8 @@ export const IntroducingSection = () => {
         >
           <div className="aspect-[21/9] rounded-2xl overflow-hidden bg-secondary">
             <img 
-              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80" 
-              alt="Branded merchandise display"
+              src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=1600&q=80" 
+              alt="Custom branded apparel and merchandise"
               className="w-full h-full object-cover opacity-80"
             />
           </div>

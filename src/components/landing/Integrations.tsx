@@ -19,9 +19,9 @@ const integrations = [
     description: "Connect existing InkSoft stores",
   },
   {
-    name: "GraphicsFlow",
-    category: "Design Management",
-    description: "Streamline artwork approvals",
+    name: "Zapier",
+    category: "Automation",
+    description: "Connect to 5,000+ apps",
   },
   {
     name: "TaxJar",
@@ -62,11 +62,11 @@ export const Integrations = () => {
             <span className="text-sm font-medium">Powerful Integrations</span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-            Works With Your{" "}
-            <span className="text-accent">Existing Systems</span>
+            Integrates With{" "}
+            <span className="text-accent">Almost Any System</span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Connect to the tools you already use. No need to change your workflow — we adapt to you.
+            Our open API connects to the tools you already use — Printavo, DecoNetwork, InkSoft, and more. We adapt to your workflow.
           </p>
         </motion.div>
 
