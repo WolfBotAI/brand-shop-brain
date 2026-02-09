@@ -17,7 +17,7 @@ const services = {
     { label: "Multi-Store Management", href: "/features/multi-store" },
     { label: "AI Suggestions", href: "/features/ai-suggestions" },
     { label: "KPI Reports", href: "/features/kpi-reports" },
-    { label: "Site Migration", href: "#" },
+    { label: "Site Migration", href: "/features/site-migration" },
   ],
 };
 
