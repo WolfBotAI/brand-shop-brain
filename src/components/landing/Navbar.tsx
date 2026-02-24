@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import brandLogo from "@/assets/brand-logo.png";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -9,7 +10,7 @@ const navLinks = [
   { label: "AI Vision", href: "/features/ai-vision" },
   { label: "AI Support", href: "/features/ai-support" },
   { label: "Order Routing", href: "/features/order-routing" },
-  { label: "Dashboard", href: "/features/dashboard" },
+  { label: "Reporting", href: "/features/reporting" },
 ];
 
 export const Navbar = () => {
@@ -38,29 +39,19 @@ export const Navbar = () => {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-foreground">BRAND-SHOP.AI</span>
+              <img src={brandLogo} alt="Brand-Shop.AI" className="h-10 w-auto" />
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-10">
               {navLinks.map((link) => (
-                link.href.startsWith('/') ? (
-                  <Link
-                    key={link.label}
-                    to={link.href}
-                    className="text-foreground/80 hover:text-primary transition-colors font-medium"
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="text-foreground/80 hover:text-primary transition-colors font-medium"
-                  >
-                    {link.label}
-                  </a>
-                )
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
+                >
+                  {link.label}
+                </Link>
               ))}
             </div>
 
@@ -88,25 +79,14 @@ export const Navbar = () => {
             <div className="container mx-auto px-4 pb-8">
               <div className="flex flex-col gap-2">
                 {navLinks.map((link) => (
-                  link.href.startsWith('/') ? (
-                    <Link
-                      key={link.label}
-                      to={link.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="py-4 text-xl text-foreground border-b border-border"
-                    >
-                      {link.label}
-                    </Link>
-                  ) : (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="py-4 text-xl text-foreground border-b border-border"
-                    >
-                      {link.label}
-                    </a>
-                  )
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-4 text-xl text-foreground border-b border-border"
+                  >
+                    {link.label}
+                  </Link>
                 ))}
               </div>
             </div>

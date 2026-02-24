@@ -9,7 +9,7 @@ import StoreBuilder from "./pages/features/StoreBuilder";
 import AISupport from "./pages/features/AISupport";
 import AIVision from "./pages/features/AIVision";
 import OrderRouting from "./pages/features/OrderRouting";
-import Dashboard from "./pages/features/Dashboard";
+import Reporting from "./pages/features/Reporting";
 import Acquisition from "./pages/features/Acquisition";
 import MultiStoreManagement from "./pages/features/MultiStoreManagement";
 import AISuggestions from "./pages/features/AISuggestions";
@@ -30,7 +30,7 @@ const App = () => (
           <Route path="/features/ai-support" element={<AISupport />} />
           <Route path="/features/ai-vision" element={<AIVision />} />
           <Route path="/features/order-routing" element={<OrderRouting />} />
-          <Route path="/features/dashboard" element={<Dashboard />} />
+          <Route path="/features/reporting" element={<Reporting />} />
           <Route path="/features/acquisition" element={<Acquisition />} />
           <Route path="/features/multi-store" element={<MultiStoreManagement />} />
           <Route path="/features/ai-suggestions" element={<AISuggestions />} />
