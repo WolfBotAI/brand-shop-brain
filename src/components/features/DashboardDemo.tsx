@@ -79,7 +79,7 @@ const metricCards = [
 ];
 
 export const DashboardDemo = () => {
-  const [activeTab, setActiveTab] = useState<"overview" | "stores" | "products">("overview");
+  const [activeTab, setActiveTab] = useState<"distributor" | "store">("distributor");
 
   return (
     <section className="py-20 bg-background">
@@ -108,17 +108,20 @@ export const DashboardDemo = () => {
                 <span className="font-semibold text-card-foreground">Distributor Dashboard</span>
               </div>
               <div className="flex gap-2">
-                {["overview", "stores", "products"].map((tab) => (
+                {[
+                  { id: "distributor" as const, label: "Distributor View" },
+                  { id: "store" as const, label: "Store View" },
+                ].map((tab) => (
                   <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab as typeof activeTab)}
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      activeTab === tab
+                      activeTab === tab.id
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-background"
                     }`}
                   >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    {tab.label}
                   </button>
                 ))}
               </div>
