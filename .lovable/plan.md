@@ -1,23 +1,23 @@
 
 
-# Fix: Missing Brand Logo Build Error
+# Fix: Copy Brand Logo to Resolve Build Error
 
 ## Problem
-The build fails because `src/assets/brand-logo.png` is imported by `Navbar.tsx` and `Footer.tsx` but the file was never copied into the project.
+The build fails because `src/assets/brand-logo.png` does not exist. Both `Navbar.tsx` and `Footer.tsx` import this file.
 
 ## Solution
 
-### Step 1: Copy the brand logo
-Copy the user's uploaded logo screenshot to `src/assets/brand-logo.png`.
+### Step 1: Copy the uploaded logo to the project
+Copy the previously uploaded brand logo image (`user-uploads://Screenshot_2026-02-24_at_10.01.55 AM.png`) to `src/assets/brand-logo.png`.
 
-### Step 2: Verify imports
-Both `Navbar.tsx` and `Footer.tsx` already have `import brandLogo from "@/assets/brand-logo.png"` — no code changes needed once the file exists.
+### Step 2: No other changes needed
+The imports in `Navbar.tsx` and `Footer.tsx` already reference this path correctly. Once the file exists, the build will succeed and the logo will appear in both the navbar and footer.
 
 ## Files to Create
 | File | Action |
 |------|--------|
-| `src/assets/brand-logo.png` | Copy from user upload |
+| `src/assets/brand-logo.png` | Copy from user's uploaded screenshot |
 
 ## Files to Modify
-None — the imports are already in place.
+None.
 
