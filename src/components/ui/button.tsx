@@ -15,6 +15,10 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        ctaPrimary: "bg-primary hover:bg-primary/90 text-primary-foreground",
+        ctaOutlineDark: "bg-transparent border border-[hsl(var(--section-dark-foreground))]/30 text-[hsl(var(--section-dark-foreground))] hover:bg-[hsl(var(--section-dark-foreground))]/10",
+        ctaOutlineLight: "bg-transparent border border-foreground/30 text-foreground hover:bg-foreground/10",
+        ctaOutlineSecondary: "bg-transparent border border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10",
       },
       size: {
         default: "h-10 px-4 py-2",
