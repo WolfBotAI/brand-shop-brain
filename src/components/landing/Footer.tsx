@@ -32,7 +32,7 @@ export const Footer = () => {
               <img src={brandIcon} alt="" className="h-8 w-auto" />
               <span className="text-2xl font-bold">
                 <span className="text-white">Brand-</span>
-                <span className="text-secondary-foreground">Shop.AI</span>
+                <span className="text-primary">Shop.AI</span>
               </span>
             </Link>
             <p className="text-secondary-foreground/70 mb-6 max-w-sm">
