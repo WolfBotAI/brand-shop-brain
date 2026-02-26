@@ -56,8 +56,8 @@ export const Hero = () => {
               </Button>
               <Button 
                 size="lg" 
-                variant="outline"
-                className="px-8 py-6 text-lg rounded-full border-foreground/50 text-foreground hover:bg-foreground/10"
+                variant="ctaOutlineLight"
+                className="px-8 py-6 text-lg rounded-full"
               >
                 Book a Demo
               </Button>

@@ -34,8 +34,8 @@ export const FeatureCTA = ({ title, description }: FeatureCTAProps) => {
             </Button>
             <Button 
               size="lg" 
-              variant="outline"
-              className="bg-transparent border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10 px-8 py-6 text-lg rounded-full"
+              variant="ctaOutlineSecondary"
+              className="px-8 py-6 text-lg rounded-full"
             >
               Contact Sales
             </Button>
