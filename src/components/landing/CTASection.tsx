@@ -66,7 +66,7 @@ export const CTASection = () => {
             <Button 
               size="lg"
               variant="outline"
-              className="px-12 py-7 text-xl rounded-full border-[hsl(var(--section-dark-foreground))]/30 text-[hsl(var(--section-dark-foreground))] hover:bg-[hsl(var(--section-dark-foreground))]/10"
+              className="bg-transparent px-12 py-7 text-xl rounded-full border-[hsl(var(--section-dark-foreground))]/30 text-[hsl(var(--section-dark-foreground))] hover:bg-[hsl(var(--section-dark-foreground))]/10"
             >
               See How It Works
             </Button>
