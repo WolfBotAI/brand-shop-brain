@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import brandLogo from "@/assets/brand-logo.png";
+import brandIcon from "@/assets/brand-icon.png";
 
 const services = {
   "For Decorators": [
@@ -28,8 +28,12 @@ export const Footer = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2">
-            <Link to="/" className="inline-block mb-4">
-              <img src={brandLogo} alt="Brand-Shop.AI" className="h-10 w-auto" />
+            <Link to="/" className="inline-flex items-center gap-2 mb-4">
+              <img src={brandIcon} alt="" className="h-8 w-auto" />
+              <span className="text-2xl font-bold">
+                <span className="text-white">Brand-</span>
+                <span className="text-primary">Shop.AI</span>
+              </span>
             </Link>
             <p className="text-secondary-foreground/70 mb-6 max-w-sm">
               The all-in-one platform for distributors and decorators to manage client stores, 
