@@ -1,0 +1,2 @@
+[functions.ss-products]
+verify_jwt = false

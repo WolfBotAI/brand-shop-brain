@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Store, ArrowRight, ArrowLeft, CheckCircle2, Bot, Send, CreditCard, Sparkles, ShoppingBag, Palette } from "lucide-react";
+import { Store, ArrowRight, ArrowLeft, CheckCircle2, Bot, Send, CreditCard, Sparkles, ShoppingBag, Palette, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChatBubble } from "@/components/features/ChatBubble";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { searchStyles, getSearchQueriesForVertical, type SSStyle } from "@/lib/api/ssProducts";
 
 interface CreateStoreStepProps {
   tenantId: string;
@@ -27,64 +29,7 @@ const verticals = [
   { value: "other", label: "Other" },
 ];
 
-type CatalogItem = {
-  id: string;
-  name: string;
-  category: string;
-  priceRange: string;
-  supplier: string;
-  image: string;
-  selected: boolean;
-};
-
-const catalogByVertical: Record<string, CatalogItem[]> = {
-  sports: [
-    { id: "s1", name: "Performance Tee", category: "Tees", priceRange: "$8–$14", supplier: "Brand-Shop Catalog", image: "👕", selected: true },
-    { id: "s2", name: "Mesh Athletic Short", category: "Shorts", priceRange: "$12–$18", supplier: "Brand-Shop Catalog", image: "🩳", selected: true },
-    { id: "s3", name: "Team Hoodie", category: "Hoodies", priceRange: "$22–$35", supplier: "Brand-Shop Catalog", image: "🧥", selected: true },
-    { id: "s4", name: "Flexfit Cap", category: "Caps", priceRange: "$10–$16", supplier: "Brand-Shop Catalog", image: "🧢", selected: true },
-    { id: "s5", name: "Warm-Up Jacket", category: "Jackets", priceRange: "$28–$42", supplier: "Brand-Shop Fulfillment", image: "🧥", selected: false },
-    { id: "s6", name: "Dri-Fit Polo", category: "Polos", priceRange: "$15–$24", supplier: "Brand-Shop Catalog", image: "👔", selected: true },
-    { id: "s7", name: "Athletic Crew Socks", category: "Accessories", priceRange: "$6–$10", supplier: "Brand-Shop Fulfillment", image: "🧦", selected: false },
-    { id: "s8", name: "Duffle Bag", category: "Accessories", priceRange: "$18–$30", supplier: "Brand-Shop Fulfillment", image: "👜", selected: false },
-  ],
-  schools: [
-    { id: "sc1", name: "Spirit Tee", category: "Tees", priceRange: "$7–$12", supplier: "Brand-Shop Catalog", image: "👕", selected: true },
-    { id: "sc2", name: "School Hoodie", category: "Hoodies", priceRange: "$20–$32", supplier: "Brand-Shop Catalog", image: "🧥", selected: true },
-    { id: "sc3", name: "Varsity Jacket", category: "Jackets", priceRange: "$35–$55", supplier: "Brand-Shop Catalog", image: "🧥", selected: true },
-    { id: "sc4", name: "School Cap", category: "Caps", priceRange: "$8–$14", supplier: "Brand-Shop Catalog", image: "🧢", selected: true },
-    { id: "sc5", name: "Gym Short", category: "Shorts", priceRange: "$10–$16", supplier: "Brand-Shop Fulfillment", image: "🩳", selected: false },
-    { id: "sc6", name: "Polo Shirt", category: "Polos", priceRange: "$14–$22", supplier: "Brand-Shop Catalog", image: "👔", selected: true },
-  ],
-  corporate: [
-    { id: "c1", name: "Classic Polo", category: "Polos", priceRange: "$16–$28", supplier: "Brand-Shop Catalog", image: "👔", selected: true },
-    { id: "c2", name: "Oxford Button-Down", category: "Dress Shirts", priceRange: "$22–$38", supplier: "Brand-Shop Catalog", image: "👔", selected: true },
-    { id: "c3", name: "Soft-Shell Jacket", category: "Jackets", priceRange: "$30–$50", supplier: "Brand-Shop Catalog", image: "🧥", selected: true },
-    { id: "c4", name: "Structured Cap", category: "Caps", priceRange: "$12–$18", supplier: "Brand-Shop Catalog", image: "🧢", selected: false },
-    { id: "c5", name: "Quarter-Zip Pullover", category: "Pullovers", priceRange: "$25–$40", supplier: "Brand-Shop Fulfillment", image: "🧥", selected: true },
-    { id: "c6", name: "Tote Bag", category: "Accessories", priceRange: "$10–$20", supplier: "Brand-Shop Fulfillment", image: "👜", selected: false },
-  ],
-  events: [
-    { id: "e1", name: "Event Tee", category: "Tees", priceRange: "$6–$10", supplier: "Brand-Shop Catalog", image: "👕", selected: true },
-    { id: "e2", name: "Lightweight Hoodie", category: "Hoodies", priceRange: "$18–$28", supplier: "Brand-Shop Catalog", image: "🧥", selected: true },
-    { id: "e3", name: "Trucker Hat", category: "Caps", priceRange: "$8–$14", supplier: "Brand-Shop Catalog", image: "🧢", selected: true },
-    { id: "e4", name: "Tank Top", category: "Tanks", priceRange: "$7–$12", supplier: "Brand-Shop Fulfillment", image: "👕", selected: false },
-    { id: "e5", name: "Tote Bag", category: "Accessories", priceRange: "$8–$15", supplier: "Brand-Shop Fulfillment", image: "👜", selected: true },
-  ],
-  fashion: [
-    { id: "f1", name: "Premium Heavyweight Tee", category: "Tees", priceRange: "$12–$22", supplier: "Brand-Shop Catalog", image: "👕", selected: true },
-    { id: "f2", name: "Oversized Hoodie", category: "Hoodies", priceRange: "$28–$45", supplier: "Brand-Shop Catalog", image: "🧥", selected: true },
-    { id: "f3", name: "Joggers", category: "Bottoms", priceRange: "$22–$38", supplier: "Brand-Shop Catalog", image: "👖", selected: true },
-    { id: "f4", name: "Snapback Cap", category: "Caps", priceRange: "$14–$22", supplier: "Brand-Shop Fulfillment", image: "🧢", selected: true },
-    { id: "f5", name: "Crewneck Sweatshirt", category: "Sweatshirts", priceRange: "$24–$38", supplier: "Brand-Shop Catalog", image: "👕", selected: false },
-  ],
-  other: [
-    { id: "o1", name: "Basic Tee", category: "Tees", priceRange: "$6–$12", supplier: "Brand-Shop Catalog", image: "👕", selected: true },
-    { id: "o2", name: "Pullover Hoodie", category: "Hoodies", priceRange: "$18–$30", supplier: "Brand-Shop Catalog", image: "🧥", selected: true },
-    { id: "o3", name: "Baseball Cap", category: "Caps", priceRange: "$8–$14", supplier: "Brand-Shop Catalog", image: "🧢", selected: true },
-    { id: "o4", name: "Polo Shirt", category: "Polos", priceRange: "$12–$20", supplier: "Brand-Shop Catalog", image: "👔", selected: false },
-  ],
-};
+type CatalogProduct = SSStyle & { selected: boolean };
 
 type Theme = { id: string; name: string; colors: string[]; recommended?: boolean };
 
@@ -142,7 +87,9 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const [storeName, setStoreName] = useState("");
   const [clientName, setClientName] = useState("");
   const [brandVertical, setBrandVertical] = useState("");
-  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
+  const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState("");
   const [billingModel, setBillingModel] = useState("brandshop");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -151,21 +98,55 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const [storeId, setStoreId] = useState("");
   const { toast } = useToast();
 
-  const selectedCount = catalogItems.filter((i) => i.selected).length;
+  const selectedCount = catalogProducts.filter((i) => i.selected).length;
   const themes = themesByVertical[brandVertical] || themesByVertical.other;
+
+  // Group products by baseCategory
+  const groupedProducts = catalogProducts.reduce<Record<string, CatalogProduct[]>>((acc, p) => {
+    const cat = p.baseCategory || "Other";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(p);
+    return acc;
+  }, {});
+
+  const fetchCatalog = async (vertical: string) => {
+    setLoadingCatalog(true);
+    setCatalogError(null);
+    try {
+      const queries = getSearchQueriesForVertical(vertical);
+      // Search all keywords in parallel
+      const allResults = await Promise.all(queries.map((q) => searchStyles(q)));
+      // Flatten + deduplicate by styleID
+      const seen = new Set<number>();
+      const products: CatalogProduct[] = [];
+      for (const results of allResults) {
+        for (const style of results) {
+          if (!seen.has(style.styleID)) {
+            seen.add(style.styleID);
+            products.push({ ...style, selected: products.length < 8 }); // auto-select first 8
+          }
+        }
+      }
+      setCatalogProducts(products);
+    } catch (err) {
+      console.error("Failed to load SS catalog:", err);
+      setCatalogError(err instanceof Error ? err.message : "Failed to load catalog");
+    } finally {
+      setLoadingCatalog(false);
+    }
+  };
 
   const handleDetailsNext = () => {
     if (!storeName.trim() || !clientName.trim() || !brandVertical) return;
-    const items = catalogByVertical[brandVertical] || catalogByVertical.other;
-    setCatalogItems(items.map((i) => ({ ...i })));
     const vertLabel = verticals.find((v) => v.value === brandVertical)?.label || brandVertical;
     setChatMessages([
       {
         role: "bot",
-        text: `I've loaded the Brand-Shop Catalog for **${vertLabel}**. Tell me about the event — goals, budget per item, colors, season — and I'll recommend products.`,
+        text: `I'm loading real products from SS Activewear for **${vertLabel}**. Tell me about the event — goals, budget per item, colors, season — and I'll help you pick the best products.`,
       },
     ]);
     setPhase("catalog");
+    fetchCatalog(brandVertical);
   };
 
   const handleChatSend = () => {
@@ -178,8 +159,10 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
     }, 800);
   };
 
-  const toggleItem = (id: string) => {
-    setCatalogItems((prev) => prev.map((i) => (i.id === id ? { ...i, selected: !i.selected } : i)));
+  const toggleItem = (styleID: number) => {
+    setCatalogProducts((prev) =>
+      prev.map((i) => (i.styleID === styleID ? { ...i, selected: !i.selected } : i))
+    );
   };
 
   const handleCatalogNext = () => {
@@ -262,7 +245,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
           </motion.div>
         )}
 
-        {/* PHASE B: AI Merch Advisor + Catalog */}
+        {/* PHASE B: AI Merch Advisor + Real SS Activewear Catalog */}
         {phase === "catalog" && (
           <motion.div key="catalog" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
             {/* AI Chat */}
@@ -308,30 +291,96 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4" />
-                  Brand-Shop Catalog — {selectedCount} items selected
+                  SS Activewear Catalog — {selectedCount} items selected
                 </h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                {catalogItems.map((item) => (
-                  <Card
-                    key={item.id}
-                    className={`cursor-pointer transition-all border-2 ${
-                      item.selected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                    }`}
-                    onClick={() => toggleItem(item.id)}
-                  >
-                    <CardContent className="p-3 space-y-1">
-                      <div className="flex items-start justify-between">
-                        <span className="text-2xl">{item.image}</span>
-                        <Checkbox checked={item.selected} onCheckedChange={() => toggleItem(item.id)} />
+
+              {loadingCatalog && (
+                <div className="grid grid-cols-2 gap-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="border-border">
+                      <CardContent className="p-3 space-y-2">
+                        <Skeleton className="w-full h-32 rounded-md" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                        <Skeleton className="h-3 w-2/3" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {catalogError && (
+                <Card className="border-destructive">
+                  <CardContent className="p-4 text-sm text-destructive">
+                    <p>Failed to load products: {catalogError}</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={() => fetchCatalog(brandVertical)}>
+                      Retry
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!loadingCatalog && !catalogError && Object.keys(groupedProducts).length > 0 && (
+                <div className="space-y-4">
+                  {Object.entries(groupedProducts).map(([category, products]) => (
+                    <div key={category} className="space-y-2">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{category}</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {products.map((item) => (
+                          <Card
+                            key={item.styleID}
+                            className={`cursor-pointer transition-all border-2 ${
+                              item.selected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                            }`}
+                            onClick={() => toggleItem(item.styleID)}
+                          >
+                            <CardContent className="p-3 space-y-2">
+                              <div className="flex items-start justify-between">
+                                {item.styleImage ? (
+                                  <img
+                                    src={item.styleImage}
+                                    alt={item.title}
+                                    className="w-full h-28 object-contain rounded-md bg-muted/30"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className="w-full h-28 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">
+                                    No image
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-start justify-between gap-1">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-semibold text-primary">{item.brandName}</p>
+                                  <p className="text-sm font-medium text-foreground leading-tight truncate">{item.title}</p>
+                                </div>
+                                <Checkbox
+                                  checked={item.selected}
+                                  onCheckedChange={() => toggleItem(item.styleID)}
+                                  className="mt-0.5 flex-shrink-0"
+                                />
+                              </div>
+                              <div className="space-y-0.5">
+                                {item.customerPrice != null && (
+                                  <p className="text-xs text-foreground">
+                                    <span className="font-medium">Distributor:</span> ${Number(item.customerPrice).toFixed(2)}
+                                  </p>
+                                )}
+                                {item.piecePrice != null && (
+                                  <p className="text-xs text-muted-foreground">
+                                    <span className="font-medium">Standard:</span> ${Number(item.piecePrice).toFixed(2)}
+                                  </p>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
                       </div>
-                      <p className="text-sm font-medium text-foreground leading-tight">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.priceRange}</p>
-                      <p className="text-xs text-muted-foreground/70">{item.supplier}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3">
