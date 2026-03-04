@@ -1,21 +1,73 @@
 
 
-# Fix "See How It Works" CTA Buttons
+# Project Status & Next Steps
 
-Both the Hero and CTASection have "See How It Works" buttons that are plain `<Button>` elements with no `onClick` or link behavior. Similarly, "Book a Demo" buttons go nowhere.
+## What's Built
 
-## Plan
+### Marketing Website (Landing)
+- Hero, Intro, Introducing, Packages, Seamless, Connect, Integrations, CTA sections — all updated with current product copy, placehold.co images, package tiers, and working CTA scroll buttons
+- Navbar with Features dropdown linking to all feature pages
+- 10 feature pages: Store Builder, AI Support, AI Vision, AI Suggestions, Order Routing, Reporting, KPI Reports, Multi-Store, Site Migration, Acquisition — all with hero, demos, feature sections, and CTAs
 
-**Scroll-to approach** for "See How It Works": Scroll to the `IntroSection` (or `StoreBuilderJourney` area) on the same page. Add an `id` to the target section and use `scrollIntoView` on click.
+### Platform App (`/app/`)
+- **Phase 1 — App Shell & Dashboard**: Done. Sidebar with nav groups (Distributor, Operations, Platform), Dashboard with KPI cards, activity feed, integration health, store performance table
+- **Phase 2 — Distributor Onboarding**: Done. Full wizard with Welcome, WolfBot Connect (GHL), Supplier setup, AI Discovery chat (4-step), Package tier selection, Catalog with bulk variant selection, Logo upload, Theme picker (presets/custom/scrape), Storefront preview, Completion
+- **Phase 3 — Store Workspace**: Partial. Has Storefront preview, Overview, Catalog grid, Pricing/Mockups/Billing tabs are placeholder stubs
 
-**Link approach** for "Book a Demo": Since there's no booking page yet, link to an anchor or a mailto/Calendly placeholder. For now, scroll to the CTA section or open a `#contact` anchor.
+### What's NOT Built Yet (by roadmap phase)
 
-### Changes
+**Phase 3 — Store Launch Workspace (incomplete)**
+- Pricing Rules tab (stub — needs markup percentage controls, per-category rules)
+- Mockup Studio tab (stub — needs AI mockup generation UI)
+- Billing tab (stub — needs payment method management)
+- Catalog sync status and re-sync controls
 
-1. **`src/components/landing/Hero.tsx`** — Wrap "See How It Works" in scroll-to `#how-it-works`, wrap "Book a Demo" in scroll-to `#packages` (or keep as-is with a future link).
-2. **`src/components/landing/CTASection.tsx`** — Same: "See How It Works" scrolls to `#how-it-works`, "Book a Demo" stays as contact action.
-3. **`src/components/landing/IntroducingSection.tsx`** (or whichever section best represents "how it works") — Add `id="how-it-works"` to the section element.
-4. **`src/components/features/FeatureHero.tsx`** and **`src/components/features/FeatureCTA.tsx`** — Add `onClick` handlers for "Book Demo" / "Contact Sales" buttons (scroll or link).
+**Phase 4 — Ops Console (not started)**
+- `/app/ai-vision` — AI Vision jobs dashboard (inbox of incoming emails/POs, extraction status, error flags, Printavo push status)
+- `/app/routing` — Order Routing rules manager (supplier/decorator mapping, manual override, split order view)
+- These are in the sidebar nav but have no routes or pages
 
-All CTA buttons across the site will use `document.getElementById('target')?.scrollIntoView({ behavior: 'smooth' })` for on-page targets, or `react-router-dom` `useNavigate` for cross-page links like `/features/store-builder`.
+**Phase 5 — Client Portal (not started)**
+- Public-facing storefront at `/store/:storeId`
+- Customer-facing catalog, cart, checkout
+- AI Chat widget embedded on storefront
+
+**Other Missing Platform Features**
+- `/app/stores` — Store list page (sidebar link exists, no route)
+- `/app/suppliers` — Integrations/supplier management page (sidebar link exists, no route)
+- `/app/settings` — Settings page (sidebar link exists, no route)
+- Authentication — No login/signup, all `/app` routes are open
+
+## Recommended Next Step
+
+The highest-impact next step is **Phase 4 — Ops Console**, specifically the two pages already in the sidebar:
+
+### 1. AI Vision Jobs Page (`/app/ai-vision`)
+- Table/list of incoming documents (emails, PDFs, photos)
+- Status badges: Pending, Extracting, Needs Review, Approved, Pushed to Printavo
+- Detail view showing extracted fields (customer, items, quantities, sizes, colors)
+- Error flags with "Email Customer" action
+- Mock data for demo purposes (no backend integration yet)
+
+### 2. Order Routing Page (`/app/routing`)
+- Routing rules configuration (supplier + decorator mapping per product category/decoration type)
+- Split order viewer showing how an invoice gets divided
+- Manual override controls
+- Mock data for demo
+
+### 3. Route Registration
+- Add routes for `/app/ai-vision`, `/app/routing`, `/app/stores`, `/app/suppliers`, `/app/settings` in `App.tsx`
+
+### Files
+
+| File | Action |
+|------|--------|
+| `src/pages/app/AIVisionJobs.tsx` | New — Vision jobs dashboard |
+| `src/pages/app/OrderRoutingManager.tsx` | New — Routing rules + split viewer |
+| `src/pages/app/StoreList.tsx` | New — List of all stores |
+| `src/pages/app/Suppliers.tsx` | New — Integration/supplier management |
+| `src/pages/app/Settings.tsx` | New — Settings placeholder |
+| `src/App.tsx` | Add routes for all new pages |
+
+This builds out the operational backbone. After this, Phase 5 (Client Portal) and authentication would follow.
 
