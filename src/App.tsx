@@ -17,6 +17,7 @@ import KPIReports from "./pages/features/KPIReports";
 import SiteMigration from "./pages/features/SiteMigration";
 import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/app/Dashboard";
+import Onboarding from "./pages/app/Onboarding";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           {/* Platform app routes */}
           <Route path="/app" element={<AppLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="onboarding" element={<Onboarding />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
