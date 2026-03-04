@@ -19,6 +19,11 @@ import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/app/Dashboard";
 import Onboarding from "./pages/app/Onboarding";
 import StoreWorkspace from "./pages/app/StoreWorkspace";
+import AIVisionJobs from "./pages/app/AIVisionJobs";
+import OrderRoutingManager from "./pages/app/OrderRoutingManager";
+import StoreList from "./pages/app/StoreList";
+import Suppliers from "./pages/app/Suppliers";
+import Settings from "./pages/app/Settings";
 
 const queryClient = new QueryClient();
 
@@ -45,7 +50,12 @@ const App = () => (
           <Route path="/app" element={<AppLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="onboarding" element={<Onboarding />} />
+            <Route path="stores" element={<StoreList />} />
             <Route path="stores/:storeId" element={<StoreWorkspace />} />
+            <Route path="ai-vision" element={<AIVisionJobs />} />
+            <Route path="routing" element={<OrderRoutingManager />} />
+            <Route path="suppliers" element={<Suppliers />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
