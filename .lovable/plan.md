@@ -1,84 +1,86 @@
 
 
-# AI Discovery, Package Tiers, Bulk Selection & Image Fix
+# Marketing Website Refresh — Align with Current Product
 
-## Problems
+## Why This Is Needed
 
-1. **Broken product images** — The `styleImage` URLs use Unsplash links that render as alt-text (screenshot shows "Performance Polo" text instead of image). The `<img>` tags lack `crossOrigin` and the URLs may be blocked or malformed in the preview iframe context.
-2. **AI gives only 2 recommendations** — The `verticalKeywords` mapping for "corporate" only has 3 queries (`polo`, `jacket`, `quarter zip pullover`) which match only 2-3 products from 12 mock items. Other verticals fare better but the AI does not do any discovery.
-3. **No discovery questions** — The AI Merch Advisor immediately jumps to recommendations without asking about goals, target audience, city/weather, budget, or preferred styles.
-4. **No package tiers** — There is no concept of Package A (10 items), B (25), C (40), or Enterprise (40+). The flow allows unlimited selection.
-5. **No bulk color/size selection** — The `ProductDetailModal` tracks `selectedColor` and `selectedSizes` locally but these selections are never saved back to the parent component. There is no "Select All Colors" button and no way to apply color/size selections in bulk across items or categories.
+The marketing website was written before the onboarding product was built. Now that the actual system has AI discovery conversations, package tiers (A/B/C/Enterprise), bulk variant selection, and a real catalog flow, the marketing pages are stale in several ways:
+
+**Mismatches identified:**
+
+1. **Hero section** — Background uses an Unsplash image that may not load (same issue as product images). The dashboard mockup shows "12 Active" stores and "AI handling 47 conversations" which are generic placeholders, not reflective of the actual product UI.
+
+2. **StoreBuilderJourney demo** — Shows a simplified 4-step flow (org type, 4 emoji products, 3 themes, go live). The real product now has: AI discovery questions (purpose, audience, city/weather, budget), package tier selection, real catalog with images/colors/sizes, bulk variant selection, and 3-mode theme picker (presets, custom colors, AI scrape). The demo should reflect these.
+
+3. **AISuggestionsDemo** — Shows only 2 chat messages and 3 hardcoded results. The real AI Merch Advisor now asks 4 discovery questions before recommending products. The demo should show the conversation flow.
+
+4. **Navbar** — Missing links to AI Suggestions, Multi-Store, KPI Reports, and Site Migration feature pages. Only 6 nav links vs 11 feature pages.
+
+5. **IntroSection** — Uses Unsplash image. Per brand guidelines, should use industry-specific imagery (screen printing, embroidery). The "100% Autopilot" messaging is fine but doesn't mention the new package tiers or AI discovery.
+
+6. **IntroducingSection** — Uses Unsplash image at bottom. Feature cards don't mention AI Merch Advisor or package tiers.
+
+7. **Footer copyright** — Says "© 2024" but current date is 2026.
+
+8. **Feature pages** — The Store Builder, AI Suggestions, and Reporting feature pages use static descriptions. Their interactive demos could be updated to reflect the new discovery flow and package selection, but this is lower priority.
+
+9. **No "Pricing" or "Packages" section** — The landing page has no mention of Package A/B/C tiers, which is now a core part of the product.
 
 ## Plan
 
-### 1. Fix Product Images
-Replace Unsplash URLs with reliable placeholder images using a deterministic service (e.g., `https://placehold.co/400x400/hex/text` or inline SVG data URIs per category). This ensures images always load in any context. Alternatively, add `crossOrigin="anonymous"` and verify Unsplash URLs work — but placehold.co is more reliable for demo.
+### 1. Fix Unsplash Images Across All Landing Components
+Replace all `images.unsplash.com` URLs with reliable `placehold.co` placeholders styled to the brand (orange/navy). Affected files:
+- `Hero.tsx` (background image)
+- `IntroSection.tsx` (screen printing image)
+- `IntroducingSection.tsx` (bottom banner image)
 
-**File:** `src/lib/api/ssProducts.ts` — swap all `styleImage` URLs
+### 2. Update StoreBuilderJourney Demo
+Rewrite the demo to match the real product flow with these steps:
+1. **Discovery** — AI asks purpose, audience, city, budget (animated chat bubbles)
+2. **Package Selection** — Show A/B/C/Enterprise cards with item limits
+3. **AI Catalog** — Show products with images, color swatches, and size badges (not emojis)
+4. **Theme & Launch** — 3-mode theme picker preview
 
-### 2. AI Discovery Conversation Flow
-Rewrite the `handleDetailsNext` sequence and `getBotResponse` to implement a multi-step discovery before showing products:
+Update `StoreBuilderJourney.tsx` with new steps array, new mock data, and updated auto-play timings.
 
-**Step 1:** "What's the purpose of this store?" (e.g., team uniforms, fundraiser, corporate gifts, event merch)
-**Step 2:** "Who's your target audience?" (employees, students, fans, general public)
-**Step 3:** "What city/region? I'll factor in climate." (free text — bot responds with weather-appropriate suggestions like "Dallas gets hot — I'll prioritize moisture-wicking and lightweight items")
-**Step 4:** "Any budget range per item?" (under $15, $15-25, $25-50, no limit)
+### 3. Update AISuggestionsDemo
+Expand the chat to show the 4-step discovery conversation before recommendations. Show 5-8 product results instead of 3 to reflect the package-tier-appropriate count.
 
-After collecting answers, the bot says "Based on your input, here are my picks for [vertical] in [city]..." and loads the catalog filtered accordingly. Add `discoveryAnswers` state to track responses and a `discoveryStep` counter.
+Update `AISuggestionsDemo.tsx`.
 
-**File:** `src/components/app/onboarding/CreateStoreStep.tsx` — rewrite chat intro sequence, add discovery state, update `getBotResponse`
+### 4. Add Pricing/Packages Section to Landing Page
+Create a new `PackagesSection.tsx` component showing the 4 tiers (Starter 10 items, Growth 25, Pro 40, Enterprise 40+) with feature comparison. Add it to `Index.tsx` between `SeamlessSection` and `ConnectSection`.
 
-### 3. Package Tier Selection & Enforcement
-Add a package selection step at the start of the catalog phase (or as a sub-phase):
+### 5. Update Navbar
+Add a "Features" dropdown or expand links to include AI Suggestions and the most important feature pages. Keep it clean — group under a dropdown if needed.
 
-| Package | Items | Label |
-|---------|-------|-------|
-| A — Starter | Up to 10 | $X/mo |
-| B — Growth | Up to 25 | $Y/mo |
-| C — Pro | Up to 40 | $Z/mo |
-| Enterprise | 40+ | Custom pricing |
+Update `Navbar.tsx`.
 
-- Show package cards with item limits
-- Display a counter badge: "8 of 10 selected (Package A)"
-- **Soft warning**: When user exceeds their package limit, show a yellow banner: "You've selected X items — this exceeds Package A (10). Consider upgrading to Package B."
-- **Enterprise**: When selecting 40+, show a modal: "Enterprise pricing requires approval. Submit a request and we'll get back to you within 24 hours." Block the "Continue" button until approved or until they reduce below 40.
+### 6. Fix Footer Copyright Year
+Change "© 2024" to "© 2026" in `Footer.tsx`.
 
-Add `selectedPackage` state and `packageLimits` constant. The warning/upgrade prompt is non-blocking per user preference.
+### 7. Update Hero Copy & Mockup
+- Refresh the dashboard mockup to show package badges and the AI discovery flow preview
+- Update quick stats to reference package tiers or real metrics
 
-**Files:** `src/components/app/onboarding/CreateStoreStep.tsx` — add package selection UI before catalog grid, enforce limits with soft warning and enterprise approval modal
+Update `Hero.tsx`.
 
-### 4. Color & Size Selection — Bulk Operations
-Redesign variant selection to be persistent and support bulk operations:
+### 8. Update IntroducingSection Feature Cards
+Add "AI Merch Advisor" as a feature card (replacing or supplementing "Customer Portal") and mention package-based stores.
 
-**A. Track selections per product:**
-Add a new type `ProductVariantSelection` = `{ styleID: number; colors: string[]; sizes: string[] }`. Store as a `Map<number, ProductVariantSelection>` in `CreateStoreStep` state. Pass to `ProductDetailModal` as props and save back on change.
-
-**B. "Select All Colors" in ProductDetailModal:**
-Add a toggle next to the color swatches (matching the existing "Select All" for sizes).
-
-**C. Bulk selection toolbar:**
-Add a floating action bar when 1+ items are selected:
-- "Set Colors & Sizes for Selected" — opens a modal with all available colors/sizes across selected items, lets user pick once, applies to all
-- "Apply to Category" — dropdown to apply current color/size config to all items in a category
-- "Apply to All" — applies to every selected item
-
-**Files:**
-- `src/components/app/onboarding/CreateStoreStep.tsx` — add `variantSelections` state, bulk toolbar component
-- `src/components/app/onboarding/ProductDetailModal.tsx` — accept `selectedColors`/`selectedSizes` as props, add "Select All Colors", fire `onVariantChange` callback
-- New: `src/components/app/onboarding/BulkVariantModal.tsx` — modal for bulk color/size selection across multiple items
-
-### 5. Improve Recommendation Count
-Expand `verticalKeywords` to include more search terms per vertical so every vertical returns 8-12 results from the 12-item mock catalog. Also auto-select up to the package limit (not hardcoded 8).
-
-**File:** `src/lib/api/ssProducts.ts` — expand keyword lists
+Update `IntroducingSection.tsx`.
 
 ## Files Summary
 
-| File | Action |
+| File | Change |
 |------|--------|
-| `src/lib/api/ssProducts.ts` | Fix image URLs, expand vertical keywords |
-| `src/components/app/onboarding/CreateStoreStep.tsx` | Major: add discovery flow, package tier selection, bulk variant toolbar, fix recommendation count |
-| `src/components/app/onboarding/ProductDetailModal.tsx` | Accept variant props, add "Select All Colors", fire change callback |
-| New: `src/components/app/onboarding/BulkVariantModal.tsx` | Bulk color/size selection modal |
+| `src/components/landing/Hero.tsx` | Fix image, update mockup and stats |
+| `src/components/landing/IntroSection.tsx` | Fix image |
+| `src/components/landing/IntroducingSection.tsx` | Fix image, update feature cards |
+| `src/components/landing/Navbar.tsx` | Add features dropdown |
+| `src/components/landing/Footer.tsx` | Fix copyright year |
+| `src/components/features/StoreBuilderJourney.tsx` | Major rewrite to match real flow |
+| `src/components/features/AISuggestionsDemo.tsx` | Expand discovery conversation |
+| New: `src/components/landing/PackagesSection.tsx` | Package tier cards |
+| `src/pages/Index.tsx` | Add PackagesSection |
 
