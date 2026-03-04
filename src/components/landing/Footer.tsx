@@ -65,7 +65,7 @@ export const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-secondary-foreground/50">
-              © 2024 Brand-Shop.AI. All rights reserved.
+              © 2026 Brand-Shop.AI. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <a href="#" className="text-sm text-secondary-foreground/50 hover:text-primary transition-colors">Terms of Use</a>

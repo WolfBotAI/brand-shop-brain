@@ -15,12 +15,16 @@ export const IntroSection = () => {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-card">
-              <img 
-                src="https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&q=80" 
-                alt="Screen printing custom apparel"
-                className="w-full h-full object-cover"
-              />
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-card flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--secondary)))' }}
+            >
+              <div className="text-center p-8">
+                <div className="w-20 h-20 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <ArrowRight className="w-10 h-10 text-primary" />
+                </div>
+                <p className="text-lg font-bold text-foreground">AI-Powered Discovery</p>
+                <p className="text-sm text-muted-foreground mt-1">Purpose · Audience · Climate · Budget</p>
+              </div>
             </div>
             {/* Floating badge */}
             <motion.div
@@ -44,19 +48,19 @@ export const IntroSection = () => {
             className="lg:pl-8"
           >
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Eliminate Customer Support.{" "}
-              <span className="text-primary">Increase Revenue.</span>
+              AI Discovers. AI Recommends.{" "}
+              <span className="text-primary">You Grow.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Your clients get AI-powered stores that run themselves. 
-              You get growth without the overhead.
+              The AI Merch Advisor asks about purpose, audience, climate, and budget — 
+              then recommends the perfect products with flexible package tiers.
             </p>
             <ul className="space-y-4 mb-8">
               {[
-                "Your clients build stores guided by AI or from themes you configure",
-                "Every store includes AI Chat + Voice handling tracking, support, and returns",
-                "Available via SMS, Email, Facebook Messenger, Instagram Messenger",
-                "Zero support tickets. 100% autopilot.",
+                "AI asks 4 discovery questions before recommending products",
+                "Package tiers: Starter (10), Growth (25), Pro (40), Enterprise (40+)",
+                "Every store includes AI Chat + Voice for tracking, support, and returns",
+                "Bulk color & size selection across your entire catalog",
               ].map((item, index) => (
                 <motion.li 
                   key={index}
