@@ -59,6 +59,7 @@ export const CTASection = () => {
             <Button 
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-7 text-xl rounded-full group shadow-lg"
+              onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Book a Demo
               <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
@@ -67,6 +68,7 @@ export const CTASection = () => {
               size="lg"
               variant="ctaOutlineDark"
               className="px-12 py-7 text-xl rounded-full"
+              onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
             >
               See How It Works
             </Button>

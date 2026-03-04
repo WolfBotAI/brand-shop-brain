@@ -28,6 +28,7 @@ export const FeatureCTA = ({ title, description }: FeatureCTAProps) => {
             <Button 
               size="lg" 
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
+              onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Book Demo
               <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
@@ -36,6 +37,7 @@ export const FeatureCTA = ({ title, description }: FeatureCTAProps) => {
               size="lg" 
               variant="ctaOutlineSecondary"
               className="px-8 py-6 text-lg rounded-full"
+              onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Contact Sales
             </Button>
