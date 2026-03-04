@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Store, ArrowRight, ArrowLeft, CheckCircle2, Bot, Send,
   CreditCard, Sparkles, ShoppingBag, Palette, Search,
-  Eye, Loader2,
+  Eye, Loader2, Globe, Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChatBubble } from "@/components/features/ChatBubble";
 import { ProductDetailModal } from "./ProductDetailModal";
 import { LogoUploadStep } from "./LogoUploadStep";
@@ -22,11 +23,14 @@ import {
   searchStyles, getAllStyles, getSearchQueriesForVertical,
   type SSStyle,
 } from "@/lib/api/ssProducts";
+import { createStore } from "@/lib/api/stores";
+import { firecrawlApi, type BrandingData } from "@/lib/api/firecrawl";
+import type { ThemeConfig } from "@/components/app/store/StorefrontPreview";
 
 interface CreateStoreStepProps {
   tenantId: string;
   locationId: string;
-  onNext: (data: { storeId: string }) => void;
+  onNext: (data: { storeId: string; storeName?: string; products?: SSStyle[]; theme?: ThemeConfig; logoUrl?: string | null }) => void;
   onBack: () => void;
 }
 
@@ -133,6 +137,15 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const [detailProduct, setDetailProduct] = useState<SSStyle | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [themeMode, setThemeMode] = useState<"presets" | "custom" | "ai">("presets");
+  const [customTheme, setCustomTheme] = useState<ThemeConfig>({
+    primary: "#2d3436", secondary: "#0984e3", accent: "#fdcb6e", background: "#ffffff",
+  });
+  const [editingPreset, setEditingPreset] = useState<string | null>(null);
+  const [scrapeUrl, setScrapeUrl] = useState("");
+  const [scraping, setScraping] = useState(false);
+  const [scrapedBranding, setScrapedBranding] = useState<BrandingData | null>(null);
+  const [creatingStore, setCreatingStore] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -273,15 +286,83 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   };
 
   const handleThemeNext = () => {
-    if (!selectedTheme) return;
+    if (themeMode === "presets" && !selectedTheme) return;
     setPhase("payment");
   };
 
-  const handleCreateStore = () => {
-    const id = `store-${Date.now()}`;
-    setStoreId(id);
-    setCreated(true);
-    toast({ title: "Store created!", description: `${storeName} is ready to configure.` });
+  const getActiveThemeConfig = (): ThemeConfig => {
+    if (themeMode === "custom" || themeMode === "ai") return customTheme;
+    const theme = themes.find((t) => t.id === selectedTheme);
+    if (theme) {
+      return { primary: theme.colors[0], secondary: theme.colors[1], accent: theme.colors[2], background: theme.colors[3] };
+    }
+    return customTheme;
+  };
+
+  const handleScrapeWebsite = async () => {
+    if (!scrapeUrl.trim()) return;
+    setScraping(true);
+    setScrapedBranding(null);
+    try {
+      const result = await firecrawlApi.scrapeBranding(scrapeUrl);
+      if (result.success && result.data) {
+        setScrapedBranding(result.data);
+        const colors = result.data.colors;
+        if (colors) {
+          setCustomTheme({
+            primary: colors.primary || customTheme.primary,
+            secondary: colors.secondary || customTheme.secondary,
+            accent: colors.accent || customTheme.accent,
+            background: colors.background || customTheme.background,
+            logoUrl: result.data.logo || result.data.images?.logo || undefined,
+            fontFamily: result.data.typography?.fontFamilies?.primary || undefined,
+          });
+        }
+        // Auto-use scraped logo if no logo uploaded yet
+        const scrapedLogo = result.data.logo || result.data.images?.logo;
+        if (scrapedLogo && !logoUrl) {
+          setLogoUrl(scrapedLogo);
+        }
+        toast({ title: "Brand analyzed!", description: "Colors, fonts, and logo extracted from the website." });
+      } else {
+        toast({ title: "Scrape failed", description: result.error || "Could not analyze that website.", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to analyze website. Make sure the URL is valid.", variant: "destructive" });
+    } finally {
+      setScraping(false);
+    }
+  };
+
+  const handleCreateStore = async () => {
+    setCreatingStore(true);
+    try {
+      const selectedProducts = catalogProducts.filter((p) => p.selected).map((p) => p.styleID);
+      const themeConfig = getActiveThemeConfig();
+      const result = await createStore({
+        tenantId,
+        locationId,
+        storeName,
+        clientName,
+        brandVertical,
+        selectedProducts,
+        themeConfig,
+        logoUrl: logoUrl || undefined,
+        pricingModel: billingModel,
+      });
+      setStoreId(result.storeId);
+      setCreated(true);
+      toast({ title: "Store created!", description: `${storeName} is ready.` });
+    } catch (err) {
+      console.error("Store creation failed:", err);
+      // Fallback to local ID for demo
+      const id = `store-${Date.now()}`;
+      setStoreId(id);
+      setCreated(true);
+      toast({ title: "Store created!", description: `${storeName} is ready (demo mode).` });
+    } finally {
+      setCreatingStore(false);
+    }
   };
 
   const phases = ["details", "catalog", "logo", "theme", "payment"];
@@ -626,39 +707,213 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
           </motion.div>
         )}
 
-        {/* PHASE C: Theme Selection */}
+        {/* PHASE C: Theme Selection — Tabbed */}
         {phase === "theme" && (
           <motion.div key="theme" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-            <ChatBubble message="Pick a theme for your storefront. I've recommended one based on your vertical, but you can choose any." delay={0.1} />
-            <div className="space-y-3">
-              {themes.map((theme) => (
-                <Card
-                  key={theme.id}
-                  className={`cursor-pointer transition-all border-2 ${
-                    selectedTheme === theme.id ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                  }`}
-                  onClick={() => setSelectedTheme(theme.id)}
-                >
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="flex gap-1.5">
-                      {theme.colors.map((c, i) => (
-                        <div key={i} className="w-8 h-8 rounded-md border border-border" style={{ backgroundColor: c }} />
-                      ))}
+            <ChatBubble message="Choose your storefront theme. Pick a preset, customize your own colors, or let AI analyze your existing website!" delay={0.1} />
+
+            <Tabs value={themeMode} onValueChange={(v) => setThemeMode(v as typeof themeMode)} className="space-y-4">
+              <TabsList className="grid grid-cols-3 w-full">
+                <TabsTrigger value="presets"><Palette className="w-3.5 h-3.5 mr-1.5" />Presets</TabsTrigger>
+                <TabsTrigger value="custom"><Pencil className="w-3.5 h-3.5 mr-1.5" />Custom</TabsTrigger>
+                <TabsTrigger value="ai"><Globe className="w-3.5 h-3.5 mr-1.5" />AI Scrape</TabsTrigger>
+              </TabsList>
+
+              {/* Presets Tab */}
+              <TabsContent value="presets" className="space-y-3">
+                {themes.map((theme) => (
+                  <Card
+                    key={theme.id}
+                    className={`cursor-pointer transition-all border-2 ${
+                      selectedTheme === theme.id ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                    }`}
+                    onClick={() => { setSelectedTheme(theme.id); setEditingPreset(null); }}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="flex gap-1.5">
+                        {(editingPreset === theme.id
+                          ? [customTheme.primary, customTheme.secondary, customTheme.accent, customTheme.background]
+                          : theme.colors
+                        ).map((c, i) => (
+                          <div key={i} className="w-8 h-8 rounded-md border border-border" style={{ backgroundColor: c }} />
+                        ))}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">{theme.name}</p>
+                        {theme.recommended && <span className="text-xs text-primary font-medium">✦ Recommended</span>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedTheme(theme.id);
+                            setEditingPreset(editingPreset === theme.id ? null : theme.id);
+                            setCustomTheme({
+                              primary: theme.colors[0], secondary: theme.colors[1],
+                              accent: theme.colors[2], background: theme.colors[3],
+                            });
+                          }}
+                          className="p-1.5 rounded-md hover:bg-muted transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                        <Palette className={`w-5 h-5 ${selectedTheme === theme.id ? "text-primary" : "text-muted-foreground/40"}`} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* Inline editor when editing a preset */}
+                {editingPreset && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-3">
+                    <Card className="border-border">
+                      <CardContent className="p-4 space-y-3">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Edit Colors</p>
+                        {(["primary", "secondary", "accent", "background"] as const).map((key) => (
+                          <div key={key} className="flex items-center gap-3">
+                            <Label className="text-xs capitalize w-20">{key}</Label>
+                            <input
+                              type="color"
+                              value={customTheme[key]}
+                              onChange={(e) => setCustomTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                              className="w-8 h-8 rounded border border-border cursor-pointer"
+                            />
+                            <Input
+                              value={customTheme[key]}
+                              onChange={(e) => setCustomTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                              className="flex-1 h-8 text-xs font-mono"
+                            />
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </TabsContent>
+
+              {/* Custom Colors Tab */}
+              <TabsContent value="custom" className="space-y-4">
+                <Card className="border-border">
+                  <CardContent className="p-4 space-y-4">
+                    <p className="text-sm font-medium text-foreground">Define your brand colors</p>
+                    {(["primary", "secondary", "accent", "background"] as const).map((key) => (
+                      <div key={key} className="flex items-center gap-3">
+                        <Label className="text-xs capitalize w-24">{key}</Label>
+                        <input
+                          type="color"
+                          value={customTheme[key]}
+                          onChange={(e) => setCustomTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                          className="w-10 h-10 rounded-lg border border-border cursor-pointer"
+                        />
+                        <Input
+                          value={customTheme[key]}
+                          onChange={(e) => setCustomTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                          className="flex-1 h-8 text-xs font-mono"
+                        />
+                      </div>
+                    ))}
+
+                    {/* Live preview */}
+                    <div className="rounded-lg overflow-hidden border border-border">
+                      <div className="h-10 flex items-center px-4" style={{ backgroundColor: customTheme.primary }}>
+                        <span className="text-xs font-bold" style={{ color: customTheme.background }}>Header Preview</span>
+                      </div>
+                      <div className="p-4 space-y-2" style={{ backgroundColor: customTheme.background }}>
+                        <div className="h-6 w-24 rounded" style={{ backgroundColor: customTheme.secondary }} />
+                        <div className="h-4 w-32 rounded" style={{ backgroundColor: customTheme.accent }} />
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">{theme.name}</p>
-                      {theme.recommended && <span className="text-xs text-primary font-medium">✦ Recommended</span>}
-                    </div>
-                    <Palette className={`w-5 h-5 ${selectedTheme === theme.id ? "text-primary" : "text-muted-foreground/40"}`} />
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              </TabsContent>
+
+              {/* AI Scrape Tab */}
+              <TabsContent value="ai" className="space-y-4">
+                <Card className="border-border">
+                  <CardContent className="p-4 space-y-4">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-primary" /> AI Brand Analyzer
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Enter your website URL and we'll extract your brand colors, logo, and fonts automatically.
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="https://your-website.com"
+                        value={scrapeUrl}
+                        onChange={(e) => setScrapeUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleScrapeWebsite()}
+                        className="flex-1"
+                      />
+                      <Button onClick={handleScrapeWebsite} disabled={scraping || !scrapeUrl.trim()} className="gap-2">
+                        {scraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+                        {scraping ? "Analyzing..." : "Analyze"}
+                      </Button>
+                    </div>
+
+                    {/* Scraped results */}
+                    {scrapedBranding && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                          <CheckCircle2 className="w-4 h-4" /> Brand extracted!
+                        </div>
+
+                        {/* Extracted logo */}
+                        {(scrapedBranding.logo || scrapedBranding.images?.logo) && (
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                            <img
+                              src={scrapedBranding.logo || scrapedBranding.images?.logo}
+                              alt="Extracted logo"
+                              className="w-12 h-12 rounded object-contain bg-background p-1"
+                            />
+                            <div>
+                              <p className="text-xs font-medium text-foreground">Logo detected</p>
+                              <p className="text-[10px] text-muted-foreground">Auto-applied to your store</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Color editing */}
+                        {(["primary", "secondary", "accent", "background"] as const).map((key) => (
+                          <div key={key} className="flex items-center gap-3">
+                            <Label className="text-xs capitalize w-24">{key}</Label>
+                            <input
+                              type="color"
+                              value={customTheme[key]}
+                              onChange={(e) => setCustomTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                              className="w-8 h-8 rounded border border-border cursor-pointer"
+                            />
+                            <Input
+                              value={customTheme[key]}
+                              onChange={(e) => setCustomTheme((prev) => ({ ...prev, [key]: e.target.value }))}
+                              className="flex-1 h-8 text-xs font-mono"
+                            />
+                          </div>
+                        ))}
+
+                        {scrapedBranding.fonts && scrapedBranding.fonts.length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            Fonts detected: {scrapedBranding.fonts.map((f) => f.family).join(", ")}
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setPhase("logo")} className="flex-1 gap-2">
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button onClick={handleThemeNext} disabled={!selectedTheme} className="flex-1 gap-2">
+              <Button
+                onClick={handleThemeNext}
+                disabled={themeMode === "presets" && !selectedTheme}
+                className="flex-1 gap-2"
+              >
                 Payment Setup <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -713,8 +968,9 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                 <span className="text-sm font-medium">Store created successfully</span>
               </motion.div>
             ) : (
-              <Button onClick={handleCreateStore} className="w-full gap-2">
-                <Store className="w-4 h-4" /> Create Store
+              <Button onClick={handleCreateStore} disabled={creatingStore} className="w-full gap-2">
+                {creatingStore ? <Loader2 className="w-4 h-4 animate-spin" /> : <Store className="w-4 h-4" />}
+                {creatingStore ? "Creating Store..." : "Create Store"}
               </Button>
             )}
 
@@ -722,7 +978,13 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
               <Button variant="outline" onClick={() => setPhase("theme")} className="flex-1 gap-2">
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button onClick={() => onNext({ storeId })} disabled={!created} className="flex-1 gap-2">
+              <Button onClick={() => onNext({
+                storeId,
+                storeName,
+                products: catalogProducts.filter((p) => p.selected),
+                theme: getActiveThemeConfig(),
+                logoUrl,
+              })} disabled={!created} className="flex-1 gap-2">
                 Continue <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

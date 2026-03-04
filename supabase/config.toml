@@ -1,1 +1,4 @@
-project_id = "zqjfpolkmfzzgszmlifq"
+# Supabase Edge Functions config
+
+[functions.firecrawl-scrape]
+verify_jwt = false

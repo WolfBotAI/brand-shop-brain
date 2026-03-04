@@ -8,6 +8,8 @@ import { WolfBotConnectStep } from "@/components/app/onboarding/WolfBotConnectSt
 import { SupplierStep } from "@/components/app/onboarding/SupplierStep";
 import { CreateStoreStep } from "@/components/app/onboarding/CreateStoreStep";
 import { CompletionStep } from "@/components/app/onboarding/CompletionStep";
+import type { ThemeConfig } from "@/components/app/store/StorefrontPreview";
+import type { SSStyle } from "@/lib/api/ssProducts";
 
 const steps = [
   { title: "Welcome", icon: Rocket },
@@ -22,8 +24,11 @@ const Onboarding = () => {
   const [tenantId, setTenantId] = useState("");
   const [locationId, setLocationId] = useState("");
   const [storeId, setStoreId] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [storeProducts, setStoreProducts] = useState<SSStyle[]>([]);
+  const [storeTheme, setStoreTheme] = useState<ThemeConfig | undefined>();
+  const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
 
-  // Only allow clicking completed steps (no skipping ahead)
   const handleStepClick = (step: number) => {
     if (step < currentStep) setCurrentStep(step);
   };
@@ -33,7 +38,6 @@ const Onboarding = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="mb-6 space-y-2">
           <h1 className="text-3xl font-bold text-foreground">Get Started</h1>
           <div className="flex items-center gap-4">
@@ -45,7 +49,6 @@ const Onboarding = () => {
         </div>
 
         <div className="grid md:grid-cols-[260px_1fr] gap-8">
-          {/* Sidebar steps */}
           <div className="hidden md:block">
             <StepIndicator
               steps={steps}
@@ -54,7 +57,6 @@ const Onboarding = () => {
             />
           </div>
 
-          {/* Step content */}
           <div className="min-h-[500px]">
             <AnimatePresence mode="wait">
               {currentStep === 0 && (
@@ -86,13 +88,24 @@ const Onboarding = () => {
                   locationId={locationId}
                   onNext={(data) => {
                     setStoreId(data.storeId);
+                    if (data.storeName) setStoreName(data.storeName);
+                    if (data.products) setStoreProducts(data.products);
+                    if (data.theme) setStoreTheme(data.theme);
+                    if (data.logoUrl !== undefined) setStoreLogoUrl(data.logoUrl);
                     setCurrentStep(4);
                   }}
                   onBack={() => setCurrentStep(2)}
                 />
               )}
               {currentStep === 4 && (
-                <CompletionStep key="complete" storeId={storeId} />
+                <CompletionStep
+                  key="complete"
+                  storeId={storeId}
+                  storeName={storeName}
+                  products={storeProducts}
+                  theme={storeTheme}
+                  logoUrl={storeLogoUrl}
+                />
               )}
             </AnimatePresence>
           </div>
