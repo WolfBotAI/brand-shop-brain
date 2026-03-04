@@ -26,21 +26,9 @@ export const SupplierStep = ({ tenantId, onNext, onBack }: SupplierStepProps) =>
   const [advancedConnected, setAdvancedConnected] = useState(false);
   const { toast } = useToast();
 
-  const handleConnectCatalog = async () => {
-    setLoading(true);
-    try {
-      await createSupplierAccount({
-        tenantId,
-        supplier: "brand-shop",
-        credentials: {},
-      });
-      setConnected(true);
-      toast({ title: "Catalog connected!", description: "Brand-Shop Catalog is now active on your account." });
-    } catch (err: any) {
-      toast({ title: "Connection failed", description: err.message || "Please try again.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+  const handleConnectCatalog = () => {
+    setConnected(true);
+    toast({ title: "Catalog activated!", description: "Brand-Shop Catalog is now active on your account." });
   };
 
   const handleConnectAdvanced = async () => {
@@ -194,7 +182,7 @@ export const SupplierStep = ({ tenantId, onNext, onBack }: SupplierStepProps) =>
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">Back</Button>
-        <Button onClick={onNext} disabled={!connected} className="flex-1 gap-2">
+        <Button onClick={onNext} className="flex-1 gap-2">
           Continue <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
