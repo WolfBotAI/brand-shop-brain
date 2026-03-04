@@ -57,12 +57,14 @@ export const CTASection = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Button 
+              asChild
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-7 text-xl rounded-full group shadow-lg"
-              onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Book a Demo
-              <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
+              <a href="/assessment">
+                Take the Assessment
+                <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
+              </a>
             </Button>
             <Button 
               size="lg"

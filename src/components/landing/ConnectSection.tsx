@@ -16,62 +16,23 @@ export const ConnectSection = () => {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            {/* Hub Container - Grid Layout */}
+            {/* Hub Container */}
             <div className="relative w-80 h-80 mx-auto">
-              {/* Connection Lines SVG - Behind everything */}
-              <svg 
-                className="absolute inset-0 w-full h-full" 
-                viewBox="0 0 320 320"
-                style={{ zIndex: 0 }}
-              >
-                {/* Top-left line (AI Chat to Center) - node center at 40,40 */}
-                <motion.line
-                  x1="40" y1="40"
-                  x2="160" y2="160"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="2"
-                  strokeDasharray="6 4"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 0.5 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                />
-                {/* Top-right line (AI Voice to Center) - node center at 280,40 */}
-                <motion.line
-                  x1="280" y1="40"
-                  x2="160" y2="160"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="2"
-                  strokeDasharray="6 4"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 0.5 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                />
-                {/* Bottom-left line (AI Vision to Center) - node center at 40,280 */}
-                <motion.line
-                  x1="40" y1="280"
-                  x2="160" y2="160"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="2"
-                  strokeDasharray="6 4"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 0.5 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
-                />
-                {/* Bottom-right line (Web Widget to Center) - node center at 280,280 */}
-                <motion.line
-                  x1="280" y1="280"
-                  x2="160" y2="160"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="2"
-                  strokeDasharray="6 4"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 0.5 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
-                />
+              {/* Connection Lines SVG */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 320 320" style={{ zIndex: 0 }}>
+                {[{ x1: 40, y1: 40 }, { x1: 280, y1: 40 }, { x1: 40, y1: 280 }, { x1: 280, y1: 280 }].map((line, i) => (
+                  <motion.line
+                    key={i}
+                    x1={line.x1} y1={line.y1} x2="160" y2="160"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="2"
+                    strokeDasharray="6 4"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    whileInView={{ pathLength: 1, opacity: 0.5 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: 0.3 + i * 0.1 }}
+                  />
+                ))}
               </svg>
 
               {/* Center AI Agent Hub */}
@@ -85,14 +46,14 @@ export const ConnectSection = () => {
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="text-center"
+                  className="flex flex-col items-center justify-center"
                 >
-                  <Bot className="w-8 h-8 text-primary-foreground mx-auto mb-1" />
-                  <span className="text-primary-foreground font-bold text-xs">AI Agent</span>
+                  <Bot className="w-8 h-8 text-primary-foreground" />
+                  <span className="text-primary-foreground font-bold text-xs mt-0.5">AI Agent</span>
                 </motion.div>
               </motion.div>
 
-              {/* AI Chat - Top Left */}
+              {/* AI Conversations - Top Left */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -101,9 +62,9 @@ export const ConnectSection = () => {
                 className="absolute top-0 left-0 z-10"
               >
                 <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <MessageSquare className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] font-medium text-foreground mt-1">AI Chat</span>
-                  <span className="text-[8px] text-muted-foreground">Live Support</span>
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  <span className="text-[9px] font-bold text-foreground mt-0.5 leading-tight text-center">AI Conversations</span>
+                  <span className="text-[7px] text-muted-foreground leading-tight text-center">Web · SMS · Email · FB · IG</span>
                 </div>
               </motion.div>
 
@@ -116,9 +77,9 @@ export const ConnectSection = () => {
                 className="absolute top-0 right-0 z-10"
               >
                 <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Phone className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] font-medium text-foreground mt-1">AI Voice</span>
-                  <span className="text-[8px] text-muted-foreground">Phone Calls</span>
+                  <Phone className="w-5 h-5 text-primary" />
+                  <span className="text-[9px] font-bold text-foreground mt-0.5">AI Voice</span>
+                  <span className="text-[7px] text-muted-foreground">Phone Calls</span>
                 </div>
               </motion.div>
 
@@ -131,13 +92,13 @@ export const ConnectSection = () => {
                 className="absolute bottom-0 left-0 z-10"
               >
                 <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Eye className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] font-medium text-foreground mt-1">AI Vision</span>
-                  <span className="text-[8px] text-muted-foreground">PO Extraction</span>
+                  <Eye className="w-5 h-5 text-primary" />
+                  <span className="text-[9px] font-bold text-foreground mt-0.5">AI Vision</span>
+                  <span className="text-[7px] text-muted-foreground">PO Extraction</span>
                 </div>
               </motion.div>
 
-              {/* Web Widget - Bottom Right */}
+              {/* AI Web Widget - Bottom Right */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -146,9 +107,9 @@ export const ConnectSection = () => {
                 className="absolute bottom-0 right-0 z-10"
               >
                 <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Globe className="w-6 h-6 text-primary" />
-                  <span className="text-[10px] font-medium text-foreground mt-1">Web Widget</span>
-                  <span className="text-[8px] text-muted-foreground">Any Website</span>
+                  <Globe className="w-5 h-5 text-primary" />
+                  <span className="text-[9px] font-bold text-foreground mt-0.5">AI Web Widget</span>
+                  <span className="text-[7px] text-muted-foreground">Embed on Any Site</span>
                 </div>
               </motion.div>
             </div>
@@ -166,15 +127,15 @@ export const ConnectSection = () => {
               <span className="text-primary">You Do Nothing.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-6">
-              AI Chat, Voice, and Vision handle every customer interaction. 
-              Your clients get 24/7 support — you never lift a finger.
+              AI Conversations, Voice, and Vision handle every customer interaction 
+              across every channel — 24/7.
             </p>
             <ul className="space-y-4 mb-8">
               {[
-                "AI Chat answers questions, tracks orders, handles returns",
+                "AI Conversations handles web chat, SMS, email, Facebook & Instagram",
                 "AI Voice takes phone calls with real-time order lookups",
                 "AI Vision reads POs, PDFs, and handwritten notes automatically",
-                "Deploy on any website in minutes with a single line of code",
+                "Our certified decorator network ensures quality and tracking",
               ].map((item, index) => (
                 <motion.li
                   key={index}
