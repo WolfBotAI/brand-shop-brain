@@ -5,17 +5,17 @@ const features = [
   {
     icon: Store,
     title: "AI Store Builder",
-    description: "Your clients build their own stores guided by AI or choose from themes you pre-select",
+    description: "AI asks discovery questions, then builds stores with the right products for each client's audience and budget",
   },
   {
     icon: Bot,
-    title: "Built-in AI Support",
-    description: "Every store includes AI Chat & Voice for tracking, support, and returns — you do nothing",
+    title: "AI Merch Advisor",
+    description: "4-step discovery: purpose, audience, climate, budget — then personalized product recommendations from your catalog",
   },
   {
     icon: Users,
-    title: "Customer Portal",
-    description: "Clients manage orders, billing, and catalogs themselves with AI guidance",
+    title: "Package Tiers",
+    description: "Starter (10 items), Growth (25), Pro (40), Enterprise (40+) — clients pick a tier, AI fills the catalog",
   },
   {
     icon: Route,
@@ -81,12 +81,13 @@ export const IntroducingSection = () => {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="mt-16"
         >
-          <div className="aspect-[21/9] rounded-2xl overflow-hidden bg-secondary">
-            <img 
-              src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=1600&q=80" 
-              alt="Custom branded apparel and merchandise"
-              className="w-full h-full object-cover opacity-80"
-            />
+          <div className="aspect-[21/9] rounded-2xl overflow-hidden flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary)))' }}
+          >
+            <div className="text-center">
+              <p className="text-2xl md:text-3xl font-bold text-foreground">AI Discovery → Package Selection → Store Live</p>
+              <p className="text-muted-foreground mt-2">The complete journey, powered by AI</p>
+            </div>
           </div>
         </motion.div>
       </div>
