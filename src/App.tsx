@@ -15,6 +15,8 @@ import MultiStoreManagement from "./pages/features/MultiStoreManagement";
 import AISuggestions from "./pages/features/AISuggestions";
 import KPIReports from "./pages/features/KPIReports";
 import SiteMigration from "./pages/features/SiteMigration";
+import AppLayout from "./layouts/AppLayout";
+import Dashboard from "./pages/app/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +38,12 @@ const App = () => (
           <Route path="/features/ai-suggestions" element={<AISuggestions />} />
           <Route path="/features/kpi-reports" element={<KPIReports />} />
           <Route path="/features/site-migration" element={<SiteMigration />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+          {/* Platform app routes */}
+          <Route path="/app" element={<AppLayout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
