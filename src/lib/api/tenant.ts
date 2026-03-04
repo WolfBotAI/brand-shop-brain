@@ -1,20 +1,20 @@
 import { apiClient } from "./client";
 
-export interface GhlConnectRequest {
+export interface WolfBotConnectRequest {
   tenantName: string;
   tenantId?: string;
   locationId: string;
   apiKey?: string;
 }
 
-export interface GhlConnectResponse {
+export interface WolfBotConnectResponse {
   ok: boolean;
   tenantId: string;
   locationId: string;
 }
 
-export function connectGhl(data: GhlConnectRequest) {
-  return apiClient<GhlConnectResponse>("/api/ghl/connect", {
+export function connectWolfBot(data: WolfBotConnectRequest) {
+  return apiClient<WolfBotConnectResponse>("/api/ghl/connect", {
     method: "POST",
     body: data,
   });

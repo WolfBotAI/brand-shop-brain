@@ -7,15 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatBubble } from "@/components/features/ChatBubble";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { connectGhl } from "@/lib/api/tenant";
+import { connectWolfBot } from "@/lib/api/tenant";
 import { useToast } from "@/hooks/use-toast";
 
-interface GhlConnectStepProps {
+interface WolfBotConnectStepProps {
   onNext: (data: { tenantId: string; locationId: string }) => void;
   onBack: () => void;
 }
 
-export const GhlConnectStep = ({ onNext, onBack }: GhlConnectStepProps) => {
+export const WolfBotConnectStep = ({ onNext, onBack }: WolfBotConnectStepProps) => {
   const [tenantName, setTenantName] = useState("");
   const [locationId, setLocationId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,10 +27,10 @@ export const GhlConnectStep = ({ onNext, onBack }: GhlConnectStepProps) => {
     if (!tenantName.trim() || !locationId.trim()) return;
     setLoading(true);
     try {
-      const res = await connectGhl({ tenantName: tenantName.trim(), locationId: locationId.trim() });
+      const res = await connectWolfBot({ tenantName: tenantName.trim(), locationId: locationId.trim() });
       setResult({ tenantId: res.tenantId, locationId: res.locationId });
       setConnected(true);
-      toast({ title: "Connected!", description: "Your GHL location is now linked." });
+      toast({ title: "Connected!", description: "Wolf Bot AI is now linked to your account." });
     } catch (err: any) {
       toast({ title: "Connection failed", description: err.message || "Please check your details and try again.", variant: "destructive" });
     } finally {
@@ -51,14 +51,14 @@ export const GhlConnectStep = ({ onNext, onBack }: GhlConnectStepProps) => {
             <Link2 className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Connect Your CRM</h2>
-            <p className="text-muted-foreground">Link your GoHighLevel location to Brand-Shop.AI</p>
+            <h2 className="text-2xl font-bold text-foreground">Connect Wolf Bot AI</h2>
+            <p className="text-muted-foreground">Link your Wolf Bot AI location to Brand-Shop.AI</p>
           </div>
         </div>
       </div>
 
       <ChatBubble
-        message="Your GHL location connects your CRM contacts, pipelines, and automations to every store you create."
+        message="Wolf Bot AI connects your CRM contacts, pipelines, and automations to every store you create. It's the engine behind your customer engagement."
         delay={0.2}
       />
 
@@ -75,7 +75,7 @@ export const GhlConnectStep = ({ onNext, onBack }: GhlConnectStepProps) => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="locationId">GHL Location ID</Label>
+            <Label htmlFor="locationId">Location ID</Label>
             <Input
               id="locationId"
               placeholder="e.g. loc_abc123"
@@ -100,7 +100,7 @@ export const GhlConnectStep = ({ onNext, onBack }: GhlConnectStepProps) => {
               disabled={loading || !tenantName.trim() || !locationId.trim()}
               className="w-full"
             >
-              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Connecting...</> : "Connect Location"}
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Connecting...</> : "Connect Wolf Bot AI"}
             </Button>
           )}
 
@@ -110,7 +110,7 @@ export const GhlConnectStep = ({ onNext, onBack }: GhlConnectStepProps) => {
                 Where do I find my Location ID?
               </AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground">
-                In GHL, go to Settings → Business Profile. Your Location ID is shown at the top of the page. It usually starts with "loc_".
+                In Wolf Bot AI, go to Settings → Business Profile. Your Location ID is shown at the top of the page. It usually starts with "loc_".
               </AccordionContent>
             </AccordionItem>
           </Accordion>

@@ -4,7 +4,7 @@ import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
 import OrderRoutingDemo from "@/components/features/OrderRoutingDemo";
-import { Route, Settings, Package, RefreshCw, Shield, Truck } from "lucide-react";
+import { Route, Settings, Package, RefreshCw, Shield, SplitSquareVertical } from "lucide-react";
 
 const OrderRouting = () => {
   return (
@@ -14,9 +14,9 @@ const OrderRouting = () => {
         <FeatureHero
           icon={Route}
           badge="Smart Order Routing"
-          title="One Order —"
-          highlight="Routed Automatically"
-          description="AI analyzes each order and routes it to the right decorator based on your rules. Product type, supplier, decoration method — set it once, never think about it again."
+          title="One Invoice —"
+          highlight="Multiple Destinations"
+          description="A single customer order can contain products from different suppliers needing different decoration methods. Our AI splits that one invoice and routes each line item to the right supplier and decorator automatically."
         />
 
         {/* Interactive Demo */}
@@ -24,10 +24,10 @@ const OrderRouting = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-                Watch AI Route Orders in Real-Time
+                Watch One Invoice Split Across Suppliers & Decorators
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Orders flow in, AI reads the product type, and instantly sends to the right decorator — no manual assignment needed.
+                One customer order with mixed products gets automatically split — each line item routed to the right supplier for fulfillment and the right decorator for finishing.
               </p>
             </div>
             <div className="max-w-4xl mx-auto">
@@ -37,23 +37,23 @@ const OrderRouting = () => {
         </section>
 
         <FeatureSection
-          title="Product-Based Routing"
-          description="Route orders based on what's being ordered. You define the rules, the system handles the rest."
+          title="Intelligent Invoice Splitting"
+          description="One order, multiple fulfillment paths — handled automatically by the routing engine."
           features={[
             {
-              icon: Package,
-              title: "By Product Type",
-              description: "T-shirts go to Decorator A, embroidery to Decorator B. Each product category has its home.",
+              icon: SplitSquareVertical,
+              title: "Multi-Supplier Split",
+              description: "Products from different suppliers in one order get separated and sent to the correct fulfillment source automatically.",
             },
             {
               icon: Settings,
-              title: "By Supplier",
-              description: "Brand X products automatically route to Supplier Y. Maintain vendor relationships effortlessly.",
+              title: "Decoration-Based Routing",
+              description: "Embroidery goes to your embroidery specialist, DTG to your print house, screen print to your screen printer — all from one invoice.",
             },
             {
-              icon: Truck,
-              title: "By Decoration Method",
-              description: "Screen print, DTG, embroidery — each method routes to specialists who do it best.",
+              icon: Package,
+              title: "White-Label Fulfillment",
+              description: "Your customers see one seamless order. Behind the scenes, products are sourced and decorated by the best-matched partners.",
             },
           ]}
         />
@@ -65,17 +65,17 @@ const OrderRouting = () => {
             {
               icon: RefreshCw,
               title: "Real-Time Sync",
-              description: "Order status updates flow back from decorators so you always know where things stand.",
+              description: "Order status updates flow back from every supplier and decorator so you always know where things stand.",
             },
             {
               icon: Shield,
               title: "Manual Override",
-              description: "Jump in and reassign orders manually whenever special situations require it.",
+              description: "Jump in and reassign line items manually whenever special situations require it.",
             },
             {
               icon: Route,
-              title: "Multi-Decorator Support",
-              description: "Work with any number of decorators and suppliers from one central dashboard.",
+              title: "Unlimited Partners",
+              description: "Work with any number of suppliers and decorators from one central dashboard — no limits on routing destinations.",
             },
           ]}
           reversed
@@ -83,7 +83,7 @@ const OrderRouting = () => {
 
         <FeatureCTA
           title="Automate Your Order Flow"
-          description="Stop manually assigning orders. Let AI-powered routing handle the logistics."
+          description="Stop manually splitting invoices. Let AI-powered routing handle multi-supplier, multi-decorator logistics."
         />
       </main>
       <Footer />
