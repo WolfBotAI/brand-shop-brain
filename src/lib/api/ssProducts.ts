@@ -1,30 +1,10 @@
 /**
- * SS Activewear API — frontend layer
- * Calls the ss-products edge function which proxies to the SS API with Basic Auth.
+ * Catalog API — frontend layer
+ * Routes through the Brand-Shop.AI Codex engine (api.brand-shop.ai)
+ * which already has SS Activewear + Printful fully connected.
  */
 
-const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-function edgeFunctionUrl(): string {
-  return `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/ss-products`;
-}
-
-async function callEdge<T>(body: Record<string, unknown>): Promise<T> {
-  const res = await fetch(edgeFunctionUrl(), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_ANON_KEY ?? "",
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`SS products edge error ${res.status}: ${text}`);
-  }
-  return res.json();
-}
+import { apiClient } from "./client";
 
 // --- Types ---
 
@@ -53,14 +33,18 @@ export interface SSProduct {
   imageUrl: string | null;
 }
 
-// --- API calls ---
+// --- API calls (routed through Codex engine) ---
 
 export async function searchStyles(query: string): Promise<SSStyle[]> {
-  return callEdge<SSStyle[]>({ search: query });
+  return apiClient<SSStyle[]>("/api/catalog/styles", {
+    params: { search: query },
+  });
 }
 
 export async function getProductsByStyle(styleIds: (string | number)[]): Promise<SSProduct[]> {
-  return callEdge<SSProduct[]>({ styleIds: styleIds.map(String) });
+  return apiClient<SSProduct[]>("/api/catalog/products", {
+    params: { styleIds: styleIds.map(String).join(",") },
+  });
 }
 
 // --- Vertical → search keywords ---
