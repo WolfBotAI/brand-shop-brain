@@ -48,6 +48,7 @@ export const Hero = () => {
               <Button 
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
+                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 See How It Works
                 <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
@@ -56,6 +57,7 @@ export const Hero = () => {
                 size="lg" 
                 variant="ctaOutlineLight"
                 className="px-8 py-6 text-lg rounded-full"
+                onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Book a Demo
               </Button>
