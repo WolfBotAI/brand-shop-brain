@@ -1,4 +1,5 @@
 import { apiClient, getTenantContext } from "./client";
+import type { ThemeConfig } from "@/components/app/store/StorefrontPreview";
 
 export interface Store {
   id: string;
@@ -19,12 +20,16 @@ export interface CreateStoreRequest {
   brandVertical: string;
   metadata?: Record<string, unknown>;
   pricingModel?: string;
+  selectedProducts?: number[];
+  themeConfig?: ThemeConfig;
+  logoUrl?: string;
 }
 
 export interface CreateStoreResponse {
   ok: boolean;
   storeId: string;
   catalogId: string;
+  storefrontUrl?: string;
 }
 
 export function createStore(data: CreateStoreRequest) {
