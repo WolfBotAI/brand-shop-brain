@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Store, ArrowRight, ArrowLeft, CheckCircle2, Bot, Send,
   CreditCard, Sparkles, ShoppingBag, Palette, Search,
-  Eye, Loader2, Globe, Pencil,
+  Eye, Loader2, Globe, Pencil, AlertTriangle, Layers, Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +15,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ChatBubble } from "@/components/features/ChatBubble";
-import { ProductDetailModal } from "./ProductDetailModal";
+import { ProductDetailModal, type ProductVariantSelection } from "./ProductDetailModal";
+import { BulkVariantModal, type VariantSelection } from "./BulkVariantModal";
 import { LogoUploadStep } from "./LogoUploadStep";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -41,6 +43,14 @@ const verticals = [
   { value: "events", label: "Events & Fundraisers" },
   { value: "fashion", label: "Fashion & Streetwear" },
   { value: "other", label: "Other" },
+];
+
+// --- Package tiers ---
+const packageTiers = [
+  { id: "a", name: "Package A — Starter", limit: 10, price: "$49/mo" },
+  { id: "b", name: "Package B — Growth", limit: 25, price: "$99/mo" },
+  { id: "c", name: "Package C — Pro", limit: 40, price: "$199/mo" },
+  { id: "enterprise", name: "Enterprise", limit: Infinity, price: "Custom" },
 ];
 
 type CatalogProduct = SSStyle & { selected: boolean };
@@ -78,15 +88,45 @@ const themesByVertical: Record<string, Theme[]> = {
   ],
 };
 
-type ChatMessage = { role: "bot" | "user"; text: string; typing?: boolean };
+type ChatMessage = { role: "bot" | "user"; text: string; typing?: boolean; options?: string[] };
 
-const suggestionChips = [
-  "Show me hoodies",
-  "Under $15",
-  "Add more caps",
-  "Browse full catalog",
-  "Remove outerwear",
+// Discovery questions for the AI advisor
+interface DiscoveryAnswers {
+  purpose?: string;
+  audience?: string;
+  city?: string;
+  budget?: string;
+}
+
+const discoveryQuestions = [
+  {
+    question: "What's the primary purpose of this store?",
+    options: ["Team Uniforms", "Corporate Gifts", "Fundraiser", "Event Merch", "Employee Swag", "Retail / Resale"],
+  },
+  {
+    question: "Who's the target audience?",
+    options: ["Employees", "Students", "Sports Fans", "General Public", "Event Attendees"],
+  },
+  {
+    question: "What city or region will this store serve? I'll factor in climate for material recommendations.",
+    options: [], // free text
+  },
+  {
+    question: "Any budget range per item?",
+    options: ["Under $15", "$15–$25", "$25–$50", "No limit"],
+  },
 ];
+
+function getWeatherInsight(city: string): string {
+  const lower = city.toLowerCase();
+  if (["dallas", "houston", "phoenix", "miami", "austin", "san antonio", "tampa", "orlando", "las vegas", "atlanta"].some(c => lower.includes(c)))
+    return `${city} gets hot — I'll prioritize moisture-wicking, lightweight fabrics, and breathable materials.`;
+  if (["chicago", "detroit", "minneapolis", "boston", "new york", "denver", "milwaukee", "buffalo", "pittsburgh"].some(c => lower.includes(c)))
+    return `${city} has cold winters — I'll include heavier fleece, jackets, and layering options.`;
+  if (["seattle", "portland", "san francisco"].some(c => lower.includes(c)))
+    return `${city} is mild and rainy — I'll balance lightweight layers with water-resistant options.`;
+  return `Got it — ${city}! I'll pick versatile items that work across seasons.`;
+}
 
 function getBotResponse(input: string): string {
   const lower = input.toLowerCase();
@@ -146,11 +186,33 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const [scraping, setScraping] = useState(false);
   const [scrapedBranding, setScrapedBranding] = useState<BrandingData | null>(null);
   const [creatingStore, setCreatingStore] = useState(false);
+
+  // Discovery state
+  const [discoveryStep, setDiscoveryStep] = useState(0);
+  const [discoveryAnswers, setDiscoveryAnswers] = useState<DiscoveryAnswers>({});
+  const [discoveryComplete, setDiscoveryComplete] = useState(false);
+
+  // Package state
+  const [selectedPackage, setSelectedPackage] = useState<string>("a");
+  const [packageSelected, setPackageSelected] = useState(false);
+  const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
+  const [enterpriseRequested, setEnterpriseRequested] = useState(false);
+
+  // Variant selections per product
+  const [variantSelections, setVariantSelections] = useState<Map<number, ProductVariantSelection>>(new Map());
+
+  // Bulk variant modal
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkApplyMode, setBulkApplyMode] = useState<"selected" | "category" | "all">("selected");
+  const [bulkCategoryName, setBulkCategoryName] = useState<string | undefined>();
+
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const selectedCount = catalogProducts.filter((i) => i.selected).length;
   const themes = themesByVertical[brandVertical] || themesByVertical.other;
+  const currentTier = packageTiers.find((t) => t.id === selectedPackage)!;
+  const isOverLimit = currentTier && selectedCount > currentTier.limit;
 
   // Get unique categories
   const categories = Array.from(new Set(catalogProducts.map((p) => p.baseCategory)));
@@ -178,18 +240,18 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, isTyping]);
 
-  const addBotMessage = useCallback((text: string, delayMs: number = 1200) => {
+  const addBotMessage = useCallback((text: string, delayMs: number = 1200, options?: string[]) => {
     setIsTyping(true);
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         setIsTyping(false);
-        setChatMessages((prev) => [...prev, { role: "bot", text }]);
+        setChatMessages((prev) => [...prev, { role: "bot", text, options }]);
         resolve();
       }, delayMs);
     });
   }, []);
 
-  const fetchCatalog = async (vertical: string) => {
+  const fetchCatalog = async (vertical: string, packageLimit: number = 10) => {
     setLoadingCatalog(true);
     setCatalogError(null);
     try {
@@ -201,7 +263,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
         for (const style of results) {
           if (!seen.has(style.styleID)) {
             seen.add(style.styleID);
-            products.push({ ...style, selected: products.length < 8 });
+            products.push({ ...style, selected: products.length < Math.min(packageLimit, 12) });
           }
         }
       }
@@ -235,24 +297,66 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
     }
   };
 
+  // --- Discovery flow ---
   const handleDetailsNext = async () => {
     if (!storeName.trim() || !clientName.trim() || !brandVertical) return;
-    const vertLabel = verticals.find((v) => v.value === brandVertical)?.label || brandVertical;
     setPhase("catalog");
-    fetchCatalog(brandVertical);
-
-    // Multi-step intro sequence
     setChatMessages([]);
-    await addBotMessage(`Hey! 👋 I'm your AI Merch Advisor. Let me help you build the perfect product lineup for **${clientName}**.`, 800);
-    await addBotMessage(`Analyzing the **${vertLabel}** market... Looking at trending styles, best-sellers, and seasonal picks.`, 1200);
-    await addBotMessage(`Here are my top recommendations! I've pre-selected 8 items to get you started. Tell me about your event — budget, colors, season — and I'll refine the picks. Or use the quick options below!`, 1500);
+    setDiscoveryStep(0);
+    setDiscoveryComplete(false);
+    setDiscoveryAnswers({});
+
+    await addBotMessage(`Hey! 👋 I'm your AI Merch Advisor. Let me learn a bit about **${clientName}** so I can build the perfect product lineup.`, 800);
+    await addBotMessage(discoveryQuestions[0].question, 1000, discoveryQuestions[0].options);
+  };
+
+  const handleDiscoveryAnswer = async (answer: string) => {
+    setChatMessages((prev) => [...prev, { role: "user", text: answer }]);
+    const step = discoveryStep;
+
+    const updatedAnswers = { ...discoveryAnswers };
+    if (step === 0) updatedAnswers.purpose = answer;
+    else if (step === 1) updatedAnswers.audience = answer;
+    else if (step === 2) updatedAnswers.city = answer;
+    else if (step === 3) updatedAnswers.budget = answer;
+    setDiscoveryAnswers(updatedAnswers);
+
+    const nextStep = step + 1;
+
+    if (step === 2) {
+      // City — give weather insight then ask budget
+      await addBotMessage(getWeatherInsight(answer), 1000);
+      await addBotMessage(discoveryQuestions[3].question, 800, discoveryQuestions[3].options);
+      setDiscoveryStep(3);
+    } else if (nextStep < discoveryQuestions.length) {
+      const q = discoveryQuestions[nextStep];
+      await addBotMessage(q.question, 1000, q.options.length > 0 ? q.options : undefined);
+      setDiscoveryStep(nextStep);
+    } else {
+      // Discovery complete — load catalog
+      setDiscoveryComplete(true);
+      const vertLabel = verticals.find((v) => v.value === brandVertical)?.label || brandVertical;
+      const tier = packageTiers.find((t) => t.id === selectedPackage)!;
+      await addBotMessage(
+        `Based on your input, here are my top picks for **${vertLabel}** in **${updatedAnswers.city || "your area"}**! I've pre-selected up to ${tier.limit === Infinity ? "40+" : tier.limit} items for your **${tier.name}**. Feel free to add, remove, or ask me to refine!`,
+        1500
+      );
+      fetchCatalog(brandVertical, tier.limit);
+    }
   };
 
   const handleChatSend = async (text?: string) => {
     const msg = (text || chatInput).trim();
     if (!msg) return;
-    setChatMessages((prev) => [...prev, { role: "user", text: msg }]);
     setChatInput("");
+
+    // If still in discovery, route through discovery
+    if (!discoveryComplete) {
+      await handleDiscoveryAnswer(msg);
+      return;
+    }
+
+    setChatMessages((prev) => [...prev, { role: "user", text: msg }]);
 
     // Handle "browse full catalog"
     if (msg.toLowerCase().includes("catalog") || msg.toLowerCase().includes("browse")) {
@@ -264,14 +368,59 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   };
 
   const toggleItem = (styleID: number) => {
-    setCatalogProducts((prev) =>
-      prev.map((i) => (i.styleID === styleID ? { ...i, selected: !i.selected } : i))
-    );
+    setCatalogProducts((prev) => {
+      const updated = prev.map((i) => (i.styleID === styleID ? { ...i, selected: !i.selected } : i));
+      const newCount = updated.filter((i) => i.selected).length;
+
+      // Enterprise check
+      if (newCount > 40 && selectedPackage !== "enterprise") {
+        setEnterpriseModalOpen(true);
+      }
+
+      return updated;
+    });
   };
 
   const openProductDetail = (product: CatalogProduct) => {
     setDetailProduct(product);
     setDetailOpen(true);
+  };
+
+  const handleVariantChange = (styleID: number, selection: ProductVariantSelection) => {
+    setVariantSelections((prev) => {
+      const next = new Map(prev);
+      next.set(styleID, selection);
+      return next;
+    });
+  };
+
+  const handleBulkApply = (selection: VariantSelection) => {
+    const selectedProducts = catalogProducts.filter((p) => p.selected);
+    let targetProducts: CatalogProduct[] = [];
+
+    if (bulkApplyMode === "all") {
+      targetProducts = selectedProducts;
+    } else if (bulkApplyMode === "category" && bulkCategoryName) {
+      targetProducts = selectedProducts.filter((p) => p.baseCategory === bulkCategoryName);
+    } else {
+      targetProducts = selectedProducts;
+    }
+
+    setVariantSelections((prev) => {
+      const next = new Map(prev);
+      for (const p of targetProducts) {
+        // Only apply colors/sizes that are valid for this product
+        const validColors = selection.colors.filter((c) => p.availableColors.some((ac) => ac.name === c));
+        const validSizes = selection.sizes.filter((s) => p.availableSizes.includes(s));
+        next.set(p.styleID, { colors: validColors, sizes: validSizes });
+      }
+      return next;
+    });
+
+    toast({
+      title: "Variants applied!",
+      description: `Updated ${targetProducts.length} items with your color/size selections.`,
+    });
   };
 
   const handleCatalogNext = () => {
@@ -318,7 +467,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
             fontFamily: result.data.typography?.fontFamilies?.primary || undefined,
           });
         }
-        // Auto-use scraped logo if no logo uploaded yet
         const scrapedLogo = result.data.logo || result.data.images?.logo;
         if (scrapedLogo && !logoUrl) {
           setLogoUrl(scrapedLogo);
@@ -355,7 +503,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
       toast({ title: "Store created!", description: `${storeName} is ready.` });
     } catch (err) {
       console.error("Store creation failed:", err);
-      // Fallback to local ID for demo
       const id = `store-${Date.now()}`;
       setStoreId(id);
       setCreated(true);
@@ -368,6 +515,11 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const phases = ["details", "catalog", "logo", "theme", "payment"];
   const phaseLabels = ["Details", "Catalog", "Logo", "Theme", "Payment"];
   const phaseIndex = phases.indexOf(phase);
+
+  // Suggestion chips change based on discovery state
+  const suggestionChips = discoveryComplete
+    ? ["Show me hoodies", "Under $15", "Add more caps", "Browse full catalog", "Remove outerwear"]
+    : [];
 
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
@@ -420,6 +572,31 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Package tier selection */}
+                <div className="space-y-2">
+                  <Label>Store Package</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {packageTiers.map((tier) => (
+                      <button
+                        key={tier.id}
+                        onClick={() => { setSelectedPackage(tier.id); setPackageSelected(true); }}
+                        className={`p-3 rounded-lg border-2 text-left transition-all ${
+                          selectedPackage === tier.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-muted-foreground/30"
+                        }`}
+                      >
+                        <p className="text-sm font-semibold text-foreground">{tier.name.split(" — ")[0]}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {tier.limit === Infinity ? "40+ items" : `Up to ${tier.limit} items`}
+                        </p>
+                        <p className="text-xs font-medium text-primary mt-1">{tier.price}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <Button onClick={handleDetailsNext} disabled={!storeName.trim() || !clientName.trim() || !brandVertical} className="w-full gap-2">
                   Continue to Catalog <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -431,6 +608,31 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
         {/* PHASE B: AI Merch Advisor + Product Catalog */}
         {phase === "catalog" && (
           <motion.div key="catalog" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+            {/* Package badge + item counter */}
+            <div className="flex items-center justify-between">
+              <Badge variant="secondary" className="gap-1">
+                <Package className="w-3 h-3" />
+                {currentTier.name} — {currentTier.limit === Infinity ? "40+" : currentTier.limit} items
+              </Badge>
+              <span className={`text-sm font-medium ${isOverLimit ? "text-destructive" : "text-foreground"}`}>
+                {selectedCount} / {currentTier.limit === Infinity ? "∞" : currentTier.limit} selected
+              </span>
+            </div>
+
+            {/* Soft warning when over limit */}
+            {isOverLimit && currentTier.limit !== Infinity && (
+              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-medium text-foreground">You've selected {selectedCount} items — exceeds {currentTier.name} ({currentTier.limit} items).</p>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    Consider upgrading to {packageTiers.find((t) => t.limit > currentTier.limit)?.name || "Enterprise"} or remove some items to stay within your plan.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             {/* AI Chat */}
             <Card className="border-border bg-gradient-to-br from-primary/5 via-background to-background">
               <CardContent className="p-4 space-y-3">
@@ -440,7 +642,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                   </motion.div>
                   AI Merch Advisor
                 </div>
-                <div className="max-h-56 overflow-y-auto space-y-3 pr-1">
+                <div className="max-h-64 overflow-y-auto space-y-3 pr-1">
                   <AnimatePresence>
                     {chatMessages.map((msg, i) => (
                       <motion.div
@@ -448,18 +650,33 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
-                        className={`flex items-start gap-2 ${msg.role === "user" ? "justify-end" : ""}`}
                       >
-                        {msg.role === "bot" && (
-                          <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-                            <Bot className="w-3.5 h-3.5 text-primary-foreground" />
+                        <div className={`flex items-start gap-2 ${msg.role === "user" ? "justify-end" : ""}`}>
+                          {msg.role === "bot" && (
+                            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+                              <Bot className="w-3.5 h-3.5 text-primary-foreground" />
+                            </div>
+                          )}
+                          <div className={`rounded-xl px-3 py-2 text-sm max-w-[80%] ${
+                            msg.role === "bot" ? "bg-muted text-foreground rounded-tl-sm" : "bg-primary text-primary-foreground rounded-tr-sm"
+                          }`}>
+                            {msg.text}
+                          </div>
+                        </div>
+                        {/* Discovery option buttons */}
+                        {msg.role === "bot" && msg.options && msg.options.length > 0 && i === chatMessages.length - 1 && !discoveryComplete && (
+                          <div className="flex gap-2 flex-wrap mt-2 ml-9">
+                            {msg.options.map((opt) => (
+                              <button
+                                key={opt}
+                                onClick={() => handleDiscoveryAnswer(opt)}
+                                className="px-3 py-1.5 rounded-full text-xs font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+                              >
+                                {opt}
+                              </button>
+                            ))}
                           </div>
                         )}
-                        <div className={`rounded-xl px-3 py-2 text-sm max-w-[80%] ${
-                          msg.role === "bot" ? "bg-muted text-foreground rounded-tl-sm" : "bg-primary text-primary-foreground rounded-tr-sm"
-                        }`}>
-                          {msg.text}
-                        </div>
                       </motion.div>
                     ))}
                   </AnimatePresence>
@@ -467,22 +684,24 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                   <div ref={chatEndRef} />
                 </div>
 
-                {/* Suggestion Chips */}
-                <div className="flex gap-2 flex-wrap">
-                  {suggestionChips.map((chip) => (
-                    <button
-                      key={chip}
-                      onClick={() => handleChatSend(chip)}
-                      className="px-3 py-1 rounded-full text-xs font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
-                    >
-                      {chip}
-                    </button>
-                  ))}
-                </div>
+                {/* Suggestion Chips — only after discovery */}
+                {suggestionChips.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {suggestionChips.map((chip) => (
+                      <button
+                        key={chip}
+                        onClick={() => handleChatSend(chip)}
+                        className="px-3 py-1 rounded-full text-xs font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Tell me about your event, budget, colors..."
+                    placeholder={discoveryComplete ? "Tell me about your event, budget, colors..." : "Type your answer..."}
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleChatSend()}
@@ -495,177 +714,223 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
               </CardContent>
             </Card>
 
-            {/* Category Filters + Search */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={() => setActiveCategory(null)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                    !activeCategory
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:border-muted-foreground"
-                  }`}
+            {/* Bulk selection toolbar */}
+            {discoveryComplete && selectedCount > 0 && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 flex-wrap p-3 rounded-lg bg-muted/50 border border-border">
+                <Layers className="w-4 h-4 text-primary" />
+                <span className="text-xs font-medium text-foreground mr-auto">Bulk Actions:</span>
+                <Button
+                  variant="outline" size="sm"
+                  onClick={() => { setBulkApplyMode("selected"); setBulkCategoryName(undefined); setBulkModalOpen(true); }}
                 >
-                  All
-                </button>
-                {categories.map((cat) => (
+                  Set Colors & Sizes for Selected
+                </Button>
+                {activeCategory && (
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => { setBulkApplyMode("category"); setBulkCategoryName(activeCategory); setBulkModalOpen(true); }}
+                  >
+                    Apply to "{activeCategory}"
+                  </Button>
+                )}
+                <Button
+                  variant="outline" size="sm"
+                  onClick={() => { setBulkApplyMode("all"); setBulkCategoryName(undefined); setBulkModalOpen(true); }}
+                >
+                  Apply to All
+                </Button>
+              </motion.div>
+            )}
+
+            {/* Category Filters + Search */}
+            {discoveryComplete && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 flex-wrap">
                   <button
-                    key={cat}
-                    onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                    onClick={() => setActiveCategory(null)}
                     className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      activeCategory === cat
+                      !activeCategory
                         ? "bg-primary text-primary-foreground border-primary"
                         : "border-border text-muted-foreground hover:border-muted-foreground"
                     }`}
                   >
-                    {cat}
+                    All
                   </button>
-                ))}
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                        activeCategory === cat
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-muted-foreground hover:border-muted-foreground"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Product Grid */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4" />
-                  Product Catalog — {selectedCount} selected
-                </h3>
-                <Button variant="outline" size="sm" onClick={loadFullCatalog} disabled={loadingCatalog}>
-                  Browse Full Catalog
-                </Button>
-              </div>
-
-              {loadingCatalog && (
-                <div className="grid grid-cols-2 gap-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Card key={i} className="border-border">
-                      <CardContent className="p-3 space-y-2">
-                        <Skeleton className="w-full h-32 rounded-md" />
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </CardContent>
-                    </Card>
-                  ))}
+            {discoveryComplete && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <ShoppingBag className="w-4 h-4" />
+                    Product Catalog — {selectedCount} selected
+                  </h3>
+                  <Button variant="outline" size="sm" onClick={loadFullCatalog} disabled={loadingCatalog}>
+                    Browse Full Catalog
+                  </Button>
                 </div>
-              )}
 
-              {catalogError && (
-                <Card className="border-destructive">
-                  <CardContent className="p-4 text-sm text-destructive">
-                    <p>Failed to load products: {catalogError}</p>
-                    <Button variant="outline" size="sm" className="mt-2" onClick={() => fetchCatalog(brandVertical)}>
-                      Retry
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
+                {loadingCatalog && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <Card key={i} className="border-border">
+                        <CardContent className="p-3 space-y-2">
+                          <Skeleton className="w-full h-32 rounded-md" />
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
 
-              {!loadingCatalog && !catalogError && Object.keys(groupedProducts).length > 0 && (
-                <div className="space-y-4">
-                  {Object.entries(groupedProducts).map(([category, products]) => (
-                    <div key={category} className="space-y-2">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{category}</h4>
-                      <div className="grid grid-cols-2 gap-3">
-                        {products.map((item) => (
-                          <Card
-                            key={item.styleID}
-                            className={`cursor-pointer transition-all border-2 ${
-                              item.selected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                            }`}
-                            onClick={() => toggleItem(item.styleID)}
-                          >
-                            <CardContent className="p-3 space-y-2">
-                              {/* Product Image */}
-                              <div className="relative">
-                                {item.styleImage ? (
-                                  <img
-                                    src={item.styleImage}
-                                    alt={item.title}
-                                    className="w-full h-28 object-cover rounded-md"
-                                    loading="lazy"
-                                  />
-                                ) : (
-                                  <div className="w-full h-28 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">
-                                    No image
+                {catalogError && (
+                  <Card className="border-destructive">
+                    <CardContent className="p-4 text-sm text-destructive">
+                      <p>Failed to load products: {catalogError}</p>
+                      <Button variant="outline" size="sm" className="mt-2" onClick={() => fetchCatalog(brandVertical)}>
+                        Retry
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {!loadingCatalog && !catalogError && Object.keys(groupedProducts).length > 0 && (
+                  <div className="space-y-4">
+                    {Object.entries(groupedProducts).map(([category, products]) => (
+                      <div key={category} className="space-y-2">
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{category}</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                          {products.map((item) => {
+                            const vs = variantSelections.get(item.styleID);
+                            return (
+                              <Card
+                                key={item.styleID}
+                                className={`cursor-pointer transition-all border-2 ${
+                                  item.selected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+                                }`}
+                                onClick={() => toggleItem(item.styleID)}
+                              >
+                                <CardContent className="p-3 space-y-2">
+                                  {/* Product Image */}
+                                  <div className="relative">
+                                    {item.styleImage ? (
+                                      <img
+                                        src={item.styleImage}
+                                        alt={item.title}
+                                        className="w-full h-28 object-cover rounded-md bg-muted"
+                                        loading="lazy"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-28 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">
+                                        No image
+                                      </div>
+                                    )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openProductDetail(item);
+                                      }}
+                                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+                                    >
+                                      <Eye className="w-3 h-3 text-foreground" />
+                                    </button>
+                                    <div className="absolute bottom-1 left-1 flex gap-0.5">
+                                      {item.availableColors.slice(0, 4).map((c) => (
+                                        <div
+                                          key={c.name}
+                                          className="w-3 h-3 rounded-full border border-background/50"
+                                          style={{ backgroundColor: c.hex }}
+                                        />
+                                      ))}
+                                      {item.availableColors.length > 4 && (
+                                        <span className="text-[8px] text-background bg-foreground/50 rounded-full px-1 flex items-center">
+                                          +{item.availableColors.length - 4}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
-                                )}
-                                {/* Quick view button */}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openProductDetail(item);
-                                  }}
-                                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-                                >
-                                  <Eye className="w-3 h-3 text-foreground" />
-                                </button>
-                                {/* Color swatches preview */}
-                                <div className="absolute bottom-1 left-1 flex gap-0.5">
-                                  {item.availableColors.slice(0, 4).map((c) => (
-                                    <div
-                                      key={c.name}
-                                      className="w-3 h-3 rounded-full border border-background/50"
-                                      style={{ backgroundColor: c.hex }}
+
+                                  <div className="flex items-start justify-between gap-1">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-semibold text-primary">{item.brandName}</p>
+                                      <p className="text-sm font-medium text-foreground leading-tight truncate">{item.title}</p>
+                                    </div>
+                                    <Checkbox
+                                      checked={item.selected}
+                                      onCheckedChange={() => toggleItem(item.styleID)}
+                                      className="mt-0.5 flex-shrink-0"
                                     />
-                                  ))}
-                                  {item.availableColors.length > 4 && (
-                                    <span className="text-[8px] text-background bg-foreground/50 rounded-full px-1 flex items-center">
-                                      +{item.availableColors.length - 4}
-                                    </span>
+                                  </div>
+
+                                  {/* Variant badge */}
+                                  {vs && (vs.colors.length > 0 || vs.sizes.length > 0) && (
+                                    <div className="flex gap-1 flex-wrap">
+                                      {vs.colors.length > 0 && (
+                                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">{vs.colors.length} colors</Badge>
+                                      )}
+                                      {vs.sizes.length > 0 && (
+                                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">{vs.sizes.length} sizes</Badge>
+                                      )}
+                                    </div>
                                   )}
-                                </div>
-                              </div>
 
-                              <div className="flex items-start justify-between gap-1">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-semibold text-primary">{item.brandName}</p>
-                                  <p className="text-sm font-medium text-foreground leading-tight truncate">{item.title}</p>
-                                </div>
-                                <Checkbox
-                                  checked={item.selected}
-                                  onCheckedChange={() => toggleItem(item.styleID)}
-                                  className="mt-0.5 flex-shrink-0"
-                                />
-                              </div>
-
-                              {/* Pricing */}
-                              <div className="space-y-0.5">
-                                {item.customerPrice != null && (
-                                  <p className="text-xs text-foreground">
-                                    <span className="font-medium">Your Cost:</span> ${Number(item.customerPrice).toFixed(2)}
-                                  </p>
-                                )}
-                                {item.piecePrice != null && (
-                                  <p className="text-xs text-muted-foreground">
-                                    <span className="font-medium">Suggested Retail:</span> ${Number(item.piecePrice).toFixed(2)}
-                                  </p>
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                                  {/* Pricing */}
+                                  <div className="space-y-0.5">
+                                    {item.customerPrice != null && (
+                                      <p className="text-xs text-foreground">
+                                        <span className="font-medium">Your Cost:</span> ${Number(item.customerPrice).toFixed(2)}
+                                      </p>
+                                    )}
+                                    {item.piecePrice != null && (
+                                      <p className="text-xs text-muted-foreground">
+                                        <span className="font-medium">Suggested Retail:</span> ${Number(item.piecePrice).toFixed(2)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-              {!loadingCatalog && !catalogError && filteredProducts.length === 0 && catalogProducts.length > 0 && (
-                <p className="text-sm text-muted-foreground text-center py-6">No products match your search. Try a different term or clear the filter.</p>
-              )}
-            </div>
+                {!loadingCatalog && !catalogError && filteredProducts.length === 0 && catalogProducts.length > 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-6">No products match your search. Try a different term or clear the filter.</p>
+                )}
+              </div>
+            )}
 
             <p className="text-[10px] text-muted-foreground text-center">
               Pricing set by Brand-Shop. Adjust your markup in Store Settings after creation.
@@ -763,7 +1028,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                   </Card>
                 ))}
 
-                {/* Inline editor when editing a preset */}
                 {editingPreset && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-3">
                     <Card className="border-border">
@@ -813,7 +1077,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                       </div>
                     ))}
 
-                    {/* Live preview */}
                     <div className="rounded-lg overflow-hidden border border-border">
                       <div className="h-10 flex items-center px-4" style={{ backgroundColor: customTheme.primary }}>
                         <span className="text-xs font-bold" style={{ color: customTheme.background }}>Header Preview</span>
@@ -853,14 +1116,12 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                       </Button>
                     </div>
 
-                    {/* Scraped results */}
                     {scrapedBranding && (
                       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                         <div className="flex items-center gap-2 text-sm font-medium text-primary">
                           <CheckCircle2 className="w-4 h-4" /> Brand extracted!
                         </div>
 
-                        {/* Extracted logo */}
                         {(scrapedBranding.logo || scrapedBranding.images?.logo) && (
                           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                             <img
@@ -875,7 +1136,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                           </div>
                         )}
 
-                        {/* Color editing */}
                         {(["primary", "secondary", "accent", "background"] as const).map((key) => (
                           <div key={key} className="flex items-center gap-3">
                             <Label className="text-xs capitalize w-24">{key}</Label>
@@ -999,7 +1259,49 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
         onOpenChange={setDetailOpen}
         isSelected={detailProduct ? catalogProducts.find((p) => p.styleID === detailProduct.styleID)?.selected ?? false : false}
         onToggleSelect={toggleItem}
+        variantSelection={detailProduct ? variantSelections.get(detailProduct.styleID) : undefined}
+        onVariantChange={handleVariantChange}
       />
+
+      {/* Bulk Variant Modal */}
+      <BulkVariantModal
+        open={bulkModalOpen}
+        onOpenChange={setBulkModalOpen}
+        products={
+          bulkApplyMode === "category" && bulkCategoryName
+            ? catalogProducts.filter((p) => p.selected && p.baseCategory === bulkCategoryName)
+            : catalogProducts.filter((p) => p.selected)
+        }
+        applyMode={bulkApplyMode}
+        categoryName={bulkCategoryName}
+        onApply={handleBulkApply}
+      />
+
+      {/* Enterprise Approval Modal */}
+      <Dialog open={enterpriseModalOpen} onOpenChange={setEnterpriseModalOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-primary" />
+              Enterprise Pricing
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You've selected more than 40 items. Enterprise pricing requires approval. Submit a request and we'll get back to you within 24 hours.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEnterpriseModalOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              setSelectedPackage("enterprise");
+              setEnterpriseRequested(true);
+              setEnterpriseModalOpen(false);
+              toast({ title: "Enterprise request submitted!", description: "We'll review and get back to you within 24 hours." });
+            }}>
+              Submit Enterprise Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
