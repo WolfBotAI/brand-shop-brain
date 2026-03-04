@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 
 const integrations = [
   {
+    name: "Brand-Shop Catalog",
+    category: "Product Sourcing",
+    description: "Thousands of blank products, ready for your brand",
+  },
+  {
     name: "Printavo",
     category: "Order Management",
     description: "Seamlessly sync orders and production status",
@@ -17,26 +22,6 @@ const integrations = [
     name: "InkSoft",
     category: "Store Platform",
     description: "Connect existing InkSoft stores",
-  },
-  {
-    name: "SanMar",
-    category: "Supplier",
-    description: "Real-time inventory and pricing sync",
-  },
-  {
-    name: "AlphaBroder",
-    category: "Supplier",
-    description: "Full product catalog access",
-  },
-  {
-    name: "S&S Activewear",
-    category: "Supplier",
-    description: "Inventory and product sync",
-  },
-  {
-    name: "Augusta",
-    category: "Supplier",
-    description: "Sports and team apparel integration",
   },
   {
     name: "Zapier",
@@ -83,10 +68,10 @@ export const Integrations = () => {
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
             Integrates With{" "}
-            <span className="text-accent">Almost Any System</span>
+            <span className="text-accent">Your Workflow</span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Our open API connects to the tools you already use — Printavo, DecoNetwork, InkSoft, and more. We adapt to your workflow.
+            Brand-Shop Catalog powers your product sourcing. Our open API connects to the tools you already use — Printavo, DecoNetwork, InkSoft, and more.
           </p>
         </motion.div>
 
@@ -96,7 +81,7 @@ export const Integrations = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-12"
+          className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-12"
         >
           {integrations.map((integration, index) => (
             <motion.div
@@ -106,9 +91,10 @@ export const Integrations = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{ y: -4 }}
-              className="glass-card rounded-xl p-6 text-center hover:shadow-lg transition-all cursor-pointer group"
+              className={`glass-card rounded-xl p-6 text-center hover:shadow-lg transition-all cursor-pointer group ${
+                index === 0 ? "md:col-span-3 border-primary/20 bg-primary/5" : ""
+              }`}
             >
-              {/* Logo Placeholder */}
               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-secondary/10 to-accent/10 mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <span className="text-2xl font-bold text-secondary">{integration.name.charAt(0)}</span>
               </div>

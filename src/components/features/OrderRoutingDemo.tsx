@@ -1,63 +1,63 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Cpu, ArrowRight, CheckCircle2, Shirt, Sparkles, Building2, Pause } from "lucide-react";
+import { Package, Cpu, ArrowRight, CheckCircle2, Shirt, Sparkles, Building2, Pause, FileText, SplitSquareVertical } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-interface Order {
+interface LineItem {
   id: string;
   product: string;
-  type: "apparel" | "embroidery" | "promo";
+  decoration: string;
   icon: typeof Shirt;
-  decorator: string;
+  destination: string;
+  destinationType: "supplier" | "decorator";
   color: string;
 }
 
-const orders: Order[] = [
-  { id: "ORD-001", product: "Custom T-Shirts (50)", type: "apparel", icon: Shirt, decorator: "PrintMax Pro", color: "from-blue-500 to-blue-600" },
-  { id: "ORD-002", product: "Embroidered Polos (25)", type: "embroidery", icon: Sparkles, decorator: "StitchCraft", color: "from-purple-500 to-purple-600" },
-  { id: "ORD-003", product: "Branded Pens (500)", type: "promo", icon: Package, decorator: "PromoHub", color: "from-green-500 to-green-600" },
+const invoiceItems: LineItem[] = [
+  { id: "LINE-1", product: "Gildan Heavy Cotton Tees (50)", decoration: "Screen Print", icon: Shirt, destination: "Fulfillment Center A", destinationType: "supplier", color: "from-blue-500 to-blue-600" },
+  { id: "LINE-2", product: "Nike Dri-FIT Polos (25)", decoration: "Embroidery", icon: Sparkles, destination: "StitchCraft Embroidery", destinationType: "decorator", color: "from-purple-500 to-purple-600" },
+  { id: "LINE-3", product: "Bella+Canvas Hoodies (30)", decoration: "DTG Print", icon: Package, destination: "PrintMax DTG", destinationType: "decorator", color: "from-emerald-500 to-emerald-600" },
 ];
 
-const decorators = [
-  { name: "PrintMax Pro", specialty: "Screen Print & DTG", color: "bg-blue-500/20 border-blue-500/50" },
-  { name: "StitchCraft", specialty: "Embroidery", color: "bg-purple-500/20 border-purple-500/50" },
-  { name: "PromoHub", specialty: "Promotional Items", color: "bg-green-500/20 border-green-500/50" },
+const destinations = [
+  { name: "Fulfillment Center A", specialty: "Blank Apparel Fulfillment", color: "bg-blue-500/20 border-blue-500/50" },
+  { name: "StitchCraft Embroidery", specialty: "Embroidery Specialist", color: "bg-purple-500/20 border-purple-500/50" },
+  { name: "PrintMax DTG", specialty: "DTG & Screen Print", color: "bg-emerald-500/20 border-emerald-500/50" },
 ];
 
 const OrderRoutingDemo = () => {
-  const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
-  const [phase, setPhase] = useState<"incoming" | "analyzing" | "routing" | "complete">("incoming");
-  const [completedOrders, setCompletedOrders] = useState<string[]>([]);
+  const [currentItemIndex, setCurrentItemIndex] = useState(0);
+  const [phase, setPhase] = useState<"invoice" | "splitting" | "routing" | "complete">("invoice");
+  const [routedItems, setRoutedItems] = useState<string[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // Progress per order
   useEffect(() => {
     if (isPaused) return;
     const interval = setInterval(() => {
-      setProgress(prev => prev >= 100 ? 0 : prev + (100 / 100)); // 10s per order
+      setProgress(prev => prev >= 100 ? 0 : prev + 1);
     }, 100);
     return () => clearInterval(interval);
-  }, [isPaused, currentOrderIndex]);
+  }, [isPaused, currentItemIndex]);
 
   useEffect(() => {
     if (isPaused) return;
-    
+
     const runAnimation = () => {
-      setPhase("incoming");
+      setPhase("invoice");
       setProgress(0);
-      
+
       const timers = [
-        setTimeout(() => setPhase("analyzing"), 2000),
+        setTimeout(() => setPhase("splitting"), 2500),
         setTimeout(() => setPhase("routing"), 5000),
         setTimeout(() => {
           setPhase("complete");
-          setCompletedOrders(prev => [...prev, orders[currentOrderIndex].id]);
-        }, 8000),
+          setRoutedItems(prev => [...prev, invoiceItems[currentItemIndex].id]);
+        }, 7500),
         setTimeout(() => {
-          setCurrentOrderIndex((prev) => (prev + 1) % orders.length);
-          if (currentOrderIndex === orders.length - 1) {
-            setCompletedOrders([]);
+          setCurrentItemIndex((prev) => (prev + 1) % invoiceItems.length);
+          if (currentItemIndex === invoiceItems.length - 1) {
+            setRoutedItems([]);
           }
         }, 10000),
       ];
@@ -67,26 +67,25 @@ const OrderRoutingDemo = () => {
 
     const cleanup = runAnimation();
     return cleanup;
-  }, [currentOrderIndex, isPaused]);
+  }, [currentItemIndex, isPaused]);
 
-  const currentOrder = orders[currentOrderIndex];
-  const OrderIcon = currentOrder.icon;
+  const currentItem = invoiceItems[currentItemIndex];
+  const ItemIcon = currentItem.icon;
 
   return (
-    <div 
+    <div
       className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 overflow-hidden border border-white/10"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Background grid */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:32px_32px]" />
-      
+
       <div className="relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-sm text-white/60 font-medium">AI Routing Engine Active</span>
+            <span className="text-sm text-white/60 font-medium">Invoice Splitting Engine Active</span>
           </div>
           <div className="flex items-center gap-4">
             {isPaused && (
@@ -95,32 +94,38 @@ const OrderRoutingDemo = () => {
               </motion.div>
             )}
             <div className="text-xs text-white/40 font-mono">
-              {completedOrders.length} / {orders.length} orders routed
+              {routedItems.length} / {invoiceItems.length} items routed
             </div>
           </div>
         </div>
 
-        {/* Main visualization - responsive */}
+        {/* Invoice Badge */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+            <FileText className="w-4 h-4 text-white/60" />
+            <span className="text-sm text-white/80 font-medium">Invoice #INV-2847</span>
+            <span className="text-xs text-white/40">• 3 line items • 1 customer</span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center min-h-[250px] md:min-h-[300px]">
-          
-          {/* Incoming Orders Column */}
+
+          {/* Invoice Line Items */}
           <div className="space-y-3">
             <div className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-4">
-              Incoming Orders
+              Invoice Line Items
             </div>
-            {orders.map((order, idx) => {
-              const Icon = order.icon;
-              const isActive = idx === currentOrderIndex;
-              const isCompleted = completedOrders.includes(order.id);
-              
+            {invoiceItems.map((item, idx) => {
+              const Icon = item.icon;
+              const isActive = idx === currentItemIndex;
+              const isRouted = routedItems.includes(item.id);
+
               return (
                 <motion.div
-                  key={order.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ 
-                    opacity: isActive ? 1 : isCompleted ? 0.3 : 0.5,
-                    x: 0,
-                    scale: isActive ? 1.02 : 1
+                  key={item.id}
+                  animate={{
+                    opacity: isActive ? 1 : isRouted ? 0.3 : 0.5,
+                    scale: isActive ? 1.02 : 1,
                   }}
                   transition={{ duration: 0.5 }}
                   className={`relative p-3 rounded-lg border transition-all ${
@@ -128,17 +133,17 @@ const OrderRoutingDemo = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${order.color} flex items-center justify-center`}>
+                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center`}>
                       <Icon className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-mono text-white/40">{order.id}</div>
-                      <div className="text-sm text-white truncate">{order.product}</div>
+                      <div className="text-sm text-white truncate">{item.product}</div>
+                      <div className="text-xs text-white/40">{item.decoration}</div>
                     </div>
-                    {isCompleted && <CheckCircle2 className="w-4 h-4 text-green-400" />}
+                    {isRouted && <CheckCircle2 className="w-4 h-4 text-green-400" />}
                   </div>
                   {isActive && phase !== "complete" && (
-                    <motion.div 
+                    <motion.div
                       className="absolute inset-0 rounded-lg border-2 border-primary/50"
                       animate={{ opacity: [0.5, 1, 0.5] }}
                       transition={{ duration: 2, repeat: Infinity }}
@@ -149,62 +154,61 @@ const OrderRoutingDemo = () => {
             })}
           </div>
 
-          {/* AI Processing Column */}
+          {/* AI Splitting Engine */}
           <div className="flex flex-col items-center justify-center">
-            {/* Arrow on mobile */}
             <div className="md:hidden mb-4">
               <ArrowRight className="w-6 h-6 text-white/30 rotate-90" />
             </div>
-            
+
             <AnimatePresence mode="wait">
-              {phase === "incoming" && (
-                <motion.div key="incoming" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }} className="text-center">
-                  <motion.div 
+              {phase === "invoice" && (
+                <motion.div key="invoice" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center">
+                  <motion.div
                     className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 flex items-center justify-center mb-4 mx-auto"
                     animate={{ scale: [1, 1.05, 1] }}
                     transition={{ duration: 2.5, repeat: Infinity }}
                   >
-                    <Cpu className="w-10 h-10 text-primary" />
+                    <FileText className="w-10 h-10 text-primary" />
                   </motion.div>
-                  <div className="text-sm text-white/60">Waiting for order...</div>
+                  <div className="text-sm text-white/60">Reading invoice...</div>
                 </motion.div>
               )}
 
-              {phase === "analyzing" && (
-                <motion.div key="analyzing" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.5 }} className="text-center">
-                  <motion.div 
+              {phase === "splitting" && (
+                <motion.div key="splitting" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="text-center">
+                  <motion.div
                     className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/50 flex items-center justify-center mb-4 mx-auto"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    <Cpu className="w-10 h-10 text-amber-400" />
+                    <SplitSquareVertical className="w-10 h-10 text-amber-400" />
                   </motion.div>
-                  <div className="text-sm text-amber-400 font-medium">Analyzing Order</div>
+                  <div className="text-sm text-amber-400 font-medium">Splitting Invoice</div>
                   <motion.div className="text-xs text-white/40 mt-1" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                    Checking product type & routing rules...
+                    Matching product to supplier & decorator...
                   </motion.div>
                   <div className="mt-3 text-xs text-white/30 space-y-1">
-                    <p>Type: {currentOrder.type}</p>
-                    <p>Best match: {currentOrder.decorator}</p>
+                    <p>Decoration: {currentItem.decoration}</p>
+                    <p>Destination: {currentItem.destination}</p>
                   </div>
                 </motion.div>
               )}
 
               {phase === "routing" && (
-                <motion.div key="routing" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.5 }} className="text-center">
+                <motion.div key="routing" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="text-center">
                   <motion.div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/50 flex items-center justify-center mb-4 mx-auto">
                     <motion.div animate={{ x: [0, 10, 0] }} transition={{ duration: 0.8, repeat: Infinity }}>
                       <ArrowRight className="w-10 h-10 text-blue-400" />
                     </motion.div>
                   </motion.div>
-                  <div className="text-sm text-blue-400 font-medium">Routing to Decorator</div>
-                  <div className="text-xs text-white/40 mt-1">→ {currentOrder.decorator}</div>
+                  <div className="text-sm text-blue-400 font-medium">Routing Line Item</div>
+                  <div className="text-xs text-white/40 mt-1">→ {currentItem.destination}</div>
                 </motion.div>
               )}
 
               {phase === "complete" && (
-                <motion.div key="complete" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.5 }} className="text-center">
-                  <motion.div 
+                <motion.div key="complete" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="text-center">
+                  <motion.div
                     className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/50 flex items-center justify-center mb-4 mx-auto"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -212,56 +216,55 @@ const OrderRoutingDemo = () => {
                   >
                     <CheckCircle2 className="w-10 h-10 text-green-400" />
                   </motion.div>
-                  <div className="text-sm text-green-400 font-medium">Order Routed!</div>
-                  <div className="text-xs text-white/40 mt-1">Sent to {currentOrder.decorator}</div>
+                  <div className="text-sm text-green-400 font-medium">Item Routed!</div>
+                  <div className="text-xs text-white/40 mt-1">Sent to {currentItem.destination}</div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Arrow on mobile */}
             <div className="md:hidden mt-4">
               <ArrowRight className="w-6 h-6 text-white/30 rotate-90" />
             </div>
           </div>
 
-          {/* Decorators Column */}
+          {/* Destinations */}
           <div className="space-y-3">
             <div className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-4">
-              Decorators
+              Suppliers & Decorators
             </div>
-            {decorators.map((decorator) => {
-              const isTarget = phase === "routing" && currentOrder.decorator === decorator.name;
-              const hasOrder = completedOrders.some(orderId => {
-                const order = orders.find(o => o.id === orderId);
-                return order?.decorator === decorator.name;
+            {destinations.map((dest) => {
+              const isTarget = phase === "routing" && currentItem.destination === dest.name;
+              const hasItem = routedItems.some(itemId => {
+                const item = invoiceItems.find(i => i.id === itemId);
+                return item?.destination === dest.name;
               });
-              
+
               return (
                 <motion.div
-                  key={decorator.name}
-                  animate={{ 
+                  key={dest.name}
+                  animate={{
                     scale: isTarget ? 1.05 : 1,
-                    borderColor: isTarget ? "rgba(59, 130, 246, 0.8)" : undefined
+                    borderColor: isTarget ? "rgba(59, 130, 246, 0.8)" : undefined,
                   }}
                   transition={{ duration: 0.5 }}
-                  className={`relative p-3 rounded-lg border transition-all ${decorator.color}`}
+                  className={`relative p-3 rounded-lg border transition-all ${dest.color}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                       <Building2 className="w-4 h-4 text-white/70" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm text-white font-medium">{decorator.name}</div>
-                      <div className="text-xs text-white/50">{decorator.specialty}</div>
+                      <div className="text-sm text-white font-medium">{dest.name}</div>
+                      <div className="text-xs text-white/50">{dest.specialty}</div>
                     </div>
-                    {hasOrder && (
+                    {hasItem && (
                       <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">
                         <span className="text-xs text-green-400">✓</span>
                       </div>
                     )}
                   </div>
                   {isTarget && (
-                    <motion.div 
+                    <motion.div
                       className="absolute inset-0 rounded-lg border-2 border-blue-400"
                       animate={{ opacity: [0.5, 1, 0.5] }}
                       transition={{ duration: 0.8, repeat: Infinity }}
@@ -278,21 +281,20 @@ const OrderRoutingDemo = () => {
           <div className="flex items-center justify-center gap-4 md:gap-6 text-xs text-white/40 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span>Apparel → PrintMax Pro</span>
+              <span>Blank Apparel → Fulfillment Center</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-purple-500" />
-              <span>Embroidery → StitchCraft</span>
+              <span>Embroidery → Stitch Specialist</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span>Promo → PromoHub</span>
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>DTG Print → Print Specialist</span>
             </div>
           </div>
-          {/* Progress bar */}
           <div className="mt-4">
             <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="h-full bg-primary/50 rounded-full"
                 style={{ width: `${progress}%` }}
               />

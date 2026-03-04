@@ -28,7 +28,7 @@ const distributorNav = [
   { title: "Dashboard", url: "/app/dashboard", icon: LayoutDashboard },
   { title: "Onboarding", url: "/app/onboarding", icon: Rocket },
   { title: "Stores", url: "/app/stores", icon: Store },
-  { title: "Suppliers", url: "/app/suppliers", icon: Truck },
+  { title: "Integrations", url: "/app/suppliers", icon: Truck },
 ];
 
 const opsNav = [

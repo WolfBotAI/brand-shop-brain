@@ -4,14 +4,14 @@ import { Rocket, Link2, PackageCheck, Store, PartyPopper } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { StepIndicator } from "@/components/features/AnimatedStep";
 import { WelcomeStep } from "@/components/app/onboarding/WelcomeStep";
-import { GhlConnectStep } from "@/components/app/onboarding/GhlConnectStep";
+import { WolfBotConnectStep } from "@/components/app/onboarding/WolfBotConnectStep";
 import { SupplierStep } from "@/components/app/onboarding/SupplierStep";
 import { CreateStoreStep } from "@/components/app/onboarding/CreateStoreStep";
 import { CompletionStep } from "@/components/app/onboarding/CompletionStep";
 
 const steps = [
   { title: "Welcome", icon: Rocket },
-  { title: "Connect CRM", icon: Link2 },
+  { title: "Wolf Bot AI", icon: Link2 },
   { title: "Supplier", icon: PackageCheck },
   { title: "First Store", icon: Store },
   { title: "Complete", icon: PartyPopper },
@@ -61,8 +61,8 @@ const Onboarding = () => {
                 <WelcomeStep key="welcome" onNext={() => setCurrentStep(1)} />
               )}
               {currentStep === 1 && (
-                <GhlConnectStep
-                  key="ghl"
+              <WolfBotConnectStep
+                  key="wolfbot"
                   onNext={(data) => {
                     setTenantId(data.tenantId);
                     setLocationId(data.locationId);
