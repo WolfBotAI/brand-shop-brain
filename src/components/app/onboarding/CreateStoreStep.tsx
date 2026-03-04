@@ -129,7 +129,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
       }
       setCatalogProducts(products);
     } catch (err) {
-      console.error("Failed to load SS catalog:", err);
+      console.error("Failed to load catalog:", err);
       setCatalogError(err instanceof Error ? err.message : "Failed to load catalog");
     } finally {
       setLoadingCatalog(false);
@@ -142,7 +142,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
     setChatMessages([
       {
         role: "bot",
-        text: `I'm loading real products from SS Activewear for **${vertLabel}**. Tell me about the event — goals, budget per item, colors, season — and I'll help you pick the best products.`,
+        text: `I'm loading products from the Brand-Shop Catalog for **${vertLabel}**. Tell me about the event — goals, budget per item, colors, season — and I'll help you pick the best products.`,
       },
     ]);
     setPhase("catalog");
@@ -245,7 +245,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
           </motion.div>
         )}
 
-        {/* PHASE B: AI Merch Advisor + Real SS Activewear Catalog */}
+        {/* PHASE B: AI Merch Advisor + Product Catalog */}
         {phase === "catalog" && (
           <motion.div key="catalog" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
             {/* AI Chat */}
@@ -291,7 +291,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4" />
-                  SS Activewear Catalog — {selectedCount} items selected
+                  Product Catalog — {selectedCount} items selected
                 </h3>
               </div>
 

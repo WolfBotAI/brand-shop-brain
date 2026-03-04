@@ -4,7 +4,7 @@
  * which already has SS Activewear + Printful fully connected.
  */
 
-import { apiClient } from "./client";
+// import { apiClient } from "./client";
 
 // --- Types ---
 
@@ -33,18 +33,40 @@ export interface SSProduct {
   imageUrl: string | null;
 }
 
-// --- API calls (routed through Codex engine) ---
+// --- Mock catalog data (until real Codex endpoints are confirmed) ---
+
+const mockCatalog: SSStyle[] = [
+  { styleID: 1, title: "Premium Heavyweight Tee", description: "6.1 oz ringspun cotton", brandName: "Brand-Shop Basics", baseCategory: "T-Shirts", styleImage: null, customerPrice: 8.50, piecePrice: 12.99 },
+  { styleID: 2, title: "Performance Polo", description: "Moisture-wicking polyester", brandName: "Brand-Shop Performance", baseCategory: "Polos", styleImage: null, customerPrice: 14.00, piecePrice: 22.99 },
+  { styleID: 3, title: "Classic Pullover Hoodie", description: "8 oz fleece blend", brandName: "Brand-Shop Basics", baseCategory: "Hoodies & Sweatshirts", styleImage: null, customerPrice: 16.50, piecePrice: 28.99 },
+  { styleID: 4, title: "Snapback Trucker Cap", description: "Structured 6-panel", brandName: "Brand-Shop Headwear", baseCategory: "Caps & Hats", styleImage: null, customerPrice: 6.00, piecePrice: 14.99 },
+  { styleID: 5, title: "Quarter-Zip Pullover", description: "Lightweight performance fleece", brandName: "Brand-Shop Performance", baseCategory: "Outerwear", styleImage: null, customerPrice: 18.00, piecePrice: 32.99 },
+  { styleID: 6, title: "Unisex Tank Top", description: "4.2 oz jersey knit", brandName: "Brand-Shop Basics", baseCategory: "T-Shirts", styleImage: null, customerPrice: 5.50, piecePrice: 9.99 },
+  { styleID: 7, title: "Athletic Shorts", description: "Moisture-wicking with liner", brandName: "Brand-Shop Performance", baseCategory: "Shorts", styleImage: null, customerPrice: 10.00, piecePrice: 18.99 },
+  { styleID: 8, title: "Crewneck Sweatshirt", description: "7.8 oz pill-resistant fleece", brandName: "Brand-Shop Basics", baseCategory: "Hoodies & Sweatshirts", styleImage: null, customerPrice: 14.00, piecePrice: 24.99 },
+  { styleID: 9, title: "Softshell Jacket", description: "3-layer bonded shell", brandName: "Brand-Shop Outerwear", baseCategory: "Outerwear", styleImage: null, customerPrice: 28.00, piecePrice: 49.99 },
+  { styleID: 10, title: "Canvas Tote Bag", description: "12 oz heavy canvas", brandName: "Brand-Shop Accessories", baseCategory: "Accessories", styleImage: null, customerPrice: 4.00, piecePrice: 8.99 },
+  { styleID: 11, title: "Dad Hat", description: "Unstructured low-profile", brandName: "Brand-Shop Headwear", baseCategory: "Caps & Hats", styleImage: null, customerPrice: 5.00, piecePrice: 12.99 },
+  { styleID: 12, title: "Jogger Pants", description: "French terry with elastic cuffs", brandName: "Brand-Shop Performance", baseCategory: "Pants", styleImage: null, customerPrice: 16.00, piecePrice: 29.99 },
+];
 
 export async function searchStyles(query: string): Promise<SSStyle[]> {
-  return apiClient<SSStyle[]>("/api/catalog/styles", {
-    params: { search: query },
-  });
+  // TODO: Replace with real apiClient call once Codex endpoints are confirmed
+  // return apiClient<SSStyle[]>("/api/catalog/styles", { params: { search: query } });
+  await new Promise((r) => setTimeout(r, 400 + Math.random() * 300));
+  const lower = query.toLowerCase();
+  return mockCatalog.filter(
+    (s) =>
+      s.title.toLowerCase().includes(lower) ||
+      s.baseCategory.toLowerCase().includes(lower) ||
+      s.description.toLowerCase().includes(lower)
+  );
 }
 
 export async function getProductsByStyle(styleIds: (string | number)[]): Promise<SSProduct[]> {
-  return apiClient<SSProduct[]>("/api/catalog/products", {
-    params: { styleIds: styleIds.map(String).join(",") },
-  });
+  // TODO: Replace with real apiClient call once Codex endpoints are confirmed
+  await new Promise((r) => setTimeout(r, 300));
+  return [];
 }
 
 // --- Vertical → search keywords ---
