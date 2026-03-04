@@ -1,2 +1,2 @@
-[functions.ss-products]
-verify_jwt = false
+# Supabase Edge Functions config
+# No custom edge functions — catalog calls route through api.brand-shop.ai
