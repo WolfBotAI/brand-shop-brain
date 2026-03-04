@@ -18,6 +18,7 @@ import SiteMigration from "./pages/features/SiteMigration";
 import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/app/Dashboard";
 import Onboarding from "./pages/app/Onboarding";
+import StoreWorkspace from "./pages/app/StoreWorkspace";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/app" element={<AppLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="onboarding" element={<Onboarding />} />
+            <Route path="stores/:storeId" element={<StoreWorkspace />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
