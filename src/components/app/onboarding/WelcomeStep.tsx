@@ -10,7 +10,7 @@ interface WelcomeStepProps {
 
 export const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
   const steps = [
-    "Connect your GHL location to link your CRM",
+    "Connect Wolf Bot AI to link your CRM",
     "Add your supplier credentials for product sourcing",
     "Create your first branded store in minutes",
   ];

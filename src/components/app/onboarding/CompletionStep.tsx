@@ -13,7 +13,7 @@ export const CompletionStep = ({ storeId }: CompletionStepProps) => {
   const navigate = useNavigate();
 
   const checklist = [
-    { label: "CRM connected via GHL", done: true },
+    { label: "Wolf Bot AI connected", done: true },
     { label: "Supplier account linked", done: true },
     { label: "First store created", done: true },
     { label: "Catalog sync triggered", done: true },

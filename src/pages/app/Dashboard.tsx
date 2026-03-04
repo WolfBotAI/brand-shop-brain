@@ -96,14 +96,13 @@ export default function Dashboard() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                AI Recommendations
+                AI Merch Advisor
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {data?.activeStores === 0 || !data ? (
                 <p className="text-muted-foreground">
-                  Get started by completing onboarding — connect your GHL location and supplier
-                  credentials to launch your first store.
+                  Get started by completing onboarding to activate your catalog and launch your first store.
                 </p>
               ) : (
                 <>
@@ -169,22 +168,35 @@ export default function Dashboard() {
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             ) : integrations.data?.integrations?.length ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {integrations.data.integrations.map((intg) => (
-                  <div
-                    key={intg.name}
-                    className="flex items-center gap-2 rounded-lg border border-border p-3"
-                  >
-                    {intg.status === "connected" ? (
-                      <Wifi className="h-4 w-4 text-accent" />
-                    ) : (
-                      <WifiOff className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <div>
-                      <p className="text-sm font-medium text-card-foreground">{intg.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{intg.status}</p>
-                    </div>
-                  </div>
-                ))}
+              {(() => {
+                const nameMap: Record<string, string> = {
+                  SSActivewear: "Brand-Shop Catalog",
+                  SanMar: "Brand-Shop Catalog",
+                  Printful: "Brand-Shop Fulfillment",
+                };
+                const seen = new Set<string>();
+                return integrations.data.integrations
+                  .map((intg) => {
+                    const displayName = nameMap[intg.name] || intg.name;
+                    if (seen.has(displayName)) return null;
+                    seen.add(displayName);
+                    const displayStatus = (intg.status as string) === "Handled-In-Ghl" ? "active" : intg.status;
+                    return (
+                      <div key={displayName} className="flex items-center gap-2 rounded-lg border border-border p-3">
+                        {displayStatus === "connected" || displayStatus === "active" ? (
+                          <Wifi className="h-4 w-4 text-accent" />
+                        ) : (
+                          <WifiOff className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-card-foreground">{displayName}</p>
+                          <p className="text-xs text-muted-foreground capitalize">{displayStatus}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                  .filter(Boolean);
+              })()}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">No integrations configured yet.</p>
