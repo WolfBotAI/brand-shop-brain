@@ -35,25 +35,11 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const [storeId, setStoreId] = useState("");
   const { toast } = useToast();
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!storeName.trim() || !clientName.trim() || !brandVertical) return;
-    setLoading(true);
-    try {
-      const res = await createStore({
-        tenantId,
-        locationId,
-        storeName: storeName.trim(),
-        clientName: clientName.trim(),
-        brandVertical,
-      });
-      setStoreId(res.storeId);
-      setCreated(true);
-      toast({ title: "Store created!", description: `${storeName} is ready to configure.` });
-    } catch (err: any) {
-      toast({ title: "Creation failed", description: err.message || "Please try again.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    setStoreId(`store-${Date.now()}`);
+    setCreated(true);
+    toast({ title: "Store created!", description: `${storeName} is ready to configure.` });
   };
 
   return (

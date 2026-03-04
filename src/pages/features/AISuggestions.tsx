@@ -4,7 +4,7 @@ import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
 import { AISuggestionsDemo } from "@/components/features/AISuggestionsDemo";
-import { Sparkles, TrendingUp, Users, ShoppingCart, Lightbulb, Target } from "lucide-react";
+import { Sparkles, CloudSun, DollarSign, Palette, ShoppingBag, MessageSquare } from "lucide-react";
 
 const AISuggestions = () => {
   return (
@@ -13,62 +13,62 @@ const AISuggestions = () => {
 
       <FeatureHero
         icon={Sparkles}
-        badge="AI Suggestions"
-        title="AI That Knows —"
-        highlight="What Sells Next"
-        description="Let AI analyze sales patterns and recommend the right products to your clients. Stop guessing, start growing."
+        badge="AI Merch Advisor"
+        title="Your Clients Tell AI What They Need —"
+        highlight="It Finds the Perfect Merch"
+        description="End customers describe their event, budget, and style preferences. AI searches your connected catalogs and recommends the best apparel — ready to add to their store with mockups."
       />
 
       <AISuggestionsDemo />
 
       <FeatureSection
-        title="Smart Recommendations"
-        description="AI-powered insights that help you and your clients make better product decisions."
+        title="Smart Merchandise Selection"
+        description="AI that understands what your clients actually need — not just what's popular."
         features={[
           {
-            icon: TrendingUp,
-            title: "Trend Detection",
-            description: "AI spots trending products before they peak, helping you stock up at the right time.",
+            icon: MessageSquare,
+            title: "Conversational Discovery",
+            description: "Clients describe their goals — team uniforms, fundraiser gear, corporate swag — and AI asks the right follow-up questions.",
           },
           {
-            icon: Target,
-            title: "Client Matching",
-            description: "Get product suggestions tailored to each client's industry and customer base.",
+            icon: DollarSign,
+            title: "Budget-Aware Picks",
+            description: "Set a per-item or total budget and AI filters the catalog to show only what fits, with the best value options highlighted.",
           },
           {
-            icon: Lightbulb,
-            title: "Seasonal Insights",
-            description: "Receive timely recommendations based on seasonal demand patterns.",
+            icon: CloudSun,
+            title: "Weather & Season Smart",
+            description: "AI factors in event timing, location weather, and seasonal trends to recommend the right weight, material, and style.",
           },
         ]}
       />
 
       <FeatureSection
-        title="Growth Engine"
-        description="Turn AI insights into revenue with actionable recommendations."
+        title="From Recommendation to Storefront"
+        description="AI doesn't just suggest — it helps clients build their store around the perfect products."
         features={[
           {
-            icon: Users,
-            title: "Distributor Insights",
-            description: "Know which products to pitch to which clients based on their sales history.",
+            icon: ShoppingBag,
+            title: "Add to Store with Mockups",
+            description: "Clients with an existing store can add recommended items instantly — products appear with AI-generated mockups in their branding.",
           },
           {
-            icon: ShoppingCart,
-            title: "Client Upsells",
-            description: "AI suggests complementary products to end customers at checkout.",
+            icon: Palette,
+            title: "AI-Assisted Store Creation",
+            description: "First-time clients describe their brand colors, style, and vertical — AI creates a themed storefront with their selected products.",
           },
           {
             icon: Sparkles,
-            title: "Confidence Scores",
-            description: "Each recommendation comes with a confidence score so you know what to prioritize.",
+            title: "Catalog-Connected Intelligence",
+            description: "Recommendations pull from your actual connected catalogs — real inventory, real pricing, real availability.",
           },
         ]}
         reversed
       />
 
       <FeatureCTA
-        title="Ready to Let AI Drive Growth?"
-        description="See how AI-powered suggestions can help you recommend the right products to the right clients."
+        title="Let AI Sell for Your Clients"
+        description="Give every end customer a personal merch advisor that knows your catalog inside and out."
       />
 
       <Footer />
