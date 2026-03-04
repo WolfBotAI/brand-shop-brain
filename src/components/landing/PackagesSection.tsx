@@ -1,44 +1,60 @@
 import { motion } from "framer-motion";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const packages = [
   {
     name: "Starter",
-    tier: "A",
-    items: "Up to 10",
-    price: "$49",
-    period: "/mo",
-    features: ["AI Store Builder", "AI Merch Advisor", "AI Chat Support", "Basic Reporting"],
+    items: "Up to 10 items",
+    features: [
+      "White-labeled agency account",
+      "AI-powered web stores",
+      "AI Conversations Agent",
+      "AI Voice Agent",
+      "Agency-level reporting",
+    ],
     popular: false,
   },
   {
     name: "Growth",
-    tier: "B",
-    items: "Up to 25",
-    price: "$99",
-    period: "/mo",
-    features: ["Everything in Starter", "Bulk Variant Selection", "Order Routing", "KPI Reports"],
+    items: "Up to 25 items",
+    features: [
+      "Everything in Starter",
+      "Bulk variant selection",
+      "Multi-store management",
+      "Advanced reporting & KPIs",
+    ],
     popular: true,
   },
   {
     name: "Pro",
-    tier: "C",
-    items: "Up to 40",
-    price: "$179",
-    period: "/mo",
-    features: ["Everything in Growth", "Multi-Store Management", "Site Migration", "Priority Support"],
+    items: "Up to 40 items",
+    features: [
+      "Everything in Growth",
+      "Priority support",
+      "Custom branding options",
+      "Dedicated onboarding",
+    ],
     popular: false,
   },
   {
     name: "Enterprise",
-    tier: "E",
-    items: "40+",
-    price: "Custom",
-    period: "",
-    features: ["Everything in Pro", "Unlimited Items", "Dedicated Account Manager", "Custom Integrations"],
+    items: "40+ items",
+    features: [
+      "Everything in Pro",
+      "Unlimited items",
+      "Dedicated account manager",
+      "Custom integrations",
+    ],
     popular: false,
   },
+];
+
+const addOns = [
+  { name: "Order Routing", description: "Auto-route orders to the right supplier or decorator" },
+  { name: "AI Vision", description: "Extract POs from any format — PDF, photo, handwritten" },
+  { name: "Site Migration", description: "Migrate existing stores from any platform" },
 ];
 
 export const PackagesSection = () => {
@@ -53,12 +69,12 @@ export const PackagesSection = () => {
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Simple, Scalable{" "}
+            Scalable{" "}
             <span className="text-primary">Package Tiers</span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Choose a package based on how many items your clients need. 
-            Upgrade anytime as their store grows.
+            Every package includes a white-labeled agency account, AI-powered stores, 
+            AI Conversations, and AI Voice for 24/7 customer support.
           </p>
         </motion.div>
 
@@ -81,16 +97,11 @@ export const PackagesSection = () => {
                 </div>
               )}
 
-              <div className="text-sm font-medium text-muted-foreground mb-1">Package {pkg.tier}</div>
               <h3 className="text-2xl font-bold text-foreground mb-1">{pkg.name}</h3>
-              <p className="text-sm text-primary font-medium mb-4">{pkg.items} items</p>
-
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-foreground">{pkg.price}</span>
-                <span className="text-muted-foreground">{pkg.period}</span>
-              </div>
+              <p className="text-sm text-primary font-medium mb-6">{pkg.items}</p>
 
               <Button
+                asChild
                 className={`w-full rounded-full mb-6 ${
                   pkg.popular
                     ? "bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -98,7 +109,7 @@ export const PackagesSection = () => {
                 }`}
                 variant={pkg.popular ? "default" : "outline"}
               >
-                {pkg.price === "Custom" ? "Contact Sales" : "Get Started"}
+                <Link to="/assessment">Take Assessment</Link>
               </Button>
 
               <ul className="space-y-3">
@@ -112,6 +123,28 @@ export const PackagesSection = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Add-ons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-12 max-w-4xl mx-auto"
+        >
+          <h3 className="text-center text-lg font-bold text-foreground mb-6">Available Add-ons</h3>
+          <div className="grid md:grid-cols-3 gap-4">
+            {addOns.map((addon) => (
+              <div key={addon.name} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
+                <Plus className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-foreground text-sm">{addon.name}</p>
+                  <p className="text-xs text-muted-foreground">{addon.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   );

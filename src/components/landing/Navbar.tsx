@@ -59,6 +59,9 @@ export const Navbar = () => {
               <Link to="/" className="text-foreground/80 hover:text-primary transition-colors font-medium">
                 Home
               </Link>
+              <Link to="/assessment" className="text-foreground/80 hover:text-primary transition-colors font-medium">
+                Assessment
+              </Link>
 
               {/* Features Dropdown */}
               <div className="relative" ref={dropdownRef}>

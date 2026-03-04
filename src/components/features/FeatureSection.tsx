@@ -46,8 +46,8 @@ export const FeatureSection = ({
               transition={{ duration: 0.4, delay: index * 0.1 }}
               className="rounded-xl p-6 bg-card border border-border"
             >
-              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-4">
-                <feature.icon className="w-6 h-6 text-secondary-foreground" />
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <feature.icon className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2">
                 {feature.title}

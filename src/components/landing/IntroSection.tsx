@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, Sparkles, MessageSquare, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const IntroSection = () => {
   return (
     <section className="py-20 bg-muted">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left - Image */}
+          {/* Left - AI Discovery Mockup */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -15,27 +16,50 @@ export const IntroSection = () => {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-card flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--secondary)))' }}
-            >
-              <div className="text-center p-8">
-                <div className="w-20 h-20 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <ArrowRight className="w-10 h-10 text-primary" />
+            <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
+              {/* Window chrome */}
+              <div className="bg-muted px-5 py-3 border-b border-border flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-destructive/50" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary/50" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-border" />
                 </div>
-                <p className="text-lg font-bold text-foreground">AI-Powered Discovery</p>
-                <p className="text-sm text-muted-foreground mt-1">Purpose · Audience · Climate · Budget</p>
+                <span className="text-xs text-muted-foreground">AI Merch Advisor</span>
+              </div>
+              <div className="p-5 space-y-3">
+                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
+                  className="p-3 rounded-xl bg-muted text-sm text-foreground mr-6">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Sparkles className="w-3 h-3 text-primary" />
+                    <span className="text-[10px] font-medium text-primary">AI Advisor</span>
+                  </div>
+                  What's the purpose of this store?
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 }}
+                  className="p-3 rounded-xl bg-primary/10 text-sm text-foreground ml-6">
+                  Football fundraiser for Lincoln High
+                </motion.div>
+                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.7 }}
+                  className="p-3 rounded-xl bg-muted text-sm text-foreground mr-6">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Sparkles className="w-3 h-3 text-primary" />
+                    <span className="text-[10px] font-medium text-primary">AI Advisor</span>
+                  </div>
+                  Great! Here are 8 picks for Package B — moisture-wicking for Dallas fall weather…
+                </motion.div>
               </div>
             </div>
+
             {/* Floating badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground px-6 py-4 rounded-xl shadow-lg"
+              transition={{ duration: 0.4, delay: 0.5 }}
+              className="absolute -bottom-5 -right-4 bg-primary text-primary-foreground px-5 py-3 rounded-xl shadow-lg"
             >
-              <p className="text-lg font-bold">Zero Support</p>
-              <p className="text-2xl font-bold">100% Autopilot</p>
+              <p className="text-sm font-bold">Zero Support</p>
+              <p className="text-lg font-bold">100% Autopilot</p>
             </motion.div>
           </motion.div>
 
@@ -59,7 +83,7 @@ export const IntroSection = () => {
               {[
                 "AI asks 4 discovery questions before recommending products",
                 "Package tiers: Starter (10), Growth (25), Pro (40), Enterprise (40+)",
-                "Every store includes AI Chat + Voice for tracking, support, and returns",
+                "AI Conversations provides 24/7 support across web, SMS, email, FB & IG",
                 "Bulk color & size selection across your entire catalog",
               ].map((item, index) => (
                 <motion.li 
@@ -76,11 +100,14 @@ export const IntroSection = () => {
               ))}
             </ul>
             <Button 
+              asChild
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
             >
-              See It In Action
-              <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+              <Link to="/assessment">
+                Take the Assessment
+                <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
           </motion.div>
         </div>

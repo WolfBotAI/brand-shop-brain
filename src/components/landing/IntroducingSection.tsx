@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Store, Bot, Users, Route } from "lucide-react";
+import { Store, Bot, Users, Route, Sparkles, Package, Rocket } from "lucide-react";
 
 const features = [
   {
@@ -73,7 +73,7 @@ export const IntroducingSection = () => {
           })}
         </div>
 
-        {/* Product Visual */}
+        {/* 3-Step Flow Diagram */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -81,13 +81,34 @@ export const IntroducingSection = () => {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="mt-16"
         >
-          <div className="aspect-[21/9] rounded-2xl overflow-hidden flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary)))' }}
-          >
-            <div className="text-center">
-              <p className="text-2xl md:text-3xl font-bold text-foreground">AI Discovery → Package Selection → Store Live</p>
-              <p className="text-muted-foreground mt-2">The complete journey, powered by AI</p>
-            </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[
+              { icon: Sparkles, step: "01", title: "AI Discovery", desc: "AI asks about purpose, audience, climate & budget" },
+              { icon: Package, step: "02", title: "Package Selection", desc: "Client picks a tier — AI fills the catalog" },
+              { icon: Rocket, step: "03", title: "Store Live", desc: "White-labeled store launches with full AI support" },
+            ].map((item, i) => {
+              const StepIcon = item.icon;
+              return (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 + i * 0.15 }}
+                  className="relative text-center p-6 rounded-2xl bg-card border border-border"
+                >
+                  <div className="text-xs font-bold text-primary mb-3">STEP {item.step}</div>
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <StepIcon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h4 className="text-lg font-bold text-foreground mb-1">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                  {i < 2 && (
+                    <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 text-primary z-10">→</div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
