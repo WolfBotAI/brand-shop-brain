@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  MessageSquare, Package, ShoppingBag, Layout, Rocket, Check, Sparkles,
-  Pause, Play, Users, Plug, ShoppingCart
+  MessageSquare, ShoppingBag, Layout, Rocket, Check, Sparkles,
+  Pause, Users, Plug, ShoppingCart, Zap, Thermometer, DollarSign, Star
 } from "lucide-react";
 import { StepIndicator } from "./AnimatedStep";
 import { ChatBubble } from "./ChatBubble";
@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 
 const steps = [
   { title: "AI Discovery", icon: MessageSquare },
-  { title: "Package Selection", icon: Package },
+  { title: "AI Product Picks", icon: Sparkles },
   { title: "AI Catalog", icon: ShoppingBag },
   { title: "Theme & Launch", icon: Rocket },
 ];
@@ -27,10 +27,11 @@ const discoveryChat = [
   { role: "user" as const, text: "Around $25" },
 ];
 
-const packageTiers = [
-  { id: "a", name: "Starter", items: 10, price: "$49/mo" },
-  { id: "b", name: "Growth", items: 25, price: "$99/mo", popular: true },
-  { id: "c", name: "Pro", items: 40, price: "$179/mo" },
+const aiRecommendedProducts = [
+  { id: 1, name: "Dri-Fit Polo", price: "$18.50", match: 97, material: "Moisture-wicking polyester", tags: [{ label: "Weather Pick", icon: Thermometer }, { label: "Best Match", icon: Star }], colors: ["bg-blue-900", "bg-yellow-500"] },
+  { id: 2, name: "Lightweight Hoodie", price: "$22.00", match: 94, material: "French terry blend", tags: [{ label: "Budget Friendly", icon: DollarSign }], colors: ["bg-blue-900", "bg-gray-400"] },
+  { id: 3, name: "Performance Tee", price: "$14.75", match: 92, material: "Breathable mesh poly", tags: [{ label: "Weather Pick", icon: Thermometer }, { label: "Budget Friendly", icon: DollarSign }], colors: ["bg-yellow-500", "bg-blue-900"] },
+  { id: 4, name: "Quarter Zip", price: "$24.50", match: 89, material: "Micro-fleece", tags: [{ label: "Best Match", icon: Star }], colors: ["bg-blue-900"] },
 ];
 
 const catalogProducts = [
@@ -56,8 +57,8 @@ const integrationPlatforms = [
 
 const aiMessages: Record<number, string> = {
   0: "Let me learn about your store. I'll ask a few quick questions…",
-  1: "Based on your needs, I recommend Package B — up to 25 items for a fundraiser.",
-  2: "Here are my top picks for fall football in Dallas. Moisture-wicking, under $25, navy & gold.",
+  1: "Based on Dallas fall weather and your $25 budget, here are my top picks — moisture-wicking in navy & gold.",
+  2: "Great choices! Browse the full catalog to add more items. I've pre-selected my recommendations.",
   3: "Pick a theme mode — presets, custom, or let AI match your school website. Then you're live!",
 };
 
@@ -68,7 +69,7 @@ const TOTAL_CYCLE_MS = 32000;
 export const StoreBuilderJourney = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [chatIndex, setChatIndex] = useState(0);
-  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [selectedRecommendations, setSelectedRecommendations] = useState<number[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -92,39 +93,34 @@ export const StoreBuilderJourney = () => {
     if (!isAutoPlaying || isPaused || mode === "connect-store") return;
     const timers: NodeJS.Timeout[] = [];
 
-    // Step 0: Discovery chat — reveal messages one by one
     let t = 1000;
     discoveryChat.forEach((_, i) => {
       timers.push(setTimeout(() => setChatIndex(i + 1), t));
       t += 1200;
     });
-    // Advance to step 1 after all chat
     timers.push(setTimeout(() => { setCurrentStep(1); setChatIndex(0); }, t + 500));
     const step1Start = t + 500;
 
-    // Step 1: Select package
-    timers.push(setTimeout(() => setSelectedPackage("b"), step1Start + 2000));
-    timers.push(setTimeout(() => setCurrentStep(2), step1Start + 3500));
-    const step2Start = step1Start + 3500;
-
-    // Step 2: Select products one by one
-    [1, 2, 3, 4, 5, 6].forEach((id, i) => {
-      timers.push(setTimeout(() => setSelectedProducts(prev => [...prev, id]), step2Start + 1000 + i * 800));
+    // Step 1: AI selects recommended products one by one
+    aiRecommendedProducts.forEach((p, i) => {
+      timers.push(setTimeout(() => setSelectedRecommendations(prev => [...prev, p.id]), step1Start + 1500 + i * 800));
     });
-    timers.push(setTimeout(() => setCurrentStep(3), step2Start + 7000));
-    const step3Start = step2Start + 7000;
+    timers.push(setTimeout(() => setCurrentStep(2), step1Start + 5500));
+    const step2Start = step1Start + 5500;
 
-    // Step 3: Select theme
+    // Step 2: Pre-select recommended + add extras
+    timers.push(setTimeout(() => setSelectedProducts([1, 2, 3, 4]), step2Start + 500));
+    [5, 6].forEach((id, i) => {
+      timers.push(setTimeout(() => setSelectedProducts(prev => [...prev, id]), step2Start + 1500 + i * 800));
+    });
+    timers.push(setTimeout(() => setCurrentStep(3), step2Start + 5000));
+    const step3Start = step2Start + 5000;
+
     timers.push(setTimeout(() => setSelectedTheme("presets"), step3Start + 2000));
 
-    // Reset
     timers.push(setTimeout(() => {
-      setCurrentStep(0);
-      setChatIndex(0);
-      setSelectedPackage(null);
-      setSelectedProducts([]);
-      setSelectedTheme(null);
-      setProgress(0);
+      setCurrentStep(0); setChatIndex(0); setSelectedRecommendations([]);
+      setSelectedProducts([]); setSelectedTheme(null); setProgress(0);
     }, step3Start + 5000));
 
     return () => timers.forEach(clearTimeout);
@@ -143,7 +139,7 @@ export const StoreBuilderJourney = () => {
   }, [isAutoPlaying, isPaused, mode, connectedPlatform === null && mode === "connect-store"]);
 
   const resetAll = () => {
-    setCurrentStep(0); setChatIndex(0); setSelectedPackage(null);
+    setCurrentStep(0); setChatIndex(0); setSelectedRecommendations([]);
     setSelectedProducts([]); setSelectedTheme(null); setProgress(0);
     setConnectedPlatform(null); setConnectStep(0); setIsAutoPlaying(true);
   };
@@ -156,7 +152,7 @@ export const StoreBuilderJourney = () => {
             Watch the AI-Powered Store Builder
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            AI discovers needs, recommends a package, fills the catalog, and launches — all automated. Hover to pause.
+            AI discovers needs, recommends the right products based on climate, audience & budget, then launches — all automated. Hover to pause.
           </p>
 
           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -248,36 +244,66 @@ export const StoreBuilderJourney = () => {
                         </div>
                       )}
 
-                      {/* Step 1: Package Selection */}
+                      {/* Step 1: AI Product Picks */}
                       {currentStep === 1 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          {packageTiers.map((pkg) => (
-                            <motion.button
-                              key={pkg.id}
-                              onClick={() => { setIsAutoPlaying(false); setSelectedPackage(pkg.id); }}
-                              className={`p-6 rounded-xl border-2 transition-all text-left relative ${
-                                selectedPackage === pkg.id
-                                  ? "border-primary bg-primary/5"
-                                  : "border-border hover:border-primary/50"
-                              }`}
-                              whileHover={{ scale: 1.02 }}
-                            >
-                              {pkg.popular && (
-                                <span className="absolute -top-2.5 right-3 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">
-                                  Recommended
-                                </span>
-                              )}
-                              <Package className="w-8 h-8 text-primary mb-3" />
-                              <p className="font-bold text-foreground text-lg">{pkg.name}</p>
-                              <p className="text-sm text-muted-foreground">Up to {pkg.items} items</p>
-                              <p className="text-sm font-semibold text-primary mt-2">{pkg.price}</p>
-                              {selectedPackage === pkg.id && (
-                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-3 right-3">
-                                  <Check className="w-5 h-5 text-primary" />
-                                </motion.div>
-                              )}
-                            </motion.button>
-                          ))}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {aiRecommendedProducts.map((product) => {
+                            const isSelected = selectedRecommendations.includes(product.id);
+                            return (
+                              <motion.button
+                                key={product.id}
+                                onClick={() => {
+                                  setIsAutoPlaying(false);
+                                  setSelectedRecommendations(prev =>
+                                    prev.includes(product.id) ? prev.filter(i => i !== product.id) : [...prev, product.id]
+                                  );
+                                }}
+                                className={`p-4 rounded-xl border-2 transition-all text-left relative ${
+                                  isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                }`}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                {/* Match badge */}
+                                <div className="absolute top-3 right-3 flex items-center gap-1">
+                                  {isSelected && (
+                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                                      <Check className="w-4 h-4 text-primary" />
+                                    </motion.div>
+                                  )}
+                                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                    product.match >= 95 ? "bg-green-100 text-green-700" : "bg-primary/10 text-primary"
+                                  }`}>
+                                    {product.match}% match
+                                  </span>
+                                </div>
+
+                                <div className="w-full h-14 rounded-lg bg-muted flex items-center justify-center mb-3">
+                                  <ShoppingBag className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                                <p className="font-semibold text-foreground">{product.name}</p>
+                                <p className="text-xs text-muted-foreground mb-2">{product.material}</p>
+                                <p className="text-sm font-semibold text-primary mb-2">{product.price}</p>
+
+                                {/* Tags */}
+                                <div className="flex flex-wrap gap-1.5">
+                                  {product.tags.map((tag, i) => (
+                                    <span key={i} className="flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                                      <tag.icon className="w-3 h-3" />
+                                      {tag.label}
+                                    </span>
+                                  ))}
+                                </div>
+
+                                {/* Color swatches */}
+                                <div className="flex items-center gap-1 mt-2">
+                                  {product.colors.map((c, i) => (
+                                    <div key={i} className={`w-3.5 h-3.5 rounded-full ${c} border border-border`} />
+                                  ))}
+                                </div>
+                              </motion.button>
+                            );
+                          })}
                         </div>
                       )}
 
@@ -285,7 +311,7 @@ export const StoreBuilderJourney = () => {
                       {currentStep === 2 && (
                         <div>
                           <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
-                            <span>{selectedProducts.length} of 25 selected (Package B)</span>
+                            <span>{selectedProducts.length} items selected</span>
                           </div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {catalogProducts.map((product) => (
@@ -305,7 +331,6 @@ export const StoreBuilderJourney = () => {
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                               >
-                                {/* Placeholder image */}
                                 <div className="w-full h-16 rounded-lg bg-muted flex items-center justify-center mb-2">
                                   <ShoppingBag className="w-6 h-6 text-muted-foreground" />
                                 </div>
@@ -337,9 +362,7 @@ export const StoreBuilderJourney = () => {
                                 key={tm.id}
                                 onClick={() => { setIsAutoPlaying(false); setSelectedTheme(tm.id); }}
                                 className={`p-5 rounded-xl border-2 transition-all text-left ${
-                                  selectedTheme === tm.id
-                                    ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50"
+                                  selectedTheme === tm.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                                 }`}
                                 whileHover={{ scale: 1.02 }}
                               >
@@ -359,14 +382,12 @@ export const StoreBuilderJourney = () => {
                             <motion.div className="text-center" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                               <motion.div
                                 className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: [0, 1.2, 1] }}
-                                transition={{ duration: 0.5 }}
+                                initial={{ scale: 0 }} animate={{ scale: [0, 1.2, 1] }} transition={{ duration: 0.5 }}
                               >
                                 <Rocket className="w-8 h-8 text-primary-foreground" />
                               </motion.div>
                               <h3 className="text-xl font-bold text-foreground mb-1">Store Ready!</h3>
-                              <p className="text-sm text-muted-foreground">6 items · Package B · Navy & Gold Spirit Theme</p>
+                              <p className="text-sm text-muted-foreground">6 items · Navy & Gold Spirit Theme</p>
                               <Button size="lg" className="rounded-full px-8 mt-4">
                                 Launch Store <Rocket className="ml-2 w-4 h-4" />
                               </Button>
@@ -406,9 +427,7 @@ export const StoreBuilderJourney = () => {
                       key={platform.id}
                       onClick={() => { setIsAutoPlaying(false); setConnectedPlatform(platform.id); }}
                       className={`p-6 rounded-xl border-2 transition-all text-center ${
-                        connectedPlatform === platform.id
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
+                        connectedPlatform === platform.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                       }`}
                       whileHover={{ scale: 1.02 }}
                     >
