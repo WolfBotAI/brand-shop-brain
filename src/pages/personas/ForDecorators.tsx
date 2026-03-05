@@ -38,7 +38,7 @@ const solutions = [
   },
   {
     icon: Bot,
-    title: "AI Conversations Agent",
+    title: "AI Support Agent",
     description: "Handles client inquiries 24/7 across web chat, SMS, email, Facebook, and Instagram.",
   },
   {

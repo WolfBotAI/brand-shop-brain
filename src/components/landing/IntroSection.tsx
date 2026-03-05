@@ -45,7 +45,7 @@ export const IntroSection = () => {
                     <Sparkles className="w-3 h-3 text-primary" />
                     <span className="text-[10px] font-medium text-primary">AI Advisor</span>
                   </div>
-                  Great! Here are 8 picks for Package B — moisture-wicking for Dallas fall weather…
+                  Great! Here are 8 top picks — moisture-wicking for Dallas fall weather…
                 </motion.div>
               </div>
             </div>
@@ -82,8 +82,8 @@ export const IntroSection = () => {
             <ul className="space-y-4 mb-8">
               {[
                 "AI asks 4 discovery questions before recommending products",
-                "Package tiers: Starter (10), Growth (25), Pro (40), Enterprise (40+)",
-                "AI Conversations provides 24/7 support across web, SMS, email, FB & IG",
+                "Scalable package tiers from 10 to 40+ items per store",
+                "AI Support Agent provides 24/7 support across web, SMS, email, FB & IG",
                 "Bulk color & size selection across your entire catalog",
               ].map((item, index) => (
                 <motion.li 
