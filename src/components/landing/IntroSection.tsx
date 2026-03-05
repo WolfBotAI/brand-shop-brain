@@ -77,12 +77,12 @@ export const IntroSection = () => {
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
               The AI Merch Advisor asks about purpose, audience, climate, and budget — 
-              then recommends the perfect products with flexible package tiers.
+              then recommends the perfect products for each client's needs.
             </p>
             <ul className="space-y-4 mb-8">
               {[
                 "AI asks 4 discovery questions before recommending products",
-                "Scalable package tiers from 10 to 40+ items per store",
+                "AI-curated product catalogs tailored to each client",
                 "AI Support Agent provides 24/7 support across web, SMS, email, FB & IG",
                 "Bulk color & size selection across your entire catalog",
               ].map((item, index) => (

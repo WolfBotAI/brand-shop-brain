@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Store, Bot, Users, Route, Sparkles, Package, Rocket } from "lucide-react";
+import { Store, Bot, MessageSquare, Route, Sparkles, ShoppingBag, Rocket } from "lucide-react";
 
 const features = [
   {
@@ -13,9 +13,9 @@ const features = [
     description: "4-step discovery: purpose, audience, climate, budget — then personalized product recommendations from your catalog",
   },
   {
-    icon: Users,
-    title: "Package Tiers",
-    description: "Starter (10 items), Growth (25), Pro (40), Enterprise (40+) — clients pick a tier, AI fills the catalog",
+    icon: MessageSquare,
+    title: "AI Support Agent",
+    description: "24/7 omnichannel support via web chat, SMS, email, phone, Facebook & Instagram — all trained on your brand",
   },
   {
     icon: Route,
@@ -84,7 +84,7 @@ export const IntroducingSection = () => {
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
               { icon: Sparkles, step: "01", title: "AI Discovery", desc: "AI asks about purpose, audience, climate & budget" },
-              { icon: Package, step: "02", title: "Package Selection", desc: "Client picks a tier — AI fills the catalog" },
+              { icon: ShoppingBag, step: "02", title: "Store Built", desc: "AI curates the right products and launches the store" },
               { icon: Rocket, step: "03", title: "Store Live", desc: "White-labeled store launches with full AI support" },
             ].map((item, i) => {
               const StepIcon = item.icon;

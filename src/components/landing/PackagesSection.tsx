@@ -1,53 +1,36 @@
 import { motion } from "framer-motion";
-import { Check, Star, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Store, MessageSquare, Phone, BarChart3, Palette, Bot, Plus } from "lucide-react";
 
-const packages = [
+const capabilities = [
   {
-    name: "Starter",
-    items: "Up to 10 items",
-    features: [
-      "White-labeled agency account",
-      "AI-powered web stores",
-      "AI Support Agent",
-      "AI Voice Agent",
-      "Agency-level reporting",
-    ],
-    popular: false,
+    icon: Store,
+    title: "AI-Managed Stores",
+    description: "Centralize all client stores. AI creates, updates, and manages them.",
   },
   {
-    name: "Growth",
-    items: "Up to 25 items",
-    features: [
-      "Everything in Starter",
-      "Bulk variant selection",
-      "Multi-store management",
-      "Advanced reporting & KPIs",
-    ],
-    popular: true,
+    icon: MessageSquare,
+    title: "AI Website Assistant",
+    description: "24/7 embedded chat for order tracking, returns, and product recommendations.",
   },
   {
-    name: "Pro",
-    items: "Up to 40 items",
-    features: [
-      "Everything in Growth",
-      "Priority support",
-      "Custom branding options",
-      "Dedicated onboarding",
-    ],
-    popular: false,
+    icon: Bot,
+    title: "AI Support Agent",
+    description: "Omnichannel support via SMS, email, phone, Facebook & Instagram.",
   },
   {
-    name: "Enterprise",
-    items: "40+ items",
-    features: [
-      "Everything in Pro",
-      "Unlimited items",
-      "Dedicated account manager",
-      "Custom integrations",
-    ],
-    popular: false,
+    icon: Phone,
+    title: "AI Voice Agent",
+    description: "Answers phone calls with real-time order lookups and customer support.",
+  },
+  {
+    icon: BarChart3,
+    title: "Agency Reporting",
+    description: "Complete visibility into every store's performance and sales data.",
+  },
+  {
+    icon: Palette,
+    title: "White-Label Branding",
+    description: "Your brand, your domain, your client relationship.",
   },
 ];
 
@@ -59,7 +42,7 @@ const addOns = [
 
 export const PackagesSection = () => {
   return (
-    <section id="packages" className="py-24 bg-muted">
+    <section id="platform" className="py-24 bg-muted">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -69,59 +52,35 @@ export const PackagesSection = () => {
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Scalable{" "}
-            <span className="text-primary">Package Tiers</span>
+            Everything You Need.{" "}
+            <span className="text-primary">Built In.</span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Every package includes a white-labeled agency account, AI-powered stores, 
-            AI Support Agent, and AI Voice for 24/7 customer support.
+            A complete AI-powered platform for managing client stores, support, and operations — 
+            so you can focus on growing your distributor business.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {packages.map((pkg, index) => (
-            <motion.div
-              key={pkg.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative bg-card rounded-2xl p-8 shadow-sm border transition-shadow hover:shadow-md ${
-                pkg.popular ? "border-primary shadow-md" : "border-border"
-              }`}
-            >
-              {pkg.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  <Star className="w-3 h-3" />
-                  Most Popular
-                </div>
-              )}
-
-              <h3 className="text-2xl font-bold text-foreground mb-1">{pkg.name}</h3>
-              <p className="text-sm text-primary font-medium mb-6">{pkg.items}</p>
-
-              <Button
-                asChild
-                className={`w-full rounded-full mb-6 ${
-                  pkg.popular
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                    : ""
-                }`}
-                variant={pkg.popular ? "default" : "outline"}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {capabilities.map((cap, index) => {
+            const Icon = cap.icon;
+            return (
+              <motion.div
+                key={cap.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="bg-card rounded-2xl p-8 shadow-sm border border-border hover:shadow-md transition-shadow"
               >
-                <Link to="/assessment">Take Assessment</Link>
-              </Button>
-
-              <ul className="space-y-3">
-                {pkg.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm text-foreground">
-                    <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
+                  <Icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">{cap.title}</h3>
+                <p className="text-sm text-muted-foreground">{cap.description}</p>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Add-ons */}

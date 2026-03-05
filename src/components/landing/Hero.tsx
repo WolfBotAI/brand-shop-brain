@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Store, Sparkles, Zap, Package } from "lucide-react";
+import { ArrowRight, Store, Sparkles, Zap } from "lucide-react";
 
 export const Hero = () => {
   return (
@@ -41,7 +41,7 @@ export const Hero = () => {
             
             <p className="text-xl text-muted-foreground mb-8 max-w-xl">
               AI discovers what your clients need, recommends the right products, 
-              and builds their store — with flexible package tiers from 10 to 40+ items.
+              and builds their store — so you can focus on growing your business.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -59,7 +59,7 @@ export const Hero = () => {
                 size="lg" 
                 variant="ctaOutlineLight"
                 className="px-8 py-6 text-lg rounded-full"
-                onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Book a Demo
               </Button>
@@ -68,7 +68,7 @@ export const Hero = () => {
             {/* Quick stats */}
             <div className="flex flex-wrap gap-8">
               {[
-                { value: "4", label: "Package Tiers" },
+                { value: "24/7", label: "AI Support" },
                 { value: "AI", label: "Discovery & Advisor" },
                 { value: "0", label: "Support Tickets" },
               ].map((stat, index) => (
@@ -137,7 +137,7 @@ export const Hero = () => {
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     <span className="text-xs font-medium text-primary">AI Advisor</span>
                   </div>
-                  Great! Dallas gets warm in fall — I'll prioritize moisture-wicking. Here are 8 picks for Package B…
+                  Great! Dallas gets warm in fall — I'll prioritize moisture-wicking. Here are my top picks for your store.
                 </motion.div>
 
                 {/* Package badge */}
@@ -147,10 +147,10 @@ export const Hero = () => {
                   transition={{ delay: 1.1 }}
                   className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20"
                 >
-                  <Package className="w-5 h-5 text-primary" />
+                  <Sparkles className="w-5 h-5 text-primary" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Package B — Growth</p>
-                    <p className="text-xs text-muted-foreground">Up to 25 items · 8 of 25 selected</p>
+                    <p className="text-sm font-medium text-foreground">AI-Curated Selection</p>
+                    <p className="text-xs text-muted-foreground">8 products matched to budget & climate</p>
                   </div>
                 </motion.div>
 
