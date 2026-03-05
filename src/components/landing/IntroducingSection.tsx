@@ -83,9 +83,9 @@ export const IntroducingSection = () => {
         >
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              { icon: Sparkles, step: "01", title: "AI Discovery", desc: "AI asks about purpose, audience, climate & budget" },
-              { icon: ShoppingBag, step: "02", title: "Store Built", desc: "AI curates the right products and launches the store" },
-              { icon: Rocket, step: "03", title: "Store Live", desc: "White-labeled store launches with full AI support" },
+              { icon: Sparkles, step: "01", title: "Choose Your Path", desc: "AI-generated, distributor-curated, or client self-build" },
+              { icon: ShoppingBag, step: "02", title: "AI Builds Your Store", desc: "Products matched, theme applied, pricing set" },
+              { icon: Rocket, step: "03", title: "Integrated & Live", desc: "Connected to your suppliers & decorators from day one" },
             ].map((item, i) => {
               const StepIcon = item.icon;
               return (

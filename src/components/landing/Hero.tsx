@@ -1,24 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Store, Sparkles, Zap, Users, Plug } from "lucide-react";
-
-const launchPaths = [
-  {
-    icon: Sparkles,
-    title: "AI-Generated Store",
-    description: "AI builds the store for your client — products, theme, and pricing selected automatically.",
-  },
-  {
-    icon: Users,
-    title: "Distributor-Curated",
-    description: "You select the products, theme, and pricing — then hand a ready store to your client.",
-  },
-  {
-    icon: Plug,
-    title: "Client Self-Build",
-    description: "Your client picks their own theme and products — within the rules you set.",
-  },
-];
+import { ArrowRight, Store, Sparkles, Zap } from "lucide-react";
 
 export const Hero = () => {
   return (
@@ -53,16 +35,19 @@ export const Hero = () => {
             </motion.div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
-              Give Your Clients{" "}
-              <span className="text-primary">AI-Powered Stores</span>
+              Launch a Store in{" "}
+              <span className="text-primary">Minutes</span>
             </h1>
             
-            <p className="text-xl text-muted-foreground mb-8 max-w-xl">
-              AI discovers what your clients need, recommends the right products, 
-              and builds their store — so you can focus on growing your business.
+            <p className="text-xl text-muted-foreground mb-4 max-w-xl">
+              Let AI build it, curate it yourself, or let your client self-build — every store connects to your suppliers and decorators automatically.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-10">
+            <p className="text-base text-muted-foreground mb-8 max-w-xl">
+              Three ways to launch. One platform. Integrated with your supply chain from day one.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 asChild
                 size="lg" 
@@ -82,37 +67,6 @@ export const Hero = () => {
                 Book a Demo
               </Button>
             </div>
-
-            {/* 3 Launch Paths — above the fold */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <p className="text-sm font-semibold text-primary mb-4 uppercase tracking-wide">Three Ways to Launch</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {launchPaths.map((path, index) => {
-                  const Icon = path.icon;
-                  return (
-                    <motion.div
-                      key={path.title}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                      className="flex items-start gap-3 p-3 rounded-xl bg-card border border-border"
-                    >
-                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Icon className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{path.title}</p>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{path.description}</p>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
           </motion.div>
 
           {/* Right - Dashboard Mockup */}
