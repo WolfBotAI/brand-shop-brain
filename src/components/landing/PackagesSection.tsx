@@ -10,7 +10,7 @@ const packages = [
     features: [
       "White-labeled agency account",
       "AI-powered web stores",
-      "AI Conversations Agent",
+      "AI Support Agent",
       "AI Voice Agent",
       "Agency-level reporting",
     ],
@@ -74,7 +74,7 @@ export const PackagesSection = () => {
           </h2>
           <p className="text-xl text-muted-foreground">
             Every package includes a white-labeled agency account, AI-powered stores, 
-            AI Conversations, and AI Voice for 24/7 customer support.
+            AI Support Agent, and AI Voice for 24/7 customer support.
           </p>
         </motion.div>
 

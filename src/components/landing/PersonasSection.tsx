@@ -6,7 +6,7 @@ const personas = [
   {
     icon: Store,
     title: "Distributors",
-    summary: "Stop forwarding POs and chasing tracking updates. Let AI manage stores, route orders, and handle customer support.",
+    summary: "Centralize all your client stores. AI manages them, routes orders, and provides 24/7 omnichannel support.",
     href: "/for/distributors",
   },
   {

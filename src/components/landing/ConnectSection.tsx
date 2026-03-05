@@ -63,7 +63,7 @@ export const ConnectSection = () => {
               >
                 <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
                   <MessageSquare className="w-5 h-5 text-primary" />
-                  <span className="text-[9px] font-bold text-foreground mt-0.5 leading-tight text-center">AI Conversations</span>
+                  <span className="text-[9px] font-bold text-foreground mt-0.5 leading-tight text-center">AI Support Agent</span>
                   <span className="text-[7px] text-muted-foreground leading-tight text-center">Web · SMS · Email · FB · IG</span>
                 </div>
               </motion.div>
@@ -127,12 +127,12 @@ export const ConnectSection = () => {
               <span className="text-primary">You Do Nothing.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-6">
-              AI Conversations, Voice, and Vision handle every customer interaction 
+              AI Support, Voice, and Vision handle every customer interaction 
               across every channel — 24/7.
             </p>
             <ul className="space-y-4 mb-8">
               {[
-                "AI Conversations handles web chat, SMS, email, Facebook & Instagram",
+                "AI Support Agent handles web chat, SMS, email, Facebook & Instagram",
                 "AI Voice takes phone calls with real-time order lookups",
                 "AI Vision reads POs, PDFs, and handwritten notes automatically",
                 "Our certified decorator network ensures quality and tracking",

@@ -159,7 +159,7 @@ const personaValueProps: Record<Persona, { headline: string; points: string[] }>
     points: [
       "White-labeled agency account — your brand, your clients",
       "AI-powered stores built automatically for each client",
-      "AI Conversations handle web chat, SMS, email, Facebook & Instagram",
+      "AI Support Agent handles web chat, SMS, email, Facebook & Instagram",
       "AI Voice answers phone calls with real-time order tracking",
       "Our certified decorator network ensures quality and tracking",
       "You focus on selling — we handle everything else",
@@ -170,7 +170,7 @@ const personaValueProps: Record<Persona, { headline: string; points: string[] }>
     points: [
       "AI Vision reads any PO format — PDF, photo, handwritten — automatically",
       "No more copy-paste errors or supervisor double-checking",
-      "AI Conversations handle client status requests 24/7",
+      "AI Support Agent handles client status requests 24/7",
       "AI Voice answers your phone and provides tracking updates",
       "Integrates directly into your existing systems",
       "Your team focuses on production, not paperwork",

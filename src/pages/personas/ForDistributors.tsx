@@ -5,7 +5,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import {
   Store, ArrowRightLeft, MessageSquare, Phone, ShieldCheck,
-  BarChart3, Layout, Bot, ArrowRight, AlertTriangle
+  BarChart3, Layout, Bot, ArrowRight, AlertTriangle, Globe, Bell
 } from "lucide-react";
 
 const painPoints = [
@@ -34,36 +34,42 @@ const painPoints = [
 const solutions = [
   {
     icon: Layout,
-    title: "AI-Powered Stores",
-    description: "AI builds and manages stores for your clients. No web updates, no manual product management.",
+    title: "AI-Managed Stores",
+    description: "Centralize all client stores in one place. AI creates, updates, and manages them — or give clients access to preconfigured stores with your pricing, or let them build their own from catalogs like S&S, SanMar, and more.",
   },
   {
-    icon: ArrowRightLeft,
-    title: "Order Routing",
-    description: "Orders auto-route to the right supplier and decorator. No forwarding, no copy-pasting POs.",
+    icon: Globe,
+    title: "AI Website Assistant",
+    description: "Embedded chat on every store provides 24/7 support — tracking requests, return/refund info based on your guidelines, and product recommendations by price, brand, and material.",
   },
   {
     icon: Bot,
-    title: "AI Conversations Agent",
-    description: "Handles customer support 24/7 across web chat, SMS, email, Facebook, and Instagram.",
+    title: "AI Support Agent",
+    description: "Handles the same requests via text, phone, Facebook Messenger, Instagram Messenger, and email — all trained on your company, clients, brand, and goals. 24/7 omnichannel support.",
   },
   {
-    icon: Phone,
-    title: "AI Voice Agent",
-    description: "Answers phone calls for tracking and order status — so your team doesn't have to.",
+    icon: ArrowRightLeft,
+    title: "Intelligent Order Routing",
+    description: "Orders automatically route to the right suppliers and decorators — even splitting items from a single order across multiple vendors.",
+  },
+  {
+    icon: Bell,
+    title: "Proactive Status Updates",
+    description: "Both AI agents proactively send order updates to you and your clients via the portal, dashboard, email, and text. If a decorator hasn't updated status, AI reaches out to them automatically.",
   },
   {
     icon: ShieldCheck,
     title: "Certified Decorator Network",
-    description: "Vetted decorators integrated into our systems, so AI agents can provide real-time tracking to your customers.",
+    description: "Vetted decorators integrated into our systems. Reviewed and certified for communication, tracking, quality, and system integration — so AI can provide real-time updates.",
   },
 ];
 
 const whatYouGet = [
   "White-labeled distributor agency account",
-  "Agency-level reporting & analytics",
-  "AI-powered web stores for all your clients",
-  "AI Conversations + AI Voice for 24/7 support",
+  "Agency-level reporting & analytics dashboard",
+  "AI-managed web stores for all your clients",
+  "AI Website Assistant + AI Support Agent for 24/7 omnichannel support",
+  "Proactive order tracking and status updates",
 ];
 
 const addOns = ["Order Routing", "AI Vision", "Site Migration"];
@@ -90,8 +96,8 @@ const ForDistributors = () => {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-6xl font-bold mb-6"
             >
-              Stop Forwarding Emails.{" "}
-              <span className="text-primary">Start Scaling.</span>
+              Centralize Your Stores.{" "}
+              <span className="text-primary">Automate Everything Else.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -99,8 +105,8 @@ const ForDistributors = () => {
               transition={{ duration: 0.6, delay: 0.15 }}
               className="text-lg md:text-xl text-secondary-foreground/70 max-w-2xl mx-auto mb-8"
             >
-              You didn't become a distributor to forward emails and chase tracking numbers. 
-              Let AI handle the busy work so you can focus on growing.
+              AI manages your client stores, routes orders to the right suppliers and decorators, 
+              and provides 24/7 support across every channel — so you can focus on growing.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -239,7 +245,7 @@ const ForDistributors = () => {
               viewport={{ once: true }}
               className="text-3xl md:text-4xl font-bold mb-4"
             >
-              Ready to Stop Forwarding?
+              Ready to Centralize & Automate?
             </motion.h2>
             <motion.p
               initial={{ opacity: 0 }}
