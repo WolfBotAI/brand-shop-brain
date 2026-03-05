@@ -1,114 +1,63 @@
 
 
-# Add Persona Pages (Distributors, Decorators, Referral Partners) + "Who We Serve" Nav
+# Rename "AI Conversations" → "AI Support Agent" + Rewrite Distributor Messaging
 
-## What We're Building
+## Two changes
 
-Three dedicated persona landing pages that speak directly to each audience's pain points, plus a "Who We Serve" dropdown in the main nav and homepage integration.
+### 1. Global rename: "AI Conversations Agent" → "AI Support Agent"
 
----
+Every file that references "AI Conversations" gets updated:
 
-## Persona Pages
+| File | What changes |
+|------|-------------|
+| `ConnectSection.tsx` | Hub node label: "AI Conversations" → "AI Support Agent", subtitle stays "Web · SMS · Email · FB · IG" |
+| `ConnectSection.tsx` | Body copy: "AI Conversations, Voice, and Vision…" → "AI Support, Voice, and Vision…" and bullet list |
+| `PackagesSection.tsx` | Feature list item + intro paragraph |
+| `IntroSection.tsx` | Bullet "AI Conversations provides…" → "AI Support Agent provides…"; also remove "Package tiers: Starter (10)…" bullet and "Package B" from AI chat mockup |
+| `ForDistributors.tsx` | Solution card title + "What You Get" list |
+| `ForDecorators.tsx` | Solution card title |
+| `PersonasSection.tsx` | Distributor summary text |
+| `Assessment.tsx` | Value props for distributor and decorator results |
+| `AISupport.tsx` | Already uses "AI Support Agent" in hero — no change needed |
 
-### `/for/distributors` — For Distributors
-**Hero**: "Stop Forwarding Emails. Start Scaling."
-**Pain points section** (3-4 cards):
-- Managing multiple stores across multiple platforms manually
-- Forwarding POs to suppliers and creating POs for decorators
-- Answering tracking calls, emails, SMS from customers — then chasing decorators for updates
-- Everyone frustrated: customers can't get answers, decorators overwhelmed, distributors stuck in the middle
+### 2. Rewrite ForDistributors page messaging
 
-**How We Solve It** section:
-- AI-Powered Stores — AI builds and manages stores for your clients, no web updates needed
-- Order Routing — Orders auto-route to the right supplier and decorator, no forwarding
-- AI Conversations Agent — Handles customer support 24/7 across web chat, SMS, email, FB, IG
-- AI Voice Agent — Answers phone calls for tracking and status
-- Certified Decorator Network — Vetted decorators integrated into our systems, so AI agents can provide real-time tracking
+The hero and solutions must stop being generic "package" talk and instead describe the actual platform value:
 
-**What You Get**:
+**New Hero copy:**
+- Title: "Centralize Your Stores. Automate Everything Else."
+- Subtitle: "AI manages your client stores, routes orders to the right suppliers and decorators, and provides 24/7 support across every channel — so you can focus on growing."
+
+**Updated Solutions section** (5 cards → 6 cards with clearer descriptions):
+
+1. **AI-Managed Stores** — "Centralize all client stores in one place. AI creates, updates, and manages them — or give clients access to preconfigured stores with your pricing, or let them build their own from catalogs like S&S, SanMar, and more."
+
+2. **AI Website Assistant** — "Embedded chat on every store provides 24/7 support — tracking requests, return/refund info based on your guidelines, and product recommendations by price, brand, and material."
+
+3. **AI Support Agent** — "Handles the same requests via text, phone, Facebook Messenger, Instagram Messenger, and email — all trained on your company, clients, brand, and goals. 24/7 omnichannel support."
+
+4. **Intelligent Order Routing** — "Orders automatically route to the right suppliers and decorators — even splitting items from a single order across multiple vendors."
+
+5. **Proactive Status Updates** — "Both AI agents proactively send order updates to you and your clients via the portal, dashboard, email, and text. If a decorator hasn't updated status, AI reaches out to them automatically."
+
+6. **Certified Decorator Network** — "Vetted decorators integrated into our systems. Reviewed and certified for communication, tracking, quality, and system integration — so AI can provide real-time updates."
+
+**Updated "What You Get" list:**
 - White-labeled distributor agency account
-- Agency-level reporting
-- AI-powered web stores for all your clients
-- AI Conversations + AI Voice for 24/7 support
+- Agency-level reporting & analytics dashboard
+- AI-managed web stores for all your clients
+- AI Website Assistant + AI Support Agent for 24/7 omnichannel support
+- Proactive order tracking and status updates
 
-**Add-ons**: Order Routing, AI Vision, Site Migration
-
-**CTA**: "Take the Assessment" → `/assessment`
-
----
-
-### `/for/decorators` — For Decorators
-**Hero**: "Stop Copy-Pasting POs. Let AI Handle It."
-**Pain points section**:
-- Every client sends POs in a different format (PDF, email, phone)
-- Staff manually opens emails, copies PO data into your system
-- Supervisors re-check every entry for accuracy
-- Overwhelmed by client calls and emails asking for status updates — can't answer distributors, distributors can't answer their clients
-
-**How We Solve It**:
-- AI Vision Agent — Reads any PO format (PDF, photo, email) and extracts all fields automatically
-- AI Conversations Agent — Handles client inquiries 24/7 across all channels
-- AI Voice Agent — Answers phone calls for order status
-- Integration into your existing platform — our AI plugs into your system
-
-**CTA**: "Take the Assessment" → `/assessment`
-
----
-
-### `/for/referral-partners` — For Referral Partners
-**Hero**: "Offer Branded Stores to Your Audience. Earn While You Grow."
-**Who this is for**: Agencies, micro/macro influencers, industry leaders with an audience
-**Value prop**:
-- Offer company stores for almost any vertical
-- Decorated apparel and one-off items at case pricing
-- White-label under your brand
-- Revenue share / commissions
-
-**CTA**: "Take the Assessment" → `/assessment`
-
----
-
-## Navigation Changes
-
-### `Navbar.tsx`
-Add a **"Who We Serve"** dropdown (same pattern as Features dropdown) with:
-- Distributors → `/for/distributors`
-- Decorators → `/for/decorators`
-- Referral Partners → `/for/referral-partners`
-
-Also add to mobile menu.
-
-### `Footer.tsx`
-Update footer columns to include "Who We Serve" links pointing to the three persona pages.
-
----
-
-## Homepage Integration
-
-### `Index.tsx`
-Add a new **`PersonasSection`** component between IntroSection and IntroducingSection. Shows 3 cards — one per persona — with icon, title, 1-line pain point summary, and "Learn More →" link to each persona page.
-
----
-
-## Route Registration
-
-### `App.tsx`
-Add routes: `/for/distributors`, `/for/decorators`, `/for/referral-partners`
-
----
-
-## Files
+### Files to modify
 
 | File | Action |
-|------|--------|
-| `src/pages/personas/ForDistributors.tsx` | **New** — Full persona landing page |
-| `src/pages/personas/ForDecorators.tsx` | **New** — Full persona landing page |
-| `src/pages/personas/ForReferralPartners.tsx` | **New** — Full persona landing page |
-| `src/components/landing/PersonasSection.tsx` | **New** — 3-card section for homepage |
-| `src/components/landing/Navbar.tsx` | Add "Who We Serve" dropdown |
-| `src/components/landing/Footer.tsx` | Add persona page links |
-| `src/pages/Index.tsx` | Add PersonasSection |
-| `src/App.tsx` | Add 3 persona routes |
-
-All pages use the same Navbar + Footer wrapper and match the homepage's light color scheme with `framer-motion` animations.
+|------|-------------|
+| `src/pages/personas/ForDistributors.tsx` | Rewrite hero, solutions, and "What You Get" |
+| `src/components/landing/ConnectSection.tsx` | Rename label + copy |
+| `src/components/landing/PackagesSection.tsx` | Rename in features + paragraph |
+| `src/components/landing/IntroSection.tsx` | Rename + remove package tier bullet + fix chat mockup |
+| `src/pages/personas/ForDecorators.tsx` | Rename solution card |
+| `src/pages/Assessment.tsx` | Rename in value props |
+| `src/components/landing/PersonasSection.tsx` | Update distributor summary |
 
