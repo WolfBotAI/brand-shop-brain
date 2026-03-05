@@ -1,30 +1,39 @@
-Understood. I’ll fix this by making the 3 distributor launch options explicit in the very first homepage fold, and by removing any hard “4 questions” messaging.
 
-1) Above-the-fold messaging (must appear at start of website)
-- File: `src/components/landing/Hero.tsx`
-- Update hero copy to immediately state distributors have 3 options:
-  1. AI-generated store
-  2. Distributor-curated store (you select products/theme for the client)
-  3. Client self-build (client selects theme/products within your rules)
-- Add a prominent “Choose your launch path” visual block directly in hero content (before/near CTAs), so this is unavoidable at first glance.
 
-2) Remove fixed question-count claims
-- File: `src/components/landing/IntroSection.tsx`
-  - Replace “AI asks 4 discovery questions…” with adaptive wording:
-    “AI asks as many discovery questions as needed to match the best products.”
-  - Update paragraph copy similarly (no fixed number).
-- File: `src/components/landing/IntroducingSection.tsx`
-  - Replace “4-step discovery…” with “adaptive discovery” language.
+# Restructure Hero + Add "Three Ways to Launch" Homepage Section
 
-3) Reinforce same model on Store Builder feature page
-- File: `src/pages/features/StoreBuilder.tsx`
-- Adjust top hero description so it explicitly repeats the same 3 options right away (not only later in the page).
+## What the user wants
+1. **Hero**: Remove the 3 boxes. Instead, weave the 3 launch paths into the hero description text naturally. The overall hero message should be about launching a store in minutes (steps to launch + integrate with supplier/decorator).
+2. **Dedicated homepage section**: A separate, prominent section below the hero that visually explains and demonstrates the 3 launch options (AI-Generated, Distributor-Curated, Client Self-Build) with interactive demos.
 
-4) Consistency sweep
-- Run content search and remove/replace any remaining hard-coded “4-step / asks 4 questions” claims in marketing pages.
-- Keep example chat flows (4+ messages) as examples, but no text should imply a fixed question count.
+## Changes
 
-5) Validation checklist
-- First viewport on homepage clearly communicates the 3 distributor options.
-- Messaging now says question count is variable and goal-driven (best product match).
-- No conflicting “4-step discovery” claims remain in landing/feature marketing copy.
+### 1. Hero (`src/components/landing/Hero.tsx`)
+- **Remove** the `launchPaths` array and the entire "Three Ways to Launch" card grid (lines 5-21, 86-115)
+- **Update headline** to something like: "Launch a Store in Minutes" / "Integrated with Your Suppliers & Decorators"
+- **Update description** to naturally mention: "Let AI build it, curate it yourself, or let your client self-build — every store connects to your suppliers and decorators automatically."
+- Keep CTAs and the right-side AI chat mockup as-is
+
+### 2. New homepage section: `src/components/landing/ThreeWaysSection.tsx`
+A dedicated section with:
+- Headline: "Three Ways to Launch a Store"
+- 3 columns, each with an **interactive animated demo mockup** (similar to existing demo patterns):
+  - **AI-Generated**: Animated flow showing AI asking questions → products auto-selected → store deployed
+  - **Distributor-Curated**: Animated flow showing distributor picking products/theme → handing ready store to client
+  - **Client Self-Build**: Animated flow showing client browsing catalog within distributor rules → store goes live
+- Each column has icon, title, short description, and the animated visual
+- Uses `framer-motion` with the project's existing slow-animation pattern (progress bar, pause-on-hover per memory)
+
+### 3. Update homepage composition (`src/pages/Index.tsx`)
+- Import `ThreeWaysSection`
+- Place it right after `Hero` (before `IntroSection`)
+
+### 4. Update `IntroducingSection.tsx` 3-step flow
+- Update the 3-step flow at the bottom to reflect the full journey: "Choose Your Path → AI Builds Your Store → Integrated & Live" (connecting to suppliers/decorators emphasis)
+
+## Files
+- **New**: `src/components/landing/ThreeWaysSection.tsx`
+- **Edit**: `src/components/landing/Hero.tsx` (remove boxes, update copy)
+- **Edit**: `src/pages/Index.tsx` (add new section)
+- **Edit**: `src/components/landing/IntroducingSection.tsx` (update 3-step flow copy)
+
