@@ -44,6 +44,11 @@ const integrations = [
     description: "Enterprise resource planning integration",
   },
   {
+    name: "Stripe",
+    category: "Payments",
+    description: "Secure payment processing and invoicing",
+  },
+  {
     name: "API Access",
     category: "Custom",
     description: "Build your own integrations",
@@ -62,13 +67,13 @@ export const Integrations = () => {
           transition={{ duration: 0.5 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6">
             <Puzzle className="w-4 h-4" />
             <span className="text-sm font-medium">Powerful Integrations</span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
             Integrates With{" "}
-            <span className="text-accent">Your Workflow</span>
+            <span className="text-primary">Your Workflow</span>
           </h2>
           <p className="text-xl text-muted-foreground">
             Brand-Shop Catalog powers your product sourcing. Our open API connects to the tools you already use — Printavo, DecoNetwork, InkSoft, and more.
@@ -116,7 +121,7 @@ export const Integrations = () => {
           <p className="text-muted-foreground mb-4">
             Don't see your system? We can build custom integrations.
           </p>
-          <Button className="rounded-full px-8 bg-accent hover:bg-accent/90 text-accent-foreground group">
+          <Button className="rounded-full px-8 bg-primary hover:bg-primary/90 text-primary-foreground group">
             Request Integration
             <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Button>
