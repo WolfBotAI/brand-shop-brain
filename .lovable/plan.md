@@ -1,63 +1,46 @@
 
 
-# Rename "AI Conversations" → "AI Support Agent" + Rewrite Distributor Messaging
+# Purge All Package/Tier/Item-Count Language from Marketing Pages
 
-## Two changes
+## Problem
+Four files on the homepage still have "package," "tier," and item-count copy that was supposed to be removed. The ForDistributors page is already correct.
 
-### 1. Global rename: "AI Conversations Agent" → "AI Support Agent"
+## Exact Changes
 
-Every file that references "AI Conversations" gets updated:
+### 1. `src/components/landing/Hero.tsx`
+- Line 44: "with flexible package tiers from 10 to 40+ items" → "and builds their store — so you can focus on growing your business."
+- Line 62: `scrollIntoView('packages')` → `scrollIntoView('how-it-works')`
+- Line 71: Stat `{ value: "4", label: "Package Tiers" }` → `{ value: "24/7", label: "AI Support" }`
+- Line 140: "Here are 8 picks for Package B…" → "Here are my top picks — moisture-wicking for Dallas fall weather."
+- Lines 143-155: Replace the "Package B — Growth / Up to 25 items" badge with a simple "AI Recommendations" badge: icon `Sparkles`, text "AI-Curated Selection", subtitle "8 products matched to budget & climate"
+- Remove `Package` from lucide import
 
-| File | What changes |
-|------|-------------|
-| `ConnectSection.tsx` | Hub node label: "AI Conversations" → "AI Support Agent", subtitle stays "Web · SMS · Email · FB · IG" |
-| `ConnectSection.tsx` | Body copy: "AI Conversations, Voice, and Vision…" → "AI Support, Voice, and Vision…" and bullet list |
-| `PackagesSection.tsx` | Feature list item + intro paragraph |
-| `IntroSection.tsx` | Bullet "AI Conversations provides…" → "AI Support Agent provides…"; also remove "Package tiers: Starter (10)…" bullet and "Package B" from AI chat mockup |
-| `ForDistributors.tsx` | Solution card title + "What You Get" list |
-| `ForDecorators.tsx` | Solution card title |
-| `PersonasSection.tsx` | Distributor summary text |
-| `Assessment.tsx` | Value props for distributor and decorator results |
-| `AISupport.tsx` | Already uses "AI Support Agent" in hero — no change needed |
+### 2. `src/components/landing/IntroSection.tsx`
+- Line 80: "then recommends the perfect products with flexible package tiers." → "then recommends the perfect products for each client's needs."
+- Line 85: "Scalable package tiers from 10 to 40+ items per store" → "AI-curated product catalogs tailored to each client"
 
-### 2. Rewrite ForDistributors page messaging
+### 3. `src/components/landing/IntroducingSection.tsx`
+- Replace feature card at index 2 ("Package Tiers / Starter (10 items)…") with: icon `MessageSquare`, title "AI Support Agent", description "24/7 omnichannel support via web chat, SMS, email, phone, Facebook & Instagram — all trained on your brand."
+- Replace step 02 ("Package Selection / Client picks a tier — AI fills the catalog") with: icon `ShoppingBag` (or `Store`), title "Store Built", desc "AI curates the right products and launches the store"
+- Update imports accordingly (remove `Package`, `Users`; add `MessageSquare`)
 
-The hero and solutions must stop being generic "package" talk and instead describe the actual platform value:
+### 4. `src/components/landing/PackagesSection.tsx`
+Complete rewrite. Replace the 4 package-tier cards with a "What's Included" section showing the platform capabilities as a feature grid (not tiers):
+- **AI-Managed Stores** — Centralize all client stores. AI creates, updates, and manages them.
+- **AI Website Assistant** — 24/7 embedded chat for tracking, returns, and product recommendations.
+- **AI Support Agent** — Omnichannel support via SMS, email, phone, FB, IG.
+- **AI Voice Agent** — Answers phone calls with real-time order lookups.
+- **Agency Reporting** — Complete visibility into every store's performance.
+- **White-Label Branding** — Your brand, your domain, your client relationship.
 
-**New Hero copy:**
-- Title: "Centralize Your Stores. Automate Everything Else."
-- Subtitle: "AI manages your client stores, routes orders to the right suppliers and decorators, and provides 24/7 support across every channel — so you can focus on growing."
+Keep the add-ons section (Order Routing, AI Vision, Site Migration) as-is. Change section heading from "Scalable Package Tiers" to "Everything You Need. Built In." Change the `id` from `packages` to `platform`.
 
-**Updated Solutions section** (5 cards → 6 cards with clearer descriptions):
-
-1. **AI-Managed Stores** — "Centralize all client stores in one place. AI creates, updates, and manages them — or give clients access to preconfigured stores with your pricing, or let them build their own from catalogs like S&S, SanMar, and more."
-
-2. **AI Website Assistant** — "Embedded chat on every store provides 24/7 support — tracking requests, return/refund info based on your guidelines, and product recommendations by price, brand, and material."
-
-3. **AI Support Agent** — "Handles the same requests via text, phone, Facebook Messenger, Instagram Messenger, and email — all trained on your company, clients, brand, and goals. 24/7 omnichannel support."
-
-4. **Intelligent Order Routing** — "Orders automatically route to the right suppliers and decorators — even splitting items from a single order across multiple vendors."
-
-5. **Proactive Status Updates** — "Both AI agents proactively send order updates to you and your clients via the portal, dashboard, email, and text. If a decorator hasn't updated status, AI reaches out to them automatically."
-
-6. **Certified Decorator Network** — "Vetted decorators integrated into our systems. Reviewed and certified for communication, tracking, quality, and system integration — so AI can provide real-time updates."
-
-**Updated "What You Get" list:**
-- White-labeled distributor agency account
-- Agency-level reporting & analytics dashboard
-- AI-managed web stores for all your clients
-- AI Website Assistant + AI Support Agent for 24/7 omnichannel support
-- Proactive order tracking and status updates
-
-### Files to modify
-
-| File | Action |
-|------|-------------|
-| `src/pages/personas/ForDistributors.tsx` | Rewrite hero, solutions, and "What You Get" |
-| `src/components/landing/ConnectSection.tsx` | Rename label + copy |
-| `src/components/landing/PackagesSection.tsx` | Rename in features + paragraph |
-| `src/components/landing/IntroSection.tsx` | Rename + remove package tier bullet + fix chat mockup |
-| `src/pages/personas/ForDecorators.tsx` | Rename solution card |
-| `src/pages/Assessment.tsx` | Rename in value props |
-| `src/components/landing/PersonasSection.tsx` | Update distributor summary |
+### Files NOT changing (already clean)
+- `ForDistributors.tsx` — already rewritten correctly
+- `ForDecorators.tsx` — no package references
+- `ForReferralPartners.tsx` — no package references
+- `PersonasSection.tsx` — clean
+- `ConnectSection.tsx` — clean
+- `Features.tsx` — clean
+- `Assessment.tsx` — clean
 
