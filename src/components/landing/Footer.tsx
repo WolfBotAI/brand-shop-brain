@@ -2,17 +2,21 @@ import { Link } from "react-router-dom";
 import brandIcon from "@/assets/brand-icon.png";
 
 const services = {
-  "For Decorators": [
-    { label: "Order Management", href: "/features/order-routing" },
-    { label: "AI Vision", href: "/features/ai-vision" },
-    { label: "AI Support", href: "/features/ai-support" },
-    { label: "Client Portal", href: "#" },
+  "Who We Serve": [
+    { label: "Distributors", href: "/for/distributors" },
+    { label: "Decorators", href: "/for/decorators" },
+    { label: "Referral Partners", href: "/for/referral-partners" },
   ],
   "For Distributors": [
     { label: "AI Store Builder", href: "/features/store-builder" },
     { label: "AI Support", href: "/features/ai-support" },
     { label: "Auto-Routing", href: "/features/order-routing" },
     { label: "Reporting & Analytics", href: "/features/reporting" },
+  ],
+  "For Decorators": [
+    { label: "AI Vision", href: "/features/ai-vision" },
+    { label: "AI Support", href: "/features/ai-support" },
+    { label: "Order Management", href: "/features/order-routing" },
   ],
   "Platform": [
     { label: "Multi-Store Management", href: "/features/multi-store" },
@@ -26,7 +30,7 @@ export const Footer = () => {
   return (
     <footer className="bg-secondary text-secondary-foreground">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
           <div className="lg:col-span-2">
             <Link to="/" className="inline-flex items-center gap-2 mb-4">
               <img src={brandIcon} alt="" className="h-8 w-auto" />

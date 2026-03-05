@@ -16,11 +16,19 @@ const featureLinks = [
   { label: "Site Migration", href: "/features/site-migration" },
 ];
 
+const personaLinks = [
+  { label: "Distributors", href: "/for/distributors" },
+  { label: "Decorators", href: "/for/decorators" },
+  { label: "Referral Partners", href: "/for/referral-partners" },
+];
+
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
+  const [isPersonasOpen, setIsPersonasOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const personasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -32,6 +40,9 @@ export const Navbar = () => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsFeaturesOpen(false);
+      }
+      if (personasRef.current && !personasRef.current.contains(e.target as Node)) {
+        setIsPersonasOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -62,6 +73,39 @@ export const Navbar = () => {
               <Link to="/assessment" className="text-foreground/80 hover:text-primary transition-colors font-medium">
                 Assessment
               </Link>
+
+              {/* Who We Serve Dropdown */}
+              <div className="relative" ref={personasRef}>
+                <button
+                  onClick={() => setIsPersonasOpen(!isPersonasOpen)}
+                  className="flex items-center gap-1 text-foreground/80 hover:text-primary transition-colors font-medium"
+                >
+                  Who We Serve
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isPersonasOpen ? "rotate-180" : ""}`} />
+                </button>
+                <AnimatePresence>
+                  {isPersonasOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-card border border-border rounded-xl shadow-lg py-2 z-50"
+                    >
+                      {personaLinks.map((link) => (
+                        <Link
+                          key={link.href}
+                          to={link.href}
+                          onClick={() => setIsPersonasOpen(false)}
+                          className="block px-4 py-2.5 text-sm text-foreground/80 hover:text-primary hover:bg-muted transition-colors"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Features Dropdown */}
               <div className="relative" ref={dropdownRef}>
@@ -123,6 +167,17 @@ export const Navbar = () => {
                 <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="py-4 text-xl text-foreground border-b border-border">
                   Home
                 </Link>
+                <p className="pt-4 pb-2 text-sm font-medium text-muted-foreground uppercase tracking-wide">Who We Serve</p>
+                {personaLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-3 pl-4 text-lg text-foreground border-b border-border"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
                 <p className="pt-4 pb-2 text-sm font-medium text-muted-foreground uppercase tracking-wide">Features</p>
                 {featureLinks.map((link) => (
                   <Link
