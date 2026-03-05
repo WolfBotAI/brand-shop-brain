@@ -14,6 +14,7 @@ const featureLinks = [
   { label: "KPI Reports", href: "/features/kpi-reports" },
   { label: "Reporting", href: "/features/reporting" },
   { label: "Site Migration", href: "/features/site-migration" },
+  { label: "Pop-Up Stores", href: "/features/popup-stores" },
 ];
 
 const personaLinks = [
@@ -71,7 +72,7 @@ export const Navbar = () => {
                 Home
               </Link>
               <Link to="/assessment" className="text-foreground/80 hover:text-primary transition-colors font-medium">
-                Assessment
+                Savings Calculator
               </Link>
 
               {/* Who We Serve Dropdown */}

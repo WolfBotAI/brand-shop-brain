@@ -62,7 +62,7 @@ export const CTASection = () => {
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-7 text-xl rounded-full group shadow-lg"
             >
               <a href="/assessment">
-                Take the Assessment
+                See How Much You Can Save
                 <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
               </a>
             </Button>

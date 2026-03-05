@@ -20,7 +20,7 @@ export const FeatureHero = ({
   title,
   highlight,
   description,
-  primaryCta = "Take Assessment",
+  primaryCta = "See How Much You Can Save",
   secondaryCta = "Book a Demo",
 }: FeatureHeroProps) => {
   return (

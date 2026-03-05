@@ -76,7 +76,7 @@ const ForReferralPartners = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <Button asChild size="lg" className="text-base">
-                <Link to="/assessment">Take the Assessment <ArrowRight className="ml-2 w-4 h-4" /></Link>
+                <Link to="/assessment">See How Much You Can Save <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
             </motion.div>
           </div>
@@ -171,7 +171,7 @@ const ForReferralPartners = () => {
               Take a quick assessment and see how the referral partner program works for you.
             </motion.p>
             <Button asChild size="lg" className="text-base">
-              <Link to="/assessment">Take the Assessment <ArrowRight className="ml-2 w-4 h-4" /></Link>
+              <Link to="/assessment">See How Much You Can Save <ArrowRight className="ml-2 w-4 h-4" /></Link>
             </Button>
           </div>
         </section>

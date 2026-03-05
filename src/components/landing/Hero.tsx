@@ -51,7 +51,7 @@ export const Hero = () => {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
               >
                 <a href="/assessment">
-                  Take the Assessment
+                  See How Much You Can Save
                   <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </a>
               </Button>

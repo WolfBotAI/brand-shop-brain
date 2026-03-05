@@ -93,7 +93,7 @@ const ForDecorators = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <Button asChild size="lg" className="text-base">
-                <Link to="/assessment">Take the Assessment <ArrowRight className="ml-2 w-4 h-4" /></Link>
+                <Link to="/assessment">Calculate Your Time Savings <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
             </motion.div>
           </div>
@@ -197,7 +197,7 @@ const ForDecorators = () => {
               Take a quick assessment and see how AI can transform your decoration business.
             </motion.p>
             <Button asChild size="lg" className="text-base">
-              <Link to="/assessment">Take the Assessment <ArrowRight className="ml-2 w-4 h-4" /></Link>
+              <Link to="/assessment">Calculate Your Time Savings <ArrowRight className="ml-2 w-4 h-4" /></Link>
             </Button>
           </div>
         </section>
