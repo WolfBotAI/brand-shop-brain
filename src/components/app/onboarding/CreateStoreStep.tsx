@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Store, ArrowRight, ArrowLeft, CheckCircle2, Bot, Send,
   CreditCard, Sparkles, ShoppingBag, Palette, Search,
-  Eye, Loader2, Globe, Pencil, AlertTriangle, Layers, Package,
+  Eye, Loader2, Globe, Pencil, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,13 +45,6 @@ const verticals = [
   { value: "other", label: "Other" },
 ];
 
-// --- Package tiers ---
-const packageTiers = [
-  { id: "a", name: "Package A — Starter", limit: 10, price: "$49/mo" },
-  { id: "b", name: "Package B — Growth", limit: 25, price: "$99/mo" },
-  { id: "c", name: "Package C — Pro", limit: 40, price: "$199/mo" },
-  { id: "enterprise", name: "Enterprise", limit: Infinity, price: "Custom" },
-];
 
 type CatalogProduct = SSStyle & { selected: boolean };
 type Theme = { id: string; name: string; colors: string[]; recommended?: boolean };
@@ -192,11 +185,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const [discoveryAnswers, setDiscoveryAnswers] = useState<DiscoveryAnswers>({});
   const [discoveryComplete, setDiscoveryComplete] = useState(false);
 
-  // Package state
-  const [selectedPackage, setSelectedPackage] = useState<string>("a");
-  const [packageSelected, setPackageSelected] = useState(false);
-  const [enterpriseModalOpen, setEnterpriseModalOpen] = useState(false);
-  const [enterpriseRequested, setEnterpriseRequested] = useState(false);
 
   // Variant selections per product
   const [variantSelections, setVariantSelections] = useState<Map<number, ProductVariantSelection>>(new Map());
@@ -211,8 +199,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
 
   const selectedCount = catalogProducts.filter((i) => i.selected).length;
   const themes = themesByVertical[brandVertical] || themesByVertical.other;
-  const currentTier = packageTiers.find((t) => t.id === selectedPackage)!;
-  const isOverLimit = currentTier && selectedCount > currentTier.limit;
 
   // Get unique categories
   const categories = Array.from(new Set(catalogProducts.map((p) => p.baseCategory)));
@@ -251,7 +237,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
     });
   }, []);
 
-  const fetchCatalog = async (vertical: string, packageLimit: number = 10) => {
+  const fetchCatalog = async (vertical: string) => {
     setLoadingCatalog(true);
     setCatalogError(null);
     try {
@@ -263,7 +249,7 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
         for (const style of results) {
           if (!seen.has(style.styleID)) {
             seen.add(style.styleID);
-            products.push({ ...style, selected: products.length < Math.min(packageLimit, 12) });
+            products.push({ ...style, selected: products.length < 12 });
           }
         }
       }
@@ -336,12 +322,11 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
       // Discovery complete — load catalog
       setDiscoveryComplete(true);
       const vertLabel = verticals.find((v) => v.value === brandVertical)?.label || brandVertical;
-      const tier = packageTiers.find((t) => t.id === selectedPackage)!;
       await addBotMessage(
-        `Based on your input, here are my top picks for **${vertLabel}** in **${updatedAnswers.city || "your area"}**! I've pre-selected up to ${tier.limit === Infinity ? "40+" : tier.limit} items for your **${tier.name}**. Feel free to add, remove, or ask me to refine!`,
+        `Based on your input, here are my top picks for **${vertLabel}** in **${updatedAnswers.city || "your area"}**! Feel free to add, remove, or ask me to refine!`,
         1500
       );
-      fetchCatalog(brandVertical, tier.limit);
+      fetchCatalog(brandVertical);
     }
   };
 
@@ -368,17 +353,9 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   };
 
   const toggleItem = (styleID: number) => {
-    setCatalogProducts((prev) => {
-      const updated = prev.map((i) => (i.styleID === styleID ? { ...i, selected: !i.selected } : i));
-      const newCount = updated.filter((i) => i.selected).length;
-
-      // Enterprise check
-      if (newCount > 40 && selectedPackage !== "enterprise") {
-        setEnterpriseModalOpen(true);
-      }
-
-      return updated;
-    });
+    setCatalogProducts((prev) =>
+      prev.map((i) => (i.styleID === styleID ? { ...i, selected: !i.selected } : i))
+    );
   };
 
   const openProductDetail = (product: CatalogProduct) => {
@@ -573,29 +550,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                   </Select>
                 </div>
 
-                {/* Package tier selection */}
-                <div className="space-y-2">
-                  <Label>Store Package</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {packageTiers.map((tier) => (
-                      <button
-                        key={tier.id}
-                        onClick={() => { setSelectedPackage(tier.id); setPackageSelected(true); }}
-                        className={`p-3 rounded-lg border-2 text-left transition-all ${
-                          selectedPackage === tier.id
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-muted-foreground/30"
-                        }`}
-                      >
-                        <p className="text-sm font-semibold text-foreground">{tier.name.split(" — ")[0]}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {tier.limit === Infinity ? "40+ items" : `Up to ${tier.limit} items`}
-                        </p>
-                        <p className="text-xs font-medium text-primary mt-1">{tier.price}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
                 <Button onClick={handleDetailsNext} disabled={!storeName.trim() || !clientName.trim() || !brandVertical} className="w-full gap-2">
                   Continue to Catalog <ArrowRight className="w-4 h-4" />
@@ -608,30 +562,16 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
         {/* PHASE B: AI Merch Advisor + Product Catalog */}
         {phase === "catalog" && (
           <motion.div key="catalog" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-            {/* Package badge + item counter */}
+            {/* Item counter */}
             <div className="flex items-center justify-between">
               <Badge variant="secondary" className="gap-1">
-                <Package className="w-3 h-3" />
-                {currentTier.name} — {currentTier.limit === Infinity ? "40+" : currentTier.limit} items
+                <ShoppingBag className="w-3 h-3" />
+                Product Catalog
               </Badge>
-              <span className={`text-sm font-medium ${isOverLimit ? "text-destructive" : "text-foreground"}`}>
-                {selectedCount} / {currentTier.limit === Infinity ? "∞" : currentTier.limit} selected
+              <span className="text-sm font-medium text-foreground">
+                {selectedCount} selected
               </span>
             </div>
-
-            {/* Soft warning when over limit */}
-            {isOverLimit && currentTier.limit !== Infinity && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-                <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-foreground">You've selected {selectedCount} items — exceeds {currentTier.name} ({currentTier.limit} items).</p>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Consider upgrading to {packageTiers.find((t) => t.limit > currentTier.limit)?.name || "Enterprise"} or remove some items to stay within your plan.
-                  </p>
-                </div>
-              </motion.div>
-            )}
 
             {/* AI Chat */}
             <Card className="border-border bg-gradient-to-br from-primary/5 via-background to-background">
@@ -1277,31 +1217,6 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
         onApply={handleBulkApply}
       />
 
-      {/* Enterprise Approval Modal */}
-      <Dialog open={enterpriseModalOpen} onOpenChange={setEnterpriseModalOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-primary" />
-              Enterprise Pricing
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            You've selected more than 40 items. Enterprise pricing requires approval. Submit a request and we'll get back to you within 24 hours.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEnterpriseModalOpen(false)}>Cancel</Button>
-            <Button onClick={() => {
-              setSelectedPackage("enterprise");
-              setEnterpriseRequested(true);
-              setEnterpriseModalOpen(false);
-              toast({ title: "Enterprise request submitted!", description: "We'll review and get back to you within 24 hours." });
-            }}>
-              Submit Enterprise Request
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   );
 };
