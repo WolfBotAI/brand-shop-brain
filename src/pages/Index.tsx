@@ -7,6 +7,7 @@ import { SeamlessSection } from "@/components/landing/SeamlessSection";
 import { PackagesSection } from "@/components/landing/PackagesSection";
 import { ConnectSection } from "@/components/landing/ConnectSection";
 import { Integrations } from "@/components/landing/Integrations";
+import { PopUpStoresSection } from "@/components/landing/PopUpStoresSection";
 import { CTASection } from "@/components/landing/CTASection";
 import { Footer } from "@/components/landing/Footer";
 
@@ -23,6 +24,7 @@ const Index = () => {
         <SeamlessSection />
         <ConnectSection />
         <Integrations />
+        <PopUpStoresSection />
         <CTASection />
       </main>
       <Footer />

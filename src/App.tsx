@@ -16,6 +16,7 @@ import MultiStoreManagement from "./pages/features/MultiStoreManagement";
 import AISuggestions from "./pages/features/AISuggestions";
 import KPIReports from "./pages/features/KPIReports";
 import SiteMigration from "./pages/features/SiteMigration";
+import PopUpStores from "./pages/features/PopUpStores";
 import ForDistributors from "./pages/personas/ForDistributors";
 import ForDecorators from "./pages/personas/ForDecorators";
 import ForReferralPartners from "./pages/personas/ForReferralPartners";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/features/ai-suggestions" element={<AISuggestions />} />
           <Route path="/features/kpi-reports" element={<KPIReports />} />
           <Route path="/features/site-migration" element={<SiteMigration />} />
+          <Route path="/features/popup-stores" element={<PopUpStores />} />
 
           {/* Persona pages */}
           <Route path="/for/distributors" element={<ForDistributors />} />

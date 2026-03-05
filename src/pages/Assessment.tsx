@@ -263,7 +263,7 @@ const Assessment = () => {
                 <div className="text-center mb-10">
                   <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
                     <Zap className="w-4 h-4" />
-                    <span className="text-sm font-medium">Free Assessment</span>
+                    <span className="text-sm font-medium">Free Savings Calculator</span>
                   </div>
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">Which best describes you?</h1>
                   <p className="text-muted-foreground">We'll customize your experience based on your role.</p>
