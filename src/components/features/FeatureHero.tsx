@@ -73,7 +73,7 @@ export const FeatureHero = ({
               size="lg" 
               variant="outline"
               className="px-8 py-6 text-lg rounded-full"
-              onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('platform')?.scrollIntoView({ behavior: 'smooth' })}
             >
               {secondaryCta}
             </Button>

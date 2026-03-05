@@ -53,7 +53,7 @@ export const ConnectSection = () => {
                 </motion.div>
               </motion.div>
 
-              {/* AI Conversations - Top Left */}
+              {/* AI Support Agent - Top Left */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}

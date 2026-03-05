@@ -140,7 +140,7 @@ export const Hero = () => {
                   Great! Dallas gets warm in fall — I'll prioritize moisture-wicking. Here are my top picks for your store.
                 </motion.div>
 
-                {/* Package badge */}
+                {/* AI Recommendation badge */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

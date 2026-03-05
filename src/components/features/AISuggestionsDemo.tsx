@@ -145,7 +145,7 @@ export const AISuggestionsDemo = () => {
                   className="flex items-center gap-2 text-sm text-primary pt-2"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>5 items matched · Package B (25 max)</span>
+                  <span>5 items matched to budget & climate</span>
                 </motion.div>
               </div>
             </div>
