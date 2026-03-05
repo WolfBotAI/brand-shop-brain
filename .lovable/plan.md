@@ -1,46 +1,81 @@
 
 
-# Purge All Package/Tier/Item-Count Language from Marketing Pages
+# Comprehensive Messaging Overhaul: Distributor-First, No Packages/Tiers
 
 ## Problem
-Four files on the homepage still have "package," "tier," and item-count copy that was supposed to be removed. The ForDistributors page is already correct.
+The website still has "Package B (25 max)", "Package badge", package tier selectors in onboarding, and scroll targets pointing to `#packages`. The homepage doesn't speak to the distributor pain points or the three store-creation options. The user wants every page — marketing AND app/onboarding — cleaned up.
 
-## Exact Changes
+## Changes by File
 
-### 1. `src/components/landing/Hero.tsx`
-- Line 44: "with flexible package tiers from 10 to 40+ items" → "and builds their store — so you can focus on growing your business."
-- Line 62: `scrollIntoView('packages')` → `scrollIntoView('how-it-works')`
-- Line 71: Stat `{ value: "4", label: "Package Tiers" }` → `{ value: "24/7", label: "AI Support" }`
-- Line 140: "Here are 8 picks for Package B…" → "Here are my top picks — moisture-wicking for Dallas fall weather."
-- Lines 143-155: Replace the "Package B — Growth / Up to 25 items" badge with a simple "AI Recommendations" badge: icon `Sparkles`, text "AI-Curated Selection", subtitle "8 products matched to budget & climate"
-- Remove `Package` from lucide import
+### HOMEPAGE — Landing Components
 
-### 2. `src/components/landing/IntroSection.tsx`
-- Line 80: "then recommends the perfect products with flexible package tiers." → "then recommends the perfect products for each client's needs."
-- Line 85: "Scalable package tiers from 10 to 40+ items per store" → "AI-curated product catalogs tailored to each client"
+**1. `src/components/landing/Hero.tsx` (line 143)**
+- Remove the `{/* Package badge */}` comment on line 143. The content itself is already clean ("AI-Curated Selection") but the HTML comment still says "Package badge" — rename to "AI Recommendation badge"
 
-### 3. `src/components/landing/IntroducingSection.tsx`
-- Replace feature card at index 2 ("Package Tiers / Starter (10 items)…") with: icon `MessageSquare`, title "AI Support Agent", description "24/7 omnichannel support via web chat, SMS, email, phone, Facebook & Instagram — all trained on your brand."
-- Replace step 02 ("Package Selection / Client picks a tier — AI fills the catalog") with: icon `ShoppingBag` (or `Store`), title "Store Built", desc "AI curates the right products and launches the store"
-- Update imports accordingly (remove `Package`, `Users`; add `MessageSquare`)
+**2. `src/components/landing/IntroSection.tsx`**
+- Already clean. No changes needed.
 
-### 4. `src/components/landing/PackagesSection.tsx`
-Complete rewrite. Replace the 4 package-tier cards with a "What's Included" section showing the platform capabilities as a feature grid (not tiers):
-- **AI-Managed Stores** — Centralize all client stores. AI creates, updates, and manages them.
-- **AI Website Assistant** — 24/7 embedded chat for tracking, returns, and product recommendations.
-- **AI Support Agent** — Omnichannel support via SMS, email, phone, FB, IG.
-- **AI Voice Agent** — Answers phone calls with real-time order lookups.
-- **Agency Reporting** — Complete visibility into every store's performance.
-- **White-Label Branding** — Your brand, your domain, your client relationship.
+**3. `src/components/landing/IntroducingSection.tsx`**
+- Already clean. No changes needed.
 
-Keep the add-ons section (Order Routing, AI Vision, Site Migration) as-is. Change section heading from "Scalable Package Tiers" to "Everything You Need. Built In." Change the `id` from `packages` to `platform`.
+**4. `src/components/landing/PackagesSection.tsx`**
+- Already clean (rewritten to platform capabilities). No changes needed.
 
-### Files NOT changing (already clean)
-- `ForDistributors.tsx` — already rewritten correctly
-- `ForDecorators.tsx` — no package references
-- `ForReferralPartners.tsx` — no package references
-- `PersonasSection.tsx` — clean
-- `ConnectSection.tsx` — clean
-- `Features.tsx` — clean
-- `Assessment.tsx` — clean
+**5. `src/components/landing/ConnectSection.tsx` (line 56)**
+- Comment says `{/* AI Conversations - Top Left */}` — update to `{/* AI Support Agent - Top Left */}`
+
+**6. `src/components/features/FeatureHero.tsx` (line 76)**
+- `document.getElementById('packages')` → `document.getElementById('platform')` — the section ID was changed but this scroll target was missed
+
+**7. `src/components/features/AISuggestionsDemo.tsx` (line 148)**
+- `"5 items matched · Package B (25 max)"` → `"5 items matched to budget & climate"`
+
+### APP / ONBOARDING
+
+**8. `src/components/app/onboarding/CreateStoreStep.tsx`**
+This is the big one. The entire package tier system needs to be removed:
+- **Lines 48-54**: Remove `packageTiers` array (Package A/B/C/Enterprise with item limits)
+- **Lines 195-196**: Remove `selectedPackage` state and related state
+- **Lines 214**: Remove `currentTier` and `isOverLimit` logic
+- **Lines 339-344**: Remove tier-based bot message ("I've pre-selected up to X items for your Package…")
+- **Lines 574-596**: Remove the entire "Package tier selection" UI block (4 tier buttons)
+- **Lines 613-630**: Remove the tier badge and over-limit warning in catalog header
+- Replace with a simple "unlimited products" or no cap at all — the distributor sets limits at the agency level, not per-store onboarding
+- Remove `Package` from lucide import (line 6)
+
+### FEATURE PAGES
+
+**9. `src/pages/features/OrderRouting.tsx` (line 7)**
+- `Package` icon import is used for "White-Label Fulfillment" (line 54) — this is fine, it's the lucide icon name, not marketing copy. No change needed.
+
+**10. `src/pages/features/SiteMigration.tsx` (lines 7, 11)**
+- Same situation — `Package` icon used for "Product Import". Fine, no change needed.
+
+### PERSONA PAGES
+
+**11. `src/pages/personas/ForDistributors.tsx`**
+- Already clean from last rewrite. No changes needed.
+
+**12. `src/pages/personas/ForDecorators.tsx`**
+- Already clean. No changes needed.
+
+**13. `src/pages/personas/ForReferralPartners.tsx`**
+- Already clean. No changes needed.
+
+### ASSESSMENT
+
+**14. `src/pages/Assessment.tsx`**
+- Already clean. No changes needed.
+
+## Summary of Actual Changes
+
+| File | Change |
+|------|--------|
+| `Hero.tsx` line 143 | Comment "Package badge" → "AI Recommendation badge" |
+| `ConnectSection.tsx` line 56 | Comment "AI Conversations" → "AI Support Agent" |
+| `FeatureHero.tsx` line 76 | Scroll target `'packages'` → `'platform'` |
+| `AISuggestionsDemo.tsx` line 148 | Remove "Package B (25 max)" text |
+| `CreateStoreStep.tsx` | **Major**: Remove entire package tier system (data, state, UI, bot messages). Replace with open catalog selection with no artificial item limits |
+
+The `CreateStoreStep.tsx` is the most significant change — it requires removing the `packageTiers` array, the tier selection UI, the tier badge in the catalog header, the over-limit warnings, and the bot message referencing tiers. The catalog will simply show all products without a tier-based cap.
 
