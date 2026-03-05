@@ -16,6 +16,9 @@ import MultiStoreManagement from "./pages/features/MultiStoreManagement";
 import AISuggestions from "./pages/features/AISuggestions";
 import KPIReports from "./pages/features/KPIReports";
 import SiteMigration from "./pages/features/SiteMigration";
+import ForDistributors from "./pages/personas/ForDistributors";
+import ForDecorators from "./pages/personas/ForDecorators";
+import ForReferralPartners from "./pages/personas/ForReferralPartners";
 import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/app/Dashboard";
 import Onboarding from "./pages/app/Onboarding";
@@ -47,6 +50,11 @@ const App = () => (
           <Route path="/features/ai-suggestions" element={<AISuggestions />} />
           <Route path="/features/kpi-reports" element={<KPIReports />} />
           <Route path="/features/site-migration" element={<SiteMigration />} />
+
+          {/* Persona pages */}
+          <Route path="/for/distributors" element={<ForDistributors />} />
+          <Route path="/for/decorators" element={<ForDecorators />} />
+          <Route path="/for/referral-partners" element={<ForReferralPartners />} />
 
           {/* Platform app routes */}
           <Route path="/app" element={<AppLayout />}>
