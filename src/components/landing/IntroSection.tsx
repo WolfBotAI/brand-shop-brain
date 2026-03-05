@@ -81,7 +81,7 @@ export const IntroSection = () => {
             </p>
             <ul className="space-y-4 mb-8">
               {[
-                "AI asks 4 discovery questions before recommending products",
+                "AI asks as many discovery questions as needed to match the best products",
                 "AI-curated product catalogs tailored to each client",
                 "AI Support Agent provides 24/7 support across web, SMS, email, FB & IG",
                 "Bulk color & size selection across your entire catalog",

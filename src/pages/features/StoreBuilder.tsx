@@ -39,9 +39,9 @@ const StoreBuilder = () => {
         <FeatureHero
           icon={Store}
           badge="AI Store Builder"
-          title="Your Clients Build Stores Themselves —"
-          highlight="Guided by AI"
-          description="AI-powered onboarding guides your clients through store creation step by step. No coding, no design skills, no hand-holding required."
+          title="Three Ways to Launch —"
+          highlight="You Choose"
+          description="Let AI build it, curate it yourself, or let your client self-build within your rules. Every path is powered by AI — no coding, no design skills, no hand-holding required."
         />
 
         {/* 3 Distributor Options */}

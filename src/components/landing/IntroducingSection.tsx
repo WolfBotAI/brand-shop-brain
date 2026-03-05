@@ -10,7 +10,7 @@ const features = [
   {
     icon: Bot,
     title: "AI Merch Advisor",
-    description: "4-step discovery: purpose, audience, climate, budget — then personalized product recommendations from your catalog",
+    description: "Adaptive discovery — purpose, audience, climate, budget & more — then personalized product recommendations from your catalog",
   },
   {
     icon: MessageSquare,

@@ -1,11 +1,29 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Store, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Store, Sparkles, Zap, Users, Plug } from "lucide-react";
+
+const launchPaths = [
+  {
+    icon: Sparkles,
+    title: "AI-Generated Store",
+    description: "AI builds the store for your client — products, theme, and pricing selected automatically.",
+  },
+  {
+    icon: Users,
+    title: "Distributor-Curated",
+    description: "You select the products, theme, and pricing — then hand a ready store to your client.",
+  },
+  {
+    icon: Plug,
+    title: "Client Self-Build",
+    description: "Your client picks their own theme and products — within the rules you set.",
+  },
+];
 
 export const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-      {/* Background pattern instead of Unsplash */}
+      {/* Background pattern */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-muted opacity-50" />
         <div 
@@ -44,7 +62,7 @@ export const Hero = () => {
               and builds their store — so you can focus on growing your business.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 mb-10">
               <Button 
                 asChild
                 size="lg" 
@@ -65,24 +83,36 @@ export const Hero = () => {
               </Button>
             </div>
 
-            {/* Quick stats */}
-            <div className="flex flex-wrap gap-8">
-              {[
-                { value: "24/7", label: "AI Support" },
-                { value: "AI", label: "Discovery & Advisor" },
-                { value: "0", label: "Support Tickets" },
-              ].map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                >
-                  <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
+            {/* 3 Launch Paths — above the fold */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <p className="text-sm font-semibold text-primary mb-4 uppercase tracking-wide">Three Ways to Launch</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {launchPaths.map((path, index) => {
+                  const Icon = path.icon;
+                  return (
+                    <motion.div
+                      key={path.title}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+                      className="flex items-start gap-3 p-3 rounded-xl bg-card border border-border"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground">{path.title}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{path.description}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
           </motion.div>
 
           {/* Right - Dashboard Mockup */}
