@@ -1,118 +1,171 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, MessageSquare, Phone, Eye, Globe, Bot } from "lucide-react";
+import { ArrowRight, MessageSquare, Smartphone, Mail, MessageCircle, Camera, Phone, Eye, Bot } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const channels = [
+  { icon: MessageSquare, label: "Web Chat" },
+  { icon: Smartphone, label: "SMS" },
+  { icon: Mail, label: "Email" },
+  { icon: MessageCircle, label: "Facebook" },
+  { icon: Camera, label: "Instagram" },
+  { icon: Phone, label: "Phone" },
+  { icon: Eye, label: "PO Vision" },
+];
+
+const SIZE = 380;
+const CENTER = SIZE / 2;
+const RADIUS = 145;
+const NODE_R = 28;
 
 export const ConnectSection = () => {
   return (
     <section className="py-24 bg-muted">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left - Visual */}
+          {/* Left - Radial Hub Visual */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative"
+            className="relative flex items-center justify-center"
           >
-            {/* Hub Container */}
-            <div className="relative w-80 h-80 mx-auto">
-              {/* Connection Lines SVG */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 320 320" style={{ zIndex: 0 }}>
-                {[{ x1: 40, y1: 40 }, { x1: 280, y1: 40 }, { x1: 40, y1: 280 }, { x1: 280, y1: 280 }].map((line, i) => (
+            <svg
+              viewBox={`0 0 ${SIZE} ${SIZE}`}
+              className="w-full max-w-[420px] h-auto"
+              style={{ overflow: "visible" }}
+            >
+              {/* Connection lines */}
+              {channels.map((_, i) => {
+                const angle = (2 * Math.PI * i) / channels.length - Math.PI / 2;
+                const x = CENTER + RADIUS * Math.cos(angle);
+                const y = CENTER + RADIUS * Math.sin(angle);
+                return (
                   <motion.line
-                    key={i}
-                    x1={line.x1} y1={line.y1} x2="160" y2="160"
+                    key={`line-${i}`}
+                    x1={CENTER}
+                    y1={CENTER}
+                    x2={x}
+                    y2={y}
                     stroke="hsl(var(--primary))"
-                    strokeWidth="2"
-                    strokeDasharray="6 4"
+                    strokeWidth="1.5"
+                    strokeDasharray="5 4"
                     initial={{ pathLength: 0, opacity: 0 }}
-                    whileInView={{ pathLength: 1, opacity: 0.5 }}
+                    whileInView={{ pathLength: 1, opacity: 0.45 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: 0.3 + i * 0.1 }}
+                    transition={{ duration: 0.6, delay: 0.4 + i * 0.08 }}
                   />
-                ))}
-              </svg>
+                );
+              })}
 
-              {/* Center AI Agent Hub */}
-              <motion.div
+              {/* Pulsing outer ring */}
+              <motion.circle
+                cx={CENTER}
+                cy={CENTER}
+                r={52}
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1.5"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              />
+              <motion.circle
+                cx={CENTER}
+                cy={CENTER}
+                r={52}
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1"
+                opacity={0.3}
+                animate={{ r: [52, 62, 52], opacity: [0.3, 0, 0.3] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              />
+
+              {/* Center hub background */}
+              <motion.circle
+                cx={CENTER}
+                cy={CENTER}
+                r={46}
+                fill="hsl(var(--primary))"
                 initial={{ scale: 0 }}
                 whileInView={{ scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-primary flex items-center justify-center shadow-lg z-10"
+                transition={{ duration: 0.5, delay: 0.15 }}
+              />
+
+              {/* Center hub content */}
+              <motion.g
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.15 }}
               >
-                <motion.div
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="flex flex-col items-center justify-center"
+                <Bot
+                  x={CENTER - 14}
+                  y={CENTER - 18}
+                  width={28}
+                  height={28}
+                  className="text-primary-foreground"
+                  stroke="hsl(var(--primary-foreground))"
+                />
+                <text
+                  x={CENTER}
+                  y={CENTER + 22}
+                  textAnchor="middle"
+                  fill="hsl(var(--primary-foreground))"
+                  fontSize="10"
+                  fontWeight="700"
                 >
-                  <Bot className="w-8 h-8 text-primary-foreground" />
-                  <span className="text-primary-foreground font-bold text-xs mt-0.5">AI Agent</span>
-                </motion.div>
-              </motion.div>
+                  One Brain
+                </text>
+              </motion.g>
 
-              {/* AI Support Agent - Top Left */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                className="absolute top-0 left-0 z-10"
-              >
-                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-primary" />
-                  <span className="text-[9px] font-bold text-foreground mt-0.5 leading-tight text-center">AI Support Agent</span>
-                  <span className="text-[7px] text-muted-foreground leading-tight text-center">Web · SMS · Email · FB · IG</span>
-                </div>
-              </motion.div>
-
-              {/* AI Voice - Top Right */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.4 }}
-                className="absolute top-0 right-0 z-10"
-              >
-                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Phone className="w-5 h-5 text-primary" />
-                  <span className="text-[9px] font-bold text-foreground mt-0.5">AI Voice</span>
-                  <span className="text-[7px] text-muted-foreground">Phone Calls</span>
-                </div>
-              </motion.div>
-
-              {/* AI Vision - Bottom Left */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.5 }}
-                className="absolute bottom-0 left-0 z-10"
-              >
-                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Eye className="w-5 h-5 text-primary" />
-                  <span className="text-[9px] font-bold text-foreground mt-0.5">AI Vision</span>
-                  <span className="text-[7px] text-muted-foreground">PO Extraction</span>
-                </div>
-              </motion.div>
-
-              {/* AI Web Widget - Bottom Right */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.6 }}
-                className="absolute bottom-0 right-0 z-10"
-              >
-                <div className="w-20 h-20 rounded-full bg-card border-2 border-border shadow-md flex flex-col items-center justify-center">
-                  <Globe className="w-5 h-5 text-primary" />
-                  <span className="text-[9px] font-bold text-foreground mt-0.5">AI Web Widget</span>
-                  <span className="text-[7px] text-muted-foreground">Embed on Any Site</span>
-                </div>
-              </motion.div>
-            </div>
+              {/* Satellite nodes */}
+              {channels.map((channel, i) => {
+                const angle = (2 * Math.PI * i) / channels.length - Math.PI / 2;
+                const x = CENTER + RADIUS * Math.cos(angle);
+                const y = CENTER + RADIUS * Math.sin(angle);
+                const Icon = channel.icon;
+                return (
+                  <motion.g
+                    key={`node-${i}`}
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.35, delay: 0.5 + i * 0.08 }}
+                  >
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={NODE_R}
+                      fill="hsl(var(--card))"
+                      stroke="hsl(var(--border))"
+                      strokeWidth="2"
+                    />
+                    <Icon
+                      x={x - 10}
+                      y={y - 10}
+                      width={20}
+                      height={20}
+                      stroke="hsl(var(--primary))"
+                    />
+                    <text
+                      x={x}
+                      y={y + NODE_R + 14}
+                      textAnchor="middle"
+                      fill="hsl(var(--foreground))"
+                      fontSize="10"
+                      fontWeight="600"
+                    >
+                      {channel.label}
+                    </text>
+                  </motion.g>
+                );
+              })}
+            </svg>
           </motion.div>
 
           {/* Right - Content */}
