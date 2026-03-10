@@ -3,9 +3,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Assessment from "./pages/Assessment";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import StoreBuilder from "./pages/features/StoreBuilder";
 import AISupport from "./pages/features/AISupport";
 import AIVision from "./pages/features/AIVision";
@@ -38,40 +44,46 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/assessment" element={<Assessment />} />
-          <Route path="/features/store-builder" element={<StoreBuilder />} />
-          <Route path="/features/ai-support" element={<AISupport />} />
-          <Route path="/features/ai-vision" element={<AIVision />} />
-          <Route path="/features/order-routing" element={<OrderRouting />} />
-          <Route path="/features/reporting" element={<Reporting />} />
-          <Route path="/features/acquisition" element={<Acquisition />} />
-          <Route path="/features/multi-store" element={<MultiStoreManagement />} />
-          <Route path="/features/ai-suggestions" element={<AISuggestions />} />
-          <Route path="/features/kpi-reports" element={<KPIReports />} />
-          <Route path="/features/site-migration" element={<SiteMigration />} />
-          <Route path="/features/popup-stores" element={<PopUpStores />} />
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/assessment" element={<Assessment />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/features/store-builder" element={<StoreBuilder />} />
+            <Route path="/features/ai-support" element={<AISupport />} />
+            <Route path="/features/ai-vision" element={<AIVision />} />
+            <Route path="/features/order-routing" element={<OrderRouting />} />
+            <Route path="/features/reporting" element={<Reporting />} />
+            <Route path="/features/acquisition" element={<Acquisition />} />
+            <Route path="/features/multi-store" element={<MultiStoreManagement />} />
+            <Route path="/features/ai-suggestions" element={<AISuggestions />} />
+            <Route path="/features/kpi-reports" element={<KPIReports />} />
+            <Route path="/features/site-migration" element={<SiteMigration />} />
+            <Route path="/features/popup-stores" element={<PopUpStores />} />
 
-          {/* Persona pages */}
-          <Route path="/for/distributors" element={<ForDistributors />} />
-          <Route path="/for/decorators" element={<ForDecorators />} />
-          <Route path="/for/referral-partners" element={<ForReferralPartners />} />
+            {/* Persona pages */}
+            <Route path="/for/distributors" element={<ForDistributors />} />
+            <Route path="/for/decorators" element={<ForDecorators />} />
+            <Route path="/for/referral-partners" element={<ForReferralPartners />} />
 
-          {/* Platform app routes */}
-          <Route path="/app" element={<AppLayout />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="onboarding" element={<Onboarding />} />
-            <Route path="stores" element={<StoreList />} />
-            <Route path="stores/:storeId" element={<StoreWorkspace />} />
-            <Route path="ai-vision" element={<AIVisionJobs />} />
-            <Route path="routing" element={<OrderRoutingManager />} />
-            <Route path="suppliers" element={<Suppliers />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+            {/* Protected platform app routes */}
+            <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="onboarding" element={<Onboarding />} />
+              <Route path="stores" element={<StoreList />} />
+              <Route path="stores/:storeId" element={<StoreWorkspace />} />
+              <Route path="ai-vision" element={<AIVisionJobs />} />
+              <Route path="routing" element={<OrderRoutingManager />} />
+              <Route path="suppliers" element={<Suppliers />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
