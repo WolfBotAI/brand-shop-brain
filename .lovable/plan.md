@@ -1,48 +1,92 @@
 
 
-# Redesign the "White-Glove Service" Hub Diagram
+# Production Readiness Audit — What's Working, What's Not, What Needs to Be Done
 
-## Problem
-The current diagram uses 4 circles in corners of a 320x320 box with dashed lines to a center hub. Issues:
-- AI Agent circle isn't visually centered (it is positioned correctly but the 4 corner nodes crowd it)
-- Only 4 nodes — doesn't show all the individual channels (Web Chat, SMS, Email, Facebook, Instagram, Phone, PO/PDF, Web Widget)
-- Doesn't convey the "one brain" concept
-- Lines cross awkwardly, feels cramped
+## Current State: What's Actually Working
 
-## New Design — `src/components/landing/ConnectSection.tsx`
+### Backend API (api.brand-shop.ai) — LIVE
+I tested the API directly. It's running and responding:
+- `GET /health` → `{"ok":true}`
+- `GET /api/integrations/status` → Returns real data (SSActivewear connected, Printful connected, ShipStation, TaxJar, Printavo, etc.)
+- `GET /api/supplier-accounts?tenantId=...` → Works (requires tenantId)
+- `GET /api/dashboard/summary?tenantId=...` → Works (requires tenantId)
+- `POST /api/ghl/connect` → Endpoint exists (POST)
+- `POST /api/store-builder/trigger` → Endpoint exists (POST)
+- `POST /api/supplier-accounts` → Endpoint exists (POST)
 
-Replace the 4-corner layout with a **true radial hub** with 7 channel nodes evenly spaced around a larger, more prominent center:
+The API layer in `src/lib/api/` is correctly wired to these endpoints. The backend codex is built and running.
 
-### Center Hub (larger, more prominent)
-- Larger circle (w-28 h-28) with pulsing ring animation to convey "one brain"
-- Label: "One Brain" with Bot icon
-- Subtle outer glow ring that pulses
+### What's Wired to Real API
+- **Dashboard** (`Dashboard.tsx`) — calls `fetchDashboardSummary()` and `fetchIntegrationStatus()` via react-query. Will work once tenantId is set.
+- **Onboarding WolfBot step** — calls `connectWolfBot()` POST to real API
+- **Onboarding Supplier step** — calls `createSupplierAccount()` POST to real API
+- **Onboarding Store creation** — calls `createStore()` POST to real API
+- **Firecrawl branding scrape** — wired through a Cloud edge function
 
-### 7 Satellite Nodes (evenly distributed around a 360-degree circle)
-Each node represents a specific channel, placed using trigonometry for even spacing:
-1. **Web Chat** (MessageSquare)
-2. **SMS** (Smartphone)
-3. **Email** (Mail)
-4. **Facebook** (MessageCircle)
-5. **Instagram** (Instagram icon or Camera)
-6. **Phone Calls** (Phone)
-7. **PO Vision** (Eye)
+### What's Using Mock/Hardcoded Data (NOT wired)
+- **Product Catalog** (`ssProducts.ts`) — 12 hardcoded mock products with fake delays. NOT calling the real SS Activewear API through the backend.
+- **Store List** (`StoreList.tsx`) — hardcoded `MOCK_STORES` array
+- **Suppliers page** (`Suppliers.tsx`) — hardcoded `MOCK_SUPPLIERS` array
+- **AI Vision Jobs** (`AIVisionJobs.tsx`) — hardcoded `MOCK_JOBS` array
+- **Order Routing** (`OrderRoutingManager.tsx`) — hardcoded `MOCK_RULES` and `MOCK_INVOICE_ITEMS`
+- **Store Workspace** (`StoreWorkspace.tsx`) — relies on React router `location.state` (ephemeral, lost on refresh)
+- **Settings** (`Settings.tsx`) — hardcoded values, no persistence
 
-### Connections
-- Animated dashed lines from each satellite to center
-- Lines animate in sequentially for a "connecting" effect
-- All lines originate from center = "one brain" visual
+## What's Completely Missing
 
-### Layout
-- Increase container from w-80 h-80 to w-96 h-96 (or responsive)
-- Satellites positioned using `Math.cos`/`Math.sin` at equal angular intervals
-- Each satellite: small circle (w-14 h-14) with icon + label below
+### 1. Authentication (Critical)
+No login, signup, or session management. All `/app/*` routes are unprotected. Anyone can access the portal.
 
-### Animation
-- Center hub scales in first
-- Pulse ring animates continuously
-- Lines draw from center outward
-- Satellites pop in sequentially around the circle
+### 2. Tenant Context Persistence
+`setTenantContext()` stores tenantId in localStorage, but there's no way to establish it except going through onboarding. No login flow sets it.
 
-No changes to the right-side content (headline, bullet points, CTA). Only the left visual is rebuilt.
+### 3. Real Catalog API Integration
+The backend has SS Activewear connected, but the frontend uses mock data in `ssProducts.ts` instead of calling the backend catalog endpoints. Need to discover the correct catalog API routes.
+
+### 4. Store List from API
+Need a `GET /api/stores?tenantId=...` endpoint (or similar) and wire `StoreList.tsx` to it.
+
+### 5. Store Workspace Persistence
+Currently reads from `location.state`. On refresh, everything is lost. Needs to fetch store data from `GET /api/stores/:storeId`.
+
+### 6. Public Storefront
+No customer-facing store page exists (e.g., `/store/:slug` for end-customers to browse/buy).
+
+---
+
+## Plan: Path to Production
+
+### Phase 1 — Authentication & Protected Routes
+- Add login/signup pages using Cloud authentication
+- Create a profiles table to store tenantId, locationId, business name
+- Protect all `/app/*` routes with an auth guard
+- On login, restore tenant context from profile
+
+### Phase 2 — Wire Mock Pages to Real API
+- **Store List**: Add `fetchStores()` to `src/lib/api/stores.ts`, replace `MOCK_STORES`
+- **Suppliers**: Replace `MOCK_SUPPLIERS` with `fetchSupplierAccounts()` (already exists in API layer)
+- **Store Workspace**: Fetch store data from API on mount instead of `location.state`
+- **Product Catalog**: Replace mock catalog in `ssProducts.ts` with real API calls (need to confirm backend catalog routes — likely `GET /api/catalog/styles` or similar)
+- **AI Vision Jobs**: Add API calls (need to confirm backend routes)
+- **Order Routing**: Add API calls (need to confirm backend routes)
+- **Settings**: Wire to profile data
+
+### Phase 3 — Public Storefront
+- Create `/store/:slug` route for end-customers
+- Fetch store config, products, and theme from API
+- Build browsable product catalog with cart
+
+---
+
+## Before I Start: I Need One Thing
+
+I can see the API is live, but I need to know the exact catalog/product endpoints available on the backend. The frontend has mock data in `ssProducts.ts` but I don't know the real routes for:
+- Searching/listing catalog products
+- Fetching AI Vision jobs
+- Fetching order routing rules
+- Listing stores by tenant
+
+**Can you share the API route list or documentation from the codex backend?** Alternatively, if there's a project with the backend code, point me to it and I'll read it directly.
+
+In the meantime, I can immediately start with **Phase 1 (Authentication)** since that doesn't depend on knowing additional API routes. Want me to proceed with that?
 
