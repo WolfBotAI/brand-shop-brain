@@ -141,7 +141,7 @@ export const PopUpStoresSection = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.6 }}
-              className="absolute -bottom-4 -left-4 bg-primary text-primary-foreground px-5 py-3 rounded-xl shadow-lg"
+              className="absolute -bottom-4 -left-4 bg-foreground text-background px-5 py-3 rounded-xl shadow-lg"
             >
               <p className="text-sm font-bold">Auto-Expires</p>
               <p className="text-xs opacity-80">Redirects to main store</p>
