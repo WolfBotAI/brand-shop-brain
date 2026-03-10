@@ -80,6 +80,13 @@ function NavGroup({ label, items, collapsed }: NavGroupProps) {
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { signOut, profile } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -100,6 +107,18 @@ export function AppSidebar() {
         <NavGroup label="Operations" items={opsNav} collapsed={collapsed} />
         <NavGroup label="Platform" items={platformNav} collapsed={collapsed} />
       </SidebarContent>
+      <div className="mt-auto border-t border-border p-3">
+        {!collapsed && profile?.email && (
+          <p className="text-xs text-muted-foreground truncate mb-2 px-2">{profile.email}</p>
+        )}
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
+      </div>
     </Sidebar>
   );
 }
