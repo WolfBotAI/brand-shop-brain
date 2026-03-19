@@ -94,6 +94,39 @@ export type Database = {
           },
         ]
       }
+      platform_fees: {
+        Row: {
+          created_at: string
+          decoration_fee_default: number
+          decoration_methods: Json
+          default_shipping_fee: number
+          id: string
+          owner_markup_percent: number
+          platform_surcharge_percent: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decoration_fee_default?: number
+          decoration_methods?: Json
+          default_shipping_fee?: number
+          id?: string
+          owner_markup_percent?: number
+          platform_surcharge_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decoration_fee_default?: number
+          decoration_methods?: Json
+          default_shipping_fee?: number
+          id?: string
+          owner_markup_percent?: number
+          platform_surcharge_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
