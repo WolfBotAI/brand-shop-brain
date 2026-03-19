@@ -139,7 +139,9 @@ export type Database = {
           catalog_id: string | null
           client_name: string
           created_at: string
+          custom_domain: string | null
           domain: string | null
+          expires_at: string | null
           external_store_id: string | null
           id: string
           logo_url: string | null
@@ -147,6 +149,7 @@ export type Database = {
           slug: string | null
           status: string
           store_name: string
+          store_type: string
           tenant_id: string | null
           theme_config: Json | null
           updated_at: string
@@ -157,7 +160,9 @@ export type Database = {
           catalog_id?: string | null
           client_name?: string
           created_at?: string
+          custom_domain?: string | null
           domain?: string | null
+          expires_at?: string | null
           external_store_id?: string | null
           id?: string
           logo_url?: string | null
@@ -165,6 +170,7 @@ export type Database = {
           slug?: string | null
           status?: string
           store_name: string
+          store_type?: string
           tenant_id?: string | null
           theme_config?: Json | null
           updated_at?: string
@@ -175,7 +181,9 @@ export type Database = {
           catalog_id?: string | null
           client_name?: string
           created_at?: string
+          custom_domain?: string | null
           domain?: string | null
+          expires_at?: string | null
           external_store_id?: string | null
           id?: string
           logo_url?: string | null
@@ -183,6 +191,7 @@ export type Database = {
           slug?: string | null
           status?: string
           store_name?: string
+          store_type?: string
           tenant_id?: string | null
           theme_config?: Json | null
           updated_at?: string
