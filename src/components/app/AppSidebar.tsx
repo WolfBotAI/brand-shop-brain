@@ -8,6 +8,8 @@ import {
   Route,
   Sparkles,
   LogOut,
+  BarChart3,
+  ArrowRightLeft,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -36,6 +38,8 @@ const distributorNav = [
 const opsNav = [
   { title: "AI Vision", url: "/app/ai-vision", icon: Eye },
   { title: "Order Routing", url: "/app/routing", icon: Route },
+  { title: "Reporting", url: "/app/reporting", icon: BarChart3 },
+  { title: "Migrate", url: "/app/migrate", icon: ArrowRightLeft },
 ];
 
 const platformNav = [

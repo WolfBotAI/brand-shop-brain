@@ -38,11 +38,22 @@ export const firecrawlApi = {
       return { success: false, error: error.message };
     }
 
-    // Firecrawl v1 nests inside data.data
     const branding = data?.data?.branding || data?.branding;
     if (branding) {
       return { success: true, data: branding };
     }
+    return { success: true, data: data?.data || data };
+  },
+
+  async scrape(url: string, options?: { formats?: string[]; onlyMainContent?: boolean }): Promise<FirecrawlResponse<any>> {
+    const { data, error } = await supabase.functions.invoke("firecrawl-scrape", {
+      body: { url, options: options || { formats: ["markdown"] } },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
     return { success: true, data: data?.data || data };
   },
 };

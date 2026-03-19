@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ShoppingCart, Plus, X, Store, Loader2, ChevronRight } from "lucide-react";
+import { ShoppingCart, Plus, X, Store, Loader2, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { StorefrontChatWidget } from "@/components/app/store/StorefrontChatWidget";
+import { isPast, parseISO, formatDistanceToNow } from "date-fns";
 import type { SSStyle } from "@/lib/api/ssProducts";
 
 interface ThemeConfig {
@@ -33,7 +35,6 @@ export default function PublicStorefront() {
   const [submitting, setSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
 
-  // Fetch store by slug (public — anon RLS)
   const { data: store, isLoading, error } = useQuery({
     queryKey: ["public-store", slug],
     queryFn: async () => {
@@ -60,6 +61,17 @@ export default function PublicStorefront() {
   const logoUrl = store?.logo_url || theme.logoUrl;
 
   const calcRetail = (cost: number) => +(cost * (1 + pricingConfig.globalMarkup / 100)).toFixed(2);
+
+  // Check if store is expired pop-up
+  const isExpired = useMemo(() => {
+    const expiresAt = (store as any)?.expires_at;
+    const storeType = (store as any)?.store_type;
+    if (storeType !== "popup" || !expiresAt) return false;
+    return isPast(parseISO(expiresAt));
+  }, [store]);
+
+  const expiresAt = (store as any)?.expires_at;
+  const storeType = (store as any)?.store_type;
 
   const addToCart = (product: SSStyle) => {
     const color = product.availableColors[0]?.name || "Default";
@@ -124,6 +136,24 @@ export default function PublicStorefront() {
     );
   }
 
+  // Expired pop-up splash
+  if (isExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
+        <div className="text-center space-y-4 max-w-md">
+          <Clock className="w-16 h-16 text-muted-foreground mx-auto" />
+          <h1 className="text-2xl font-bold">This Pop-Up Store Has Ended</h1>
+          <p className="text-muted-foreground">
+            The "{storeName}" pop-up event has concluded. Thank you for your interest!
+          </p>
+          <Link to="/">
+            <Button variant="outline">Visit Brand-Shop.AI</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (orderPlaced) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
@@ -133,7 +163,12 @@ export default function PublicStorefront() {
           </div>
           <h1 className="text-2xl font-bold">Order Placed!</h1>
           <p className="text-muted-foreground">Thank you for your order. You'll receive a confirmation email at {checkoutForm.email}.</p>
-          <Button onClick={() => { setOrderPlaced(false); setCheckoutOpen(false); }}>Continue Shopping</Button>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => { setOrderPlaced(false); setCheckoutOpen(false); }}>Continue Shopping</Button>
+            <Link to={`/store/${slug}/orders`}>
+              <Button variant="outline">View Orders</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -141,6 +176,14 @@ export default function PublicStorefront() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme.background, fontFamily: theme.fontFamily || "inherit" }}>
+      {/* Pop-up countdown banner */}
+      {storeType === "popup" && expiresAt && !isExpired && (
+        <div className="bg-primary text-primary-foreground text-center text-sm py-1.5 px-4">
+          <Clock className="inline w-3.5 h-3.5 mr-1 -mt-0.5" />
+          Pop-Up ends in {formatDistanceToNow(parseISO(expiresAt))}
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm" style={{ backgroundColor: theme.primary, color: "#fff" }}>
         <div className="flex items-center gap-3">
@@ -151,14 +194,19 @@ export default function PublicStorefront() {
           )}
           <span className="font-bold text-lg">{storeName}</span>
         </div>
-        <button onClick={() => setCartOpen(!cartOpen)} className="relative p-2 rounded-lg hover:bg-white/20 transition-colors">
-          <ShoppingCart className="w-5 h-5" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: theme.accent, color: "#fff" }}>
-              {cartCount}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          <Link to={`/store/${slug}/orders`} className="text-white/80 hover:text-white text-sm underline-offset-2 hover:underline">
+            My Orders
+          </Link>
+          <button onClick={() => setCartOpen(!cartOpen)} className="relative p-2 rounded-lg hover:bg-white/20 transition-colors">
+            <ShoppingCart className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: theme.accent, color: "#fff" }}>
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Cart Drawer */}
@@ -290,6 +338,17 @@ export default function PublicStorefront() {
       <footer className="mt-12 py-6 text-center text-xs text-muted-foreground border-t border-border">
         Powered by Brand-Shop.AI
       </footer>
+
+      {/* AI Chat Widget */}
+      <StorefrontChatWidget
+        storeName={storeName}
+        products={products.map((p) => ({
+          title: p.title,
+          price: calcRetail(p.customerPrice || p.piecePrice || 0),
+          brandName: p.brandName,
+        }))}
+        accentColor={theme.accent}
+      />
     </div>
   );
 }

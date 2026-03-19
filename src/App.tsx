@@ -16,7 +16,7 @@ import StoreBuilder from "./pages/features/StoreBuilder";
 import AISupport from "./pages/features/AISupport";
 import AIVision from "./pages/features/AIVision";
 import OrderRouting from "./pages/features/OrderRouting";
-import Reporting from "./pages/features/Reporting";
+import FeatureReporting from "./pages/features/Reporting";
 import Acquisition from "./pages/features/Acquisition";
 import MultiStoreManagement from "./pages/features/MultiStoreManagement";
 import AISuggestions from "./pages/features/AISuggestions";
@@ -36,6 +36,9 @@ import StoreList from "./pages/app/StoreList";
 import Suppliers from "./pages/app/Suppliers";
 import Settings from "./pages/app/Settings";
 import PublicStorefront from "./pages/app/PublicStorefront";
+import Reporting from "./pages/app/Reporting";
+import SiteMigrationWizard from "./pages/app/SiteMigrationWizard";
+import CustomerOrders from "./pages/app/CustomerOrders";
 
 const queryClient = new QueryClient();
 
@@ -57,7 +60,7 @@ const App = () => (
             <Route path="/features/ai-support" element={<AISupport />} />
             <Route path="/features/ai-vision" element={<AIVision />} />
             <Route path="/features/order-routing" element={<OrderRouting />} />
-            <Route path="/features/reporting" element={<Reporting />} />
+            <Route path="/features/reporting" element={<FeatureReporting />} />
             <Route path="/features/acquisition" element={<Acquisition />} />
             <Route path="/features/multi-store" element={<MultiStoreManagement />} />
             <Route path="/features/ai-suggestions" element={<AISuggestions />} />
@@ -72,6 +75,7 @@ const App = () => (
 
             {/* Public storefront */}
             <Route path="/store/:slug" element={<PublicStorefront />} />
+            <Route path="/store/:slug/orders" element={<CustomerOrders />} />
 
             {/* Protected platform app routes */}
             <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -81,6 +85,8 @@ const App = () => (
               <Route path="stores/:storeId" element={<StoreWorkspace />} />
               <Route path="ai-vision" element={<AIVisionJobs />} />
               <Route path="routing" element={<OrderRoutingManager />} />
+              <Route path="reporting" element={<Reporting />} />
+              <Route path="migrate" element={<SiteMigrationWizard />} />
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="settings" element={<Settings />} />
             </Route>
