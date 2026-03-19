@@ -16,7 +16,7 @@ import StoreBuilder from "./pages/features/StoreBuilder";
 import AISupport from "./pages/features/AISupport";
 import AIVision from "./pages/features/AIVision";
 import OrderRouting from "./pages/features/OrderRouting";
-import Reporting from "./pages/features/Reporting";
+import FeatureReporting from "./pages/features/Reporting";
 import Acquisition from "./pages/features/Acquisition";
 import MultiStoreManagement from "./pages/features/MultiStoreManagement";
 import AISuggestions from "./pages/features/AISuggestions";
