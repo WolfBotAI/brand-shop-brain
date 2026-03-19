@@ -60,7 +60,7 @@ const App = () => (
             <Route path="/features/ai-support" element={<AISupport />} />
             <Route path="/features/ai-vision" element={<AIVision />} />
             <Route path="/features/order-routing" element={<OrderRouting />} />
-            <Route path="/features/reporting" element={<Reporting />} />
+            <Route path="/features/reporting" element={<FeatureReporting />} />
             <Route path="/features/acquisition" element={<Acquisition />} />
             <Route path="/features/multi-store" element={<MultiStoreManagement />} />
             <Route path="/features/ai-suggestions" element={<AISuggestions />} />
