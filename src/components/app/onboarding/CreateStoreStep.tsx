@@ -513,6 +513,8 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
             status: "draft",
             slug,
             metadata: { selectedProducts, products: productsForMetadata, pricingModel: billingModel },
+            store_type: storeType,
+            expires_at: storeType === "popup" && expiresAt ? new Date(expiresAt).toISOString() : null,
           } as any)
           .select("id")
           .single();
