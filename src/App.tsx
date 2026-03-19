@@ -86,6 +86,8 @@ const App = () => (
               <Route path="stores/:storeId" element={<StoreWorkspace />} />
               <Route path="ai-vision" element={<AIVisionJobs />} />
               <Route path="routing" element={<OrderRoutingManager />} />
+              <Route path="reporting" element={<Reporting />} />
+              <Route path="migrate" element={<SiteMigrationWizard />} />
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="settings" element={<Settings />} />
             </Route>
