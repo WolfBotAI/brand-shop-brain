@@ -2,3 +2,6 @@
 
 [functions.firecrawl-scrape]
 verify_jwt = false
+
+[functions.ss-catalog]
+verify_jwt = false

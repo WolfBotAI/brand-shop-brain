@@ -1,8 +1,9 @@
 /**
- * Catalog API — frontend layer
- * Routes through the Brand-Shop.AI Codex engine (api.brand-shop.ai)
- * which already has SS Activewear + Printful fully connected.
+ * Catalog API — calls the ss-catalog edge function
+ * which proxies the S&S Activewear API v2.
  */
+
+import { supabase } from "@/integrations/supabase/client";
 
 // --- Types ---
 
@@ -33,16 +34,87 @@ export interface SSProduct {
   imageUrl: string | null;
 }
 
-// --- Reliable placeholder images (placehold.co) ---
+// --- Edge function caller ---
+
+async function callCatalog(params: Record<string, string>): Promise<any> {
+  const qs = new URLSearchParams(params).toString();
+  const { data, error } = await supabase.functions.invoke("ss-catalog", {
+    body: null,
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  // supabase.functions.invoke doesn't support query params well for GET,
+  // so we use fetch directly with the project URL
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const url = `https://${projectId}.supabase.co/functions/v1/ss-catalog?${qs}`;
+
+  const resp = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${anonKey}`,
+      apikey: anonKey,
+    },
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: resp.statusText }));
+    throw new Error(err.error || `Catalog API error ${resp.status}`);
+  }
+
+  return resp.json();
+}
+
+// --- Map S&S API response to our interfaces ---
+
+function mapStyle(raw: any): SSStyle {
+  return {
+    styleID: raw.styleID ?? raw.StyleID ?? raw.id ?? 0,
+    title: raw.title ?? raw.Title ?? raw.styleName ?? "",
+    description: raw.description ?? raw.Description ?? "",
+    brandName: raw.brandName ?? raw.BrandName ?? raw.brand ?? "",
+    baseCategory: raw.baseCategory ?? raw.BaseCategory ?? raw.category ?? "",
+    styleImage: raw.styleImage ?? raw.StyleImage ?? raw.mainImage ?? null,
+    customerPrice: raw.customerPrice ?? raw.CustomerPrice ?? raw.piecePrice ?? undefined,
+    piecePrice: raw.piecePrice ?? raw.PiecePrice ?? undefined,
+    availableColors: Array.isArray(raw.availableColors ?? raw.Colors)
+      ? (raw.availableColors ?? raw.Colors).map((c: any) => ({
+          name: c.name ?? c.ColorName ?? c.colorName ?? "",
+          hex: c.hex ?? c.HexCode ?? c.hexCode ?? "#888888",
+        }))
+      : [],
+    availableSizes: Array.isArray(raw.availableSizes ?? raw.Sizes)
+      ? (raw.availableSizes ?? raw.Sizes).map((s: any) => (typeof s === "string" ? s : s.name ?? s.SizeName ?? ""))
+      : [],
+  };
+}
+
+function mapProduct(raw: any): SSProduct {
+  return {
+    sku: raw.sku ?? raw.SKU ?? raw.Sku ?? "",
+    brandName: raw.brandName ?? raw.BrandName ?? "",
+    styleName: raw.styleName ?? raw.StyleName ?? "",
+    title: raw.title ?? raw.Title ?? `${raw.styleName ?? ""} ${raw.colorName ?? ""}`.trim(),
+    colorName: raw.colorName ?? raw.ColorName ?? "",
+    sizeName: raw.sizeName ?? raw.SizeName ?? "",
+    customerPrice: raw.customerPrice ?? raw.CustomerPrice ?? 0,
+    piecePrice: raw.piecePrice ?? raw.PiecePrice ?? 0,
+    dozenPrice: raw.dozenPrice ?? raw.DozenPrice ?? 0,
+    casePrice: raw.casePrice ?? raw.CasePrice ?? 0,
+    imageUrl: raw.colorFrontImage ?? raw.ColorFrontImage ?? raw.styleImage ?? null,
+  };
+}
+
+// --- Reliable placeholder images (fallback if API fails) ---
 
 function placeholdImg(label: string, bg = "e2e8f0", fg = "475569"): string {
   const encoded = encodeURIComponent(label.replace(/ /g, "+"));
   return `https://placehold.co/400x400/${bg}/${fg}?text=${encoded}`;
 }
 
-// --- Mock catalog data ---
+// --- Fallback mock catalog (used when edge function is unavailable) ---
 
-const mockCatalog: SSStyle[] = [
+const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 1, title: "Premium Heavyweight Tee", description: "6.1 oz ringspun cotton",
     brandName: "Brand-Shop Basics", baseCategory: "T-Shirts",
@@ -91,60 +163,22 @@ const mockCatalog: SSStyle[] = [
     availableColors: [{ name: "White", hex: "#FFFFFF" }, { name: "Black", hex: "#1a1a1a" }, { name: "Heather Grey", hex: "#B0B0B0" }],
     availableSizes: ["S", "M", "L", "XL"],
   },
-  {
-    styleID: 7, title: "Athletic Shorts", description: "Moisture-wicking with liner",
-    brandName: "Brand-Shop Performance", baseCategory: "Shorts",
-    styleImage: placeholdImg("Athletic\\nShorts", "d1fae5", "065f46"),
-    customerPrice: 10.00, piecePrice: 18.99,
-    availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Grey", hex: "#808080" }],
-    availableSizes: ["S", "M", "L", "XL", "2XL"],
-  },
-  {
-    styleID: 8, title: "Crewneck Sweatshirt", description: "7.8 oz pill-resistant fleece",
-    brandName: "Brand-Shop Basics", baseCategory: "Hoodies & Sweatshirts",
-    styleImage: placeholdImg("Crewneck\\nSweatshirt", "e0e7ff", "3730a3"),
-    customerPrice: 14.00, piecePrice: 24.99,
-    availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Heather Grey", hex: "#B0B0B0" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Burgundy", hex: "#800020" }],
-    availableSizes: ["S", "M", "L", "XL", "2XL"],
-  },
-  {
-    styleID: 9, title: "Softshell Jacket", description: "3-layer bonded shell",
-    brandName: "Brand-Shop Outerwear", baseCategory: "Outerwear",
-    styleImage: placeholdImg("Softshell\\nJacket", "cffafe", "155e75"),
-    customerPrice: 28.00, piecePrice: 49.99,
-    availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }],
-    availableSizes: ["S", "M", "L", "XL", "2XL", "3XL"],
-  },
-  {
-    styleID: 10, title: "Canvas Tote Bag", description: "12 oz heavy canvas",
-    brandName: "Brand-Shop Accessories", baseCategory: "Accessories",
-    styleImage: placeholdImg("Canvas\\nTote", "fef9c3", "854d0e"),
-    customerPrice: 4.00, piecePrice: 8.99,
-    availableColors: [{ name: "Natural", hex: "#F5F0E1" }, { name: "Black", hex: "#1a1a1a" }],
-    availableSizes: ["One Size"],
-  },
-  {
-    styleID: 11, title: "Dad Hat", description: "Unstructured low-profile",
-    brandName: "Brand-Shop Headwear", baseCategory: "Caps & Hats",
-    styleImage: placeholdImg("Dad\\nHat", "ffe4e6", "9f1239"),
-    customerPrice: 5.00, piecePrice: 12.99,
-    availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Khaki", hex: "#C3B091" }, { name: "Navy", hex: "#1B2A4A" }, { name: "White", hex: "#FFFFFF" }],
-    availableSizes: ["One Size"],
-  },
-  {
-    styleID: 12, title: "Jogger Pants", description: "French terry with elastic cuffs",
-    brandName: "Brand-Shop Performance", baseCategory: "Pants",
-    styleImage: placeholdImg("Jogger\\nPants", "f3e8ff", "6b21a8"),
-    customerPrice: 16.00, piecePrice: 29.99,
-    availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Heather Grey", hex: "#B0B0B0" }, { name: "Navy", hex: "#1B2A4A" }],
-    availableSizes: ["S", "M", "L", "XL", "2XL"],
-  },
 ];
 
+// --- Public API (tries live, falls back to mock) ---
+
 export async function searchStyles(query: string): Promise<SSStyle[]> {
-  await new Promise((r) => setTimeout(r, 400 + Math.random() * 300));
+  try {
+    const data = await callCatalog({ action: "styles", keyword: query, perPage: "50" });
+    if (Array.isArray(data) && data.length > 0) {
+      return data.map(mapStyle);
+    }
+  } catch (e) {
+    console.warn("SS catalog search failed, using fallback:", e);
+  }
+  // Fallback: filter mock data
   const lower = query.toLowerCase();
-  return mockCatalog.filter(
+  return FALLBACK_CATALOG.filter(
     (s) =>
       s.title.toLowerCase().includes(lower) ||
       s.baseCategory.toLowerCase().includes(lower) ||
@@ -153,20 +187,48 @@ export async function searchStyles(query: string): Promise<SSStyle[]> {
 }
 
 export async function getAllStyles(): Promise<SSStyle[]> {
-  await new Promise((r) => setTimeout(r, 300));
-  return [...mockCatalog];
+  try {
+    const data = await callCatalog({ action: "styles", perPage: "50" });
+    if (Array.isArray(data) && data.length > 0) {
+      return data.map(mapStyle);
+    }
+  } catch (e) {
+    console.warn("SS catalog getAllStyles failed, using fallback:", e);
+  }
+  return [...FALLBACK_CATALOG];
 }
 
 export function getStyleById(styleID: number): SSStyle | undefined {
-  return mockCatalog.find((s) => s.styleID === styleID);
+  // Synchronous fallback — for async use fetchStyleById
+  return FALLBACK_CATALOG.find((s) => s.styleID === styleID);
+}
+
+export async function fetchStyleById(styleID: number): Promise<SSStyle | undefined> {
+  try {
+    const data = await callCatalog({ action: "style", styleID: String(styleID) });
+    if (data && (data.styleID || data.StyleID)) {
+      return mapStyle(data);
+    }
+  } catch (e) {
+    console.warn("SS catalog fetchStyleById failed, using fallback:", e);
+  }
+  return FALLBACK_CATALOG.find((s) => s.styleID === styleID);
 }
 
 export async function getProductsByStyle(styleIds: (string | number)[]): Promise<SSProduct[]> {
-  await new Promise((r) => setTimeout(r, 300));
+  if (styleIds.length === 0) return [];
+  try {
+    const data = await callCatalog({ action: "products", styleIDs: styleIds.join(",") });
+    if (Array.isArray(data) && data.length > 0) {
+      return data.map(mapProduct);
+    }
+  } catch (e) {
+    console.warn("SS catalog getProductsByStyle failed:", e);
+  }
   return [];
 }
 
-// --- Vertical → search keywords (expanded for broader matches) ---
+// --- Vertical → search keywords ---
 
 const verticalKeywords: Record<string, string[]> = {
   sports: ["tee", "polo", "hoodie", "cap", "shorts", "sweatshirt", "jogger", "quarter-zip", "tank", "jacket", "performance"],
