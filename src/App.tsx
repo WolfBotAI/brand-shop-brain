@@ -76,6 +76,7 @@ const App = () => (
 
             {/* Public storefront */}
             <Route path="/store/:slug" element={<PublicStorefront />} />
+            <Route path="/store/:slug/orders" element={<CustomerOrders />} />
 
             {/* Protected platform app routes */}
             <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
