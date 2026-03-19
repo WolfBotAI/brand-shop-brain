@@ -8,6 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChatBubble } from "@/components/features/ChatBubble";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { connectWolfBot } from "@/lib/api/tenant";
+import { setTenantContext } from "@/lib/api/client";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 interface WolfBotConnectStepProps {
