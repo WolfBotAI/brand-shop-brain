@@ -129,6 +129,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accounting_config: Json | null
           avatar_url: string | null
           business_name: string | null
           company_logo_url: string | null
@@ -143,6 +144,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          accounting_config?: Json | null
           avatar_url?: string | null
           business_name?: string | null
           company_logo_url?: string | null
@@ -157,6 +159,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          accounting_config?: Json | null
           avatar_url?: string | null
           business_name?: string | null
           company_logo_url?: string | null
@@ -210,6 +213,10 @@ export type Database = {
       }
       stores: {
         Row: {
+          accounting_config: Json | null
+          ai_chat_enabled: boolean
+          ai_voice_enabled: boolean
+          ai_voice_number: string | null
           brand_vertical: string
           catalog_id: string | null
           client_name: string
@@ -231,6 +238,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accounting_config?: Json | null
+          ai_chat_enabled?: boolean
+          ai_voice_enabled?: boolean
+          ai_voice_number?: string | null
           brand_vertical?: string
           catalog_id?: string | null
           client_name?: string
@@ -252,6 +263,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accounting_config?: Json | null
+          ai_chat_enabled?: boolean
+          ai_voice_enabled?: boolean
+          ai_voice_number?: string | null
           brand_vertical?: string
           catalog_id?: string | null
           client_name?: string
