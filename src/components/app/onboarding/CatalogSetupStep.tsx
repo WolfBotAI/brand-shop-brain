@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ShoppingBag, ArrowRight, Search, Check, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingBag, ArrowRight, Search, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { getAllStyles, type SSStyle } from "@/lib/api/ssProducts";
+import { fetchStylesPage, fetchCategories, type SSStyle } from "@/lib/api/ssProducts";
 
 export interface CatalogSelection {
   catalogId: string;
@@ -33,47 +33,85 @@ interface CatalogSetupStepProps {
 export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [allProducts, setAllProducts] = useState<SSStyle[]>([]);
+
+  // Catalog data
+  const [products, setProducts] = useState<SSStyle[]>([]);
   const [selected, setSelected] = useState<Map<number, SelectedProduct>>(new Map());
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isFallback, setIsFallback] = useState(false);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [expandedProduct, setExpandedProduct] = useState<number | null>(null);
+  const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
-  // Advanced: own S&S credentials
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  // UI
+  const [saving, setSaving] = useState(false);
+  const [expandedProduct, setExpandedProduct] = useState<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Advanced S&S credentials
   const [ssAccount, setSsAccount] = useState("");
   const [ssApiKey, setSsApiKey] = useState("");
 
+  const PER_PAGE = 100;
+
+  // Load categories once
   useEffect(() => {
-    loadCatalog();
+    fetchCategories().then(setCategories);
   }, []);
 
-  const loadCatalog = async () => {
+  // Load first page (and reset on filter change)
+  useEffect(() => {
+    setProducts([]);
+    setPage(1);
+    setHasMore(true);
     setLoading(true);
+    loadPage(1, true);
+  }, [searchQuery, activeCategory]);
+
+  const loadPage = useCallback(async (pageNum: number, reset: boolean) => {
     try {
-      const styles = await getAllStyles();
-      setAllProducts(styles);
+      const result = await fetchStylesPage(pageNum, PER_PAGE, {
+        keyword: searchQuery || undefined,
+        category: activeCategory || undefined,
+      });
+      setProducts((prev) => reset ? result.styles : [...prev, ...result.styles]);
+      setHasMore(result.hasMore);
+      setIsFallback(result.isFallback);
+      setPage(pageNum);
     } catch {
       toast({ title: "Error", description: "Failed to load catalog", variant: "destructive" });
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  }, [searchQuery, activeCategory, toast]);
+
+  // Infinite scroll handler
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || loadingMore || !hasMore) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+      setLoadingMore(true);
+      loadPage(page + 1, false);
+    }
+  }, [loadingMore, hasMore, page, loadPage]);
+
+  // Debounced search
+  const handleSearchChange = (value: string) => {
+    if (searchTimeout) clearTimeout(searchTimeout);
+    const timeout = setTimeout(() => setSearchQuery(value), 400);
+    setSearchTimeout(timeout);
   };
 
-  const categories = Array.from(new Set(allProducts.map((p) => p.baseCategory)));
-
-  const filtered = allProducts.filter((p) => {
-    const matchesCat = !activeCategory || p.baseCategory === activeCategory;
-    const matchesSearch =
-      !searchQuery ||
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesSearch;
-  });
-
+  // Selection helpers
   const toggleProduct = (product: SSStyle) => {
     setSelected((prev) => {
       const next = new Map(prev);
@@ -116,14 +154,16 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
     });
   };
 
-  const selectAll = () => {
-    const map = new Map<number, SelectedProduct>();
-    for (const p of allProducts) {
-      map.set(p.styleID, {
-        ...p,
-        selectedColors: p.availableColors.map((c) => c.name),
-        selectedSizes: [...p.availableSizes],
-      });
+  const selectAllVisible = () => {
+    const map = new Map(selected);
+    for (const p of products) {
+      if (!map.has(p.styleID)) {
+        map.set(p.styleID, {
+          ...p,
+          selectedColors: p.availableColors.map((c) => c.name),
+          selectedSizes: [...p.availableSizes],
+        });
+      }
     }
     setSelected(map);
   };
@@ -134,16 +174,16 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
     if (selected.size === 0) return;
     setSaving(true);
     try {
-      const products = Array.from(selected.values());
+      const selectedProducts = Array.from(selected.values());
       let catalogId = "";
 
       if (user) {
         const { data, error } = await supabase
-          .from("distributor_catalogs" as any)
+          .from("distributor_catalogs")
           .insert({
             user_id: user.id,
             catalog_name: "My Catalog",
-            selected_products: products.map((p) => ({
+            selected_products: selectedProducts.map((p) => ({
               styleID: p.styleID,
               title: p.title,
               description: p.description,
@@ -156,16 +196,16 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
               selectedSizes: p.selectedSizes,
               availableColors: p.availableColors,
               availableSizes: p.availableSizes,
-            })),
-          } as any)
+            })) as any,
+          })
           .select("id")
           .single();
 
         if (error) throw error;
-        catalogId = (data as any).id;
+        catalogId = data.id;
       }
 
-      onNext({ catalogId, products });
+      onNext({ catalogId, products: selectedProducts });
     } catch (err: any) {
       toast({ title: "Error saving catalog", description: err.message, variant: "destructive" });
     } finally {
@@ -180,6 +220,7 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
+      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -193,9 +234,17 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
       </div>
 
       <ChatBubble
-        message="Browse the Brand-Shop Apparel catalog below. Select the items, colors, and sizes you want to make available to your clients. You can always add more later."
+        message="Browse the Brand-Shop Apparel catalog below. Select the items, colors, and sizes you want to make available to your clients. Scroll down to load more products."
         delay={0.2}
       />
+
+      {/* Fallback warning */}
+      {isFallback && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+          <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+          <p className="text-xs text-destructive">Showing sample catalog — full catalog unavailable. Please try again later.</p>
+        </div>
+      )}
 
       {/* Advanced: Own S&S Account */}
       <Accordion type="single" collapsible>
@@ -225,8 +274,8 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            defaultValue=""
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -251,10 +300,10 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {selected.size} of {allProducts.length} selected
+            {selected.size} selected · {products.length} loaded{hasMore ? "+" : ""}
           </span>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={selectAll} className="text-xs h-7">Select All</Button>
+            <Button variant="ghost" size="sm" onClick={selectAllVisible} className="text-xs h-7">Select Visible</Button>
             <Button variant="ghost" size="sm" onClick={selectNone} className="text-xs h-7">Clear</Button>
           </div>
         </div>
@@ -268,116 +317,41 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1">
-          {filtered.map((product) => {
-            const isSelected = selected.has(product.styleID);
-            const sel = selected.get(product.styleID);
-            const isExpanded = expandedProduct === product.styleID;
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1"
+        >
+          {products.map((product) => (
+            <ProductCard
+              key={product.styleID}
+              product={product}
+              selected={selected}
+              expandedProduct={expandedProduct}
+              onToggle={toggleProduct}
+              onToggleColor={toggleColor}
+              onToggleSize={toggleSize}
+              onExpand={(id) => setExpandedProduct(expandedProduct === id ? null : id)}
+            />
+          ))}
 
-            return (
-              <Card
-                key={product.styleID}
-                className={`border cursor-pointer transition-all ${
-                  isSelected ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/40"
-                }`}
-              >
-                <CardContent className="p-3 space-y-2">
-                  {/* Header with checkbox */}
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleProduct(product)}
-                      className="mt-0.5"
-                    />
-                    <div className="flex-1 min-w-0" onClick={() => toggleProduct(product)}>
-                      <p className="text-xs font-medium text-foreground truncate">{product.title}</p>
-                      <p className="text-[10px] text-muted-foreground">{product.brandName}</p>
-                    </div>
-                  </div>
+          {/* Loading more indicator */}
+          {loadingMore && (
+            <div className="col-span-full flex items-center justify-center py-6">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">Loading more products...</span>
+            </div>
+          )}
 
-                  {/* Image */}
-                  <div className="aspect-square bg-muted rounded-md overflow-hidden" onClick={() => toggleProduct(product)}>
-                    {product.styleImage ? (
-                      <img src={product.styleImage} alt={product.title} className="w-full h-full object-contain" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
-                    )}
-                  </div>
-
-                  {/* Price */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      ${product.piecePrice?.toFixed(2) || "—"}
-                    </span>
-                    <Badge variant="secondary" className="text-[10px]">{product.baseCategory}</Badge>
-                  </div>
-
-                  {/* Expand for color/size selection when selected */}
-                  {isSelected && (
-                    <div className="space-y-2 border-t border-border pt-2">
-                      <button
-                        className="flex items-center justify-between w-full text-xs text-muted-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedProduct(isExpanded ? null : product.styleID);
-                        }}
-                      >
-                        <span>{sel?.selectedColors.length} colors, {sel?.selectedSizes.length} sizes</span>
-                        {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                      </button>
-
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          className="space-y-2"
-                        >
-                          {/* Colors */}
-                          <div>
-                            <p className="text-[10px] font-medium text-foreground mb-1">Colors</p>
-                            <div className="flex flex-wrap gap-1">
-                              {product.availableColors.map((c) => (
-                                <button
-                                  key={c.name}
-                                  onClick={(e) => { e.stopPropagation(); toggleColor(product.styleID, c.name); }}
-                                  className={`w-5 h-5 rounded-full border-2 transition-all ${
-                                    sel?.selectedColors.includes(c.name)
-                                      ? "border-primary scale-110"
-                                      : "border-transparent opacity-40"
-                                  }`}
-                                  style={{ backgroundColor: c.hex }}
-                                  title={c.name}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          {/* Sizes */}
-                          <div>
-                            <p className="text-[10px] font-medium text-foreground mb-1">Sizes</p>
-                            <div className="flex flex-wrap gap-1">
-                              {product.availableSizes.map((s) => (
-                                <Badge
-                                  key={s}
-                                  variant={sel?.selectedSizes.includes(s) ? "default" : "outline"}
-                                  className="text-[10px] cursor-pointer px-1.5 py-0"
-                                  onClick={(e) => { e.stopPropagation(); toggleSize(product.styleID, s); }}
-                                >
-                                  {s}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+          {!hasMore && products.length > 0 && (
+            <div className="col-span-full text-center py-4">
+              <span className="text-xs text-muted-foreground">All {products.length} products loaded</span>
+            </div>
+          )}
         </div>
       )}
 
+      {/* Actions */}
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">Back</Button>
         <Button onClick={handleNext} disabled={selected.size === 0 || saving} className="flex-1 gap-2">
@@ -386,5 +360,102 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
         </Button>
       </div>
     </motion.div>
+  );
+};
+
+// --- Extracted product card component ---
+
+interface ProductCardProps {
+  product: SSStyle;
+  selected: Map<number, SelectedProduct>;
+  expandedProduct: number | null;
+  onToggle: (p: SSStyle) => void;
+  onToggleColor: (id: number, color: string) => void;
+  onToggleSize: (id: number, size: string) => void;
+  onExpand: (id: number) => void;
+}
+
+const ProductCard = ({ product, selected, expandedProduct, onToggle, onToggleColor, onToggleSize, onExpand }: ProductCardProps) => {
+  const isSelected = selected.has(product.styleID);
+  const sel = selected.get(product.styleID);
+  const isExpanded = expandedProduct === product.styleID;
+
+  return (
+    <Card
+      className={`border cursor-pointer transition-all ${
+        isSelected ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/40"
+      }`}
+    >
+      <CardContent className="p-3 space-y-2">
+        <div className="flex items-start gap-2">
+          <Checkbox checked={isSelected} onCheckedChange={() => onToggle(product)} className="mt-0.5" />
+          <div className="flex-1 min-w-0" onClick={() => onToggle(product)}>
+            <p className="text-xs font-medium text-foreground truncate">{product.title}</p>
+            <p className="text-[10px] text-muted-foreground">{product.brandName}</p>
+          </div>
+        </div>
+
+        <div className="aspect-square bg-muted rounded-md overflow-hidden" onClick={() => onToggle(product)}>
+          {product.styleImage ? (
+            <img src={product.styleImage} alt={product.title} className="w-full h-full object-contain" loading="lazy" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">${product.piecePrice?.toFixed(2) || "—"}</span>
+          <Badge variant="secondary" className="text-[10px]">{product.baseCategory}</Badge>
+        </div>
+
+        {isSelected && (
+          <div className="space-y-2 border-t border-border pt-2">
+            <button
+              className="flex items-center justify-between w-full text-xs text-muted-foreground"
+              onClick={(e) => { e.stopPropagation(); onExpand(product.styleID); }}
+            >
+              <span>{sel?.selectedColors.length} colors, {sel?.selectedSizes.length} sizes</span>
+              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+
+            {isExpanded && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="space-y-2">
+                <div>
+                  <p className="text-[10px] font-medium text-foreground mb-1">Colors</p>
+                  <div className="flex flex-wrap gap-1">
+                    {product.availableColors.map((c) => (
+                      <button
+                        key={c.name}
+                        onClick={(e) => { e.stopPropagation(); onToggleColor(product.styleID, c.name); }}
+                        className={`w-5 h-5 rounded-full border-2 transition-all ${
+                          sel?.selectedColors.includes(c.name) ? "border-primary scale-110" : "border-transparent opacity-40"
+                        }`}
+                        style={{ backgroundColor: c.hex }}
+                        title={c.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-medium text-foreground mb-1">Sizes</p>
+                  <div className="flex flex-wrap gap-1">
+                    {product.availableSizes.map((s) => (
+                      <Badge
+                        key={s}
+                        variant={sel?.selectedSizes.includes(s) ? "default" : "outline"}
+                        className="text-[10px] cursor-pointer px-1.5 py-0"
+                        onClick={(e) => { e.stopPropagation(); onToggleSize(product.styleID, s); }}
+                      >
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

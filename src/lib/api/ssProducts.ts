@@ -239,35 +239,77 @@ const FALLBACK_CATALOG: SSStyle[] = [
 
 // --- Public API (tries live, falls back to mock) ---
 
-export async function searchStyles(query: string): Promise<SSStyle[]> {
+export interface FetchStylesPageResult {
+  styles: SSStyle[];
+  hasMore: boolean;
+  isFallback: boolean;
+}
+
+export async function fetchStylesPage(
+  page: number = 1,
+  perPage: number = 100,
+  filters?: { keyword?: string; category?: string }
+): Promise<FetchStylesPageResult> {
   try {
-    const data = await callCatalog({ action: "styles", keyword: query, perPage: "50" });
+    const params: Record<string, string> = {
+      action: "styles",
+      page: String(page),
+      perPage: String(perPage),
+    };
+    if (filters?.keyword) params.keyword = filters.keyword;
+    if (filters?.category) params.category = filters.category;
+
+    const data = await callCatalog(params);
     if (Array.isArray(data) && data.length > 0) {
-      return data.map(mapStyle);
+      return {
+        styles: data.map(mapStyle),
+        hasMore: data.length >= perPage,
+        isFallback: false,
+      };
     }
+    // Empty page — no more results
+    return { styles: [], hasMore: false, isFallback: false };
   } catch (e) {
-    console.warn("SS catalog search failed, using fallback:", e);
+    console.warn("SS catalog fetchStylesPage failed, using fallback:", e);
+    if (page > 1) return { styles: [], hasMore: false, isFallback: true };
+    // Only return fallback on page 1
+    let filtered = [...FALLBACK_CATALOG];
+    if (filters?.keyword) {
+      const lower = filters.keyword.toLowerCase();
+      filtered = filtered.filter(
+        (s) =>
+          s.title.toLowerCase().includes(lower) ||
+          s.baseCategory.toLowerCase().includes(lower) ||
+          s.description.toLowerCase().includes(lower)
+      );
+    }
+    if (filters?.category) {
+      filtered = filtered.filter((s) => s.baseCategory === filters.category);
+    }
+    return { styles: filtered, hasMore: false, isFallback: true };
   }
-  // Fallback: filter mock data
-  const lower = query.toLowerCase();
-  return FALLBACK_CATALOG.filter(
-    (s) =>
-      s.title.toLowerCase().includes(lower) ||
-      s.baseCategory.toLowerCase().includes(lower) ||
-      s.description.toLowerCase().includes(lower)
-  );
+}
+
+export async function searchStyles(query: string): Promise<SSStyle[]> {
+  const result = await fetchStylesPage(1, 100, { keyword: query });
+  return result.styles;
 }
 
 export async function getAllStyles(): Promise<SSStyle[]> {
+  const result = await fetchStylesPage(1, 100);
+  return result.styles;
+}
+
+export async function fetchCategories(): Promise<string[]> {
   try {
-    const data = await callCatalog({ action: "styles", perPage: "50" });
-    if (Array.isArray(data) && data.length > 0) {
-      return data.map(mapStyle);
+    const data = await callCatalog({ action: "categories" });
+    if (Array.isArray(data)) {
+      return data.map((c: any) => c.name ?? c.Name ?? c.categoryName ?? String(c));
     }
   } catch (e) {
-    console.warn("SS catalog getAllStyles failed, using fallback:", e);
+    console.warn("Failed to fetch categories:", e);
   }
-  return [...FALLBACK_CATALOG];
+  return Array.from(new Set(FALLBACK_CATALOG.map((p) => p.baseCategory)));
 }
 
 export function getStyleById(styleID: number): SSStyle | undefined {
