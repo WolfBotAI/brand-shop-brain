@@ -1,92 +1,83 @@
 
 
-# Fix: Broken Images, Fullscreen Catalog, Pricing Fees, Modern Storefront
+# Production Readiness Audit + New Features
 
-## Problems Identified (from screenshots)
+## What's Already Built
+- Distributor onboarding (profile, catalog, pricing, client store creation)
+- S&S catalog browsing with infinite scroll
+- Pricing engine with platform fees + distributor markup
+- Public storefront with cart/checkout
+- Basic order history lookup by email (`/store/:slug/orders`)
+- AI chat widget on storefronts
+- GHL sync edge function (foundation)
+- Dashboard, store workspace, settings
 
-1. **Broken images everywhere** — S&S CDN URLs like `ssactivewear.com/Images/Style/...` require authentication and don't load publicly. The fallback catalog and all stored products show broken `<img>` alt text.
-2. **Catalog is cramped** — Browsing happens inside a `max-h-[500px]` scrollable div within the onboarding wizard. No fullscreen option.
-3. **No per-item pricing during selection** — When a product is selected, user picks colors/sizes but can't adjust price. Pricing is a separate step that only shows global/category markup.
-4. **Pricing missing app owner fees** — The pricing step only shows distributor markup. It needs to show: base cost + app owner markup + decoration fee + shipping fee + platform surcharge (% of apparel).
-5. **Public storefront is bland** — `PublicStorefront.tsx` is a basic grid with minimal styling. Needs to be a modern, high-fashion shopping experience.
-6. **Store preview images also broken** — Same S&S CDN issue in `StorefrontPreview.tsx` and `CompletionStep.tsx`.
-7. **No GHL sync** — Orders, contacts, communications not synced to GHL sub-accounts.
+## What's Pending / New Requirements
 
-## Plan
+### 1. Order Status Tracking Page (per store)
+**Current state:** `CustomerOrders.tsx` shows order history by email but has no real-time status tracking, no order number lookup, and no status detail view.
 
-### 1. Fix broken images
-- S&S CDN URLs require API auth — they can't be used as public `<img src>` URLs
-- Update the `ss-catalog` edge function to also proxy product images, OR use S&S's public image CDN format (if available), OR cache images in storage
-- For fallback catalog, use publicly accessible placeholder images (e.g., unsplash apparel photos or generic product silhouettes)
-- Add an `onError` handler on all product `<img>` tags to show a styled placeholder instead of broken alt text
+**Build:**
+- Upgrade `/store/:slug/orders` to an **Order Status Tracker** — accepts order number OR email
+- Show real-time status timeline (Received → In Production → Decorated → Shipped → Delivered)
+- Pull status from three sources in priority order:
+  1. Printful API (if order was fulfilled via Printful)
+  2. Decorator API (if routed to a decorator with API)
+  3. GHL contact record `status` field (fallback)
+- Create a `check-order-status` edge function that queries these sources and returns unified status
+- Add GHL chat widget + AI voice agent phone number to the status page (configurable per store)
 
-### 2. Fullscreen catalog browser
-- Add a "Browse Fullscreen" button to `CatalogSetupStep.tsx` that opens a fullscreen `Dialog` (or dedicated overlay)
-- The fullscreen view uses the full viewport: search bar at top, category filters, product grid fills the screen
-- Clicking a product opens `ProductDetailModal` for color/size selection
-- Selected count shown in a sticky footer bar with "Continue" button
-- Keep the inline small view as a fallback/summary
+### 2. Per-Store AI Agent Toggle (Chat + Voice)
+**Current state:** Chat widget is always shown on storefronts. No voice agent. No per-store billing toggle.
 
-### 3. Per-item pricing in catalog selection
-- When a product is selected and expanded (or in the detail modal), show a markup input field per item
-- Allow the distributor to set a custom markup (% or $) for that specific item right there
-- This feeds into the `itemMarkups` map already in the pricing step
-- The pricing step then becomes a review/bulk-adjust step rather than the only place to set prices
+**Build:**
+- Add `ai_chat_enabled` and `ai_voice_enabled` boolean columns to `stores` table
+- Add AI agent toggle controls in `StoreWorkspace.tsx` settings tab
+- Conditionally render chat widget and voice agent phone number on storefront/status page based on these flags
+- Show billing notice: "AI Chat: $X/mo per store" / "AI Voice: $X/mo per store"
 
-### 4. Complete pricing fee structure
-Update `PricingStep.tsx` to show the full fee breakdown:
-- **Base cost** (wholesale from S&S — set by platform)
-- **App owner markup** (set by us, stored in a `platform_fees` config — read-only for distributors)
-- **Decoration fee** (per-method: screen print, embroidery, DTG — configurable by app owner)
-- **Shipping fee** (flat rate or real-time via FedEx/UPS)
-- **Platform surcharge** (% of apparel subtotal, set by app owner — e.g., 5% technology fee)
-- **Distributor markup** (what the distributor controls — %, $, per-item, per-category, bulk)
-- Show a live price breakdown preview per product: Cost → + Owner Markup → + Decoration → + Shipping → + Platform Fee → + Distributor Markup = **Final Retail Price**
+### 3. Accounting Integration (QuickBooks / Xero / Spreadsheet)
+**Build:**
+- Add an `accounting_config` jsonb column to `stores` table (per-location) and `profiles` table (distributor-level)
+- Create a settings section in `StoreWorkspace.tsx` for connecting accounting:
+  - QuickBooks Online (OAuth — future connector)
+  - Xero (OAuth — future connector)
+  - Google Sheets export (manual CSV download now, API later)
+- Create a `sync-accounting` edge function that formats order data for each platform
+- For now: implement CSV/spreadsheet export of orders as the immediate solution; QuickBooks/Xero OAuth as Phase 2
 
-Create a `platform_fees` table (or config row) that the app owner sets:
-- `owner_markup_percent`, `decoration_fee_default`, `platform_surcharge_percent`, `default_shipping_fee`
+### 4. GHL Deep Sync
+**Current state:** `ghl-sync` edge function exists but isn't wired into order flow.
 
-### 5. Modern public storefront redesign
-Redesign `PublicStorefront.tsx` to be a high-fashion, interactive shopping experience:
-- Hero banner with store name/logo and gradient overlay
-- Product grid with hover effects, quick-view modals, image zoom
-- Product detail page with color/size selectors, image gallery
-- Animated cart drawer (slide from right)
-- Category filtering and search
-- Modern typography, spacing, and transitions
-- Mobile-responsive with bottom sheet cart on mobile
-- Image fallback with styled "no image" placeholders (not broken alt text)
+**Build:**
+- Wire `ghl-sync` into the checkout flow in `PublicStorefront.tsx` (after order insert)
+- Add communication logging: every chat message and order status update gets logged as a GHL conversation note
+- Auto-create GHL sub-account on store creation in `AddClientStep.tsx`
 
-### 6. Image error handling everywhere
-- Add `onError` fallback to every `<img>` in: `ProductCard`, `StorefrontPreview`, `PublicStorefront`, `CompletionStep`, `ProductDetailModal`
-- Fallback shows a gradient placeholder with product initials or a generic apparel icon
+### 5. Remaining Production Gaps
+- **Order status updates:** Add `UPDATE` RLS policy on `orders` table for store owners
+- **Printful integration:** Create `check-order-status` edge function that queries Printful order status API
+- **Platform fees seed data:** Insert default row into `platform_fees` table so pricing step works out of the box
+- **Email verification:** Currently no auto-confirm — verify this is working correctly
+- **Error handling:** Add proper error boundaries and loading states across all pages
 
-### 7. GHL sync (foundation)
-- Create an edge function `ghl-sync` that:
-  - On order creation: creates/updates contact in GHL, logs order as conversation note
-  - On store creation: creates GHL sub-account location
-- Wire up order placement in `PublicStorefront` to call this edge function after insert
-- This is a foundation — full bi-directional sync comes later with webhooks
-
-## Files to Change
+## Files to Create/Change
 
 | File | Change |
 |------|--------|
-| `src/components/app/onboarding/CatalogSetupStep.tsx` | Add fullscreen dialog mode, image error handling, per-item markup input |
-| `src/components/app/onboarding/ProductDetailModal.tsx` | Add markup input, image error handler |
-| `src/components/app/onboarding/PricingStep.tsx` | Add full fee breakdown (owner markup, decoration, shipping, platform surcharge), read from platform_fees |
-| `src/pages/app/PublicStorefront.tsx` | Complete redesign — modern, high-fashion, product detail views, animated cart, hero section, image fallbacks |
-| `src/components/app/store/StorefrontPreview.tsx` | Image error handling, improved styling |
-| `src/components/app/onboarding/CompletionStep.tsx` | Image error handling |
-| `src/lib/api/ssProducts.ts` | Fix fallback image URLs to publicly accessible ones, add image proxy helper |
-| `supabase/functions/ss-catalog/index.ts` | Add image proxy action to serve authenticated S&S images |
-| NEW: `supabase/migrations/platform_fees.sql` | Create `platform_fees` table for app owner fee config |
-| NEW: `supabase/functions/ghl-sync/index.ts` | Foundation for GHL contact/order sync |
+| `src/pages/app/CustomerOrders.tsx` | Complete rewrite → Order Status Tracker with order# + email lookup, status timeline, GHL chat widget, voice agent phone |
+| NEW: `supabase/functions/check-order-status/index.ts` | Queries Printful API, decorator API, or GHL for order status |
+| `src/pages/app/PublicStorefront.tsx` | Wire GHL sync on checkout, conditionally show chat/voice based on store flags |
+| `src/pages/app/StoreWorkspace.tsx` | Add AI agent toggles (chat/voice), accounting integration section |
+| `src/components/app/store/StorefrontChatWidget.tsx` | Make conditional on `ai_chat_enabled` |
+| `supabase/functions/ghl-sync/index.ts` | Add communication logging action |
+| Migration | Add `ai_chat_enabled`, `ai_voice_enabled`, `accounting_config` to `stores`; add `UPDATE` policy on `orders` for store owners; seed `platform_fees` |
+| `src/pages/app/Settings.tsx` | Add distributor-level accounting connection option |
 
 ## Implementation Order
-1. Fix images (proxy + fallbacks) — unblocks everything visual
-2. Fullscreen catalog browser
-3. Per-item pricing in selection + full fee breakdown in pricing step
-4. Modern storefront redesign
-5. GHL sync foundation
+1. Database migration (new columns + policies + seed data)
+2. Order Status Tracker page with edge function
+3. Per-store AI agent toggles
+4. GHL sync wiring into checkout + store creation
+5. Accounting integration (CSV export now, OAuth connectors later)
 
