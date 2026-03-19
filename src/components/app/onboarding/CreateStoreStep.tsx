@@ -601,8 +601,25 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
                     </SelectContent>
                   </Select>
                 </div>
-
-
+                <div className="space-y-2">
+                  <Label>Store Type</Label>
+                  <RadioGroup value={storeType} onValueChange={(v) => setStoreType(v as "standard" | "popup")} className="flex gap-4">
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="standard" id="type-standard" />
+                      <Label htmlFor="type-standard" className="font-normal">Standard</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="popup" id="type-popup" />
+                      <Label htmlFor="type-popup" className="font-normal">Pop-Up (time-limited)</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                {storeType === "popup" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="expiresAt">Expiration Date</Label>
+                    <Input id="expiresAt" type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
+                  </div>
+                )}
                 <Button onClick={handleDetailsNext} disabled={!storeName.trim() || !clientName.trim() || !brandVertical} className="w-full gap-2">
                   Continue to Catalog <ArrowRight className="w-4 h-4" />
                 </Button>
