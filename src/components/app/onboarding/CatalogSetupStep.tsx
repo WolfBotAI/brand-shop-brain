@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
-import { ShoppingBag, ArrowRight, Search, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingBag, ArrowRight, Search, Loader2, ChevronDown, ChevronUp, AlertTriangle, Maximize2, X, Check, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +10,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ChatBubble } from "@/components/features/ChatBubble";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { fetchStylesPage, fetchCategories, type SSStyle } from "@/lib/api/ssProducts";
+import { ProductImage } from "./ProductImage";
 
 export interface CatalogSelection {
   catalogId: string;
@@ -23,6 +25,7 @@ export interface CatalogSelection {
 export interface SelectedProduct extends SSStyle {
   selectedColors: string[];
   selectedSizes: string[];
+  itemMarkup?: number;
 }
 
 interface CatalogSetupStepProps {
@@ -34,40 +37,32 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Catalog data
   const [products, setProducts] = useState<SSStyle[]>([]);
   const [selected, setSelected] = useState<Map<number, SelectedProduct>>(new Map());
   const [categories, setCategories] = useState<string[]>([]);
   const [isFallback, setIsFallback] = useState(false);
 
-  // Pagination
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
-  // UI
   const [saving, setSaving] = useState(false);
   const [expandedProduct, setExpandedProduct] = useState<number | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Advanced S&S credentials
-  const [ssAccount, setSsAccount] = useState("");
-  const [ssApiKey, setSsApiKey] = useState("");
+  const fullscreenScrollRef = useRef<HTMLDivElement>(null);
 
   const PER_PAGE = 100;
 
-  // Load categories once
   useEffect(() => {
     fetchCategories().then(setCategories);
   }, []);
 
-  // Load first page (and reset on filter change)
   useEffect(() => {
     setProducts([]);
     setPage(1);
@@ -94,9 +89,7 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
     }
   }, [searchQuery, activeCategory, toast]);
 
-  // Infinite scroll handler
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
+  const handleScroll = useCallback((el: HTMLDivElement | null) => {
     if (!el || loadingMore || !hasMore) return;
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
       setLoadingMore(true);
@@ -104,14 +97,12 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
     }
   }, [loadingMore, hasMore, page, loadPage]);
 
-  // Debounced search
   const handleSearchChange = (value: string) => {
     if (searchTimeout) clearTimeout(searchTimeout);
     const timeout = setTimeout(() => setSearchQuery(value), 400);
     setSearchTimeout(timeout);
   };
 
-  // Selection helpers
   const toggleProduct = (product: SSStyle) => {
     setSelected((prev) => {
       const next = new Map(prev);
@@ -150,6 +141,16 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
         ? item.selectedSizes.filter((s) => s !== size)
         : [...item.selectedSizes, size];
       next.set(styleID, { ...item, selectedSizes: sizes });
+      return next;
+    });
+  };
+
+  const setItemMarkup = (styleID: number, markup: number | undefined) => {
+    setSelected((prev) => {
+      const next = new Map(prev);
+      const item = next.get(styleID);
+      if (!item) return prev;
+      next.set(styleID, { ...item, itemMarkup: markup });
       return next;
     });
   };
@@ -196,6 +197,7 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
               selectedSizes: p.selectedSizes,
               availableColors: p.availableColors,
               availableSizes: p.availableSizes,
+              itemMarkup: p.itemMarkup,
             })) as any,
           })
           .select("id")
@@ -213,114 +215,65 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-6"
-    >
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <ShoppingBag className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Build Your Catalog</h2>
-            <p className="text-muted-foreground">Select the products you want to offer your clients</p>
-          </div>
-        </div>
+  const searchAndFilters = (
+    <div className="space-y-3">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Search products..."
+          defaultValue=""
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-10"
+        />
       </div>
-
-      <ChatBubble
-        message="Browse the Brand-Shop Apparel catalog below. Select the items, colors, and sizes you want to make available to your clients. Scroll down to load more products."
-        delay={0.2}
-      />
-
-      {/* Fallback warning */}
-      {isFallback && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-          <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
-          <p className="text-xs text-destructive">Showing sample catalog — full catalog unavailable. Please try again later.</p>
-        </div>
-      )}
-
-      {/* Advanced: Own S&S Account */}
-      <Accordion type="single" collapsible>
-        <AccordionItem value="advanced" className="border border-border rounded-lg">
-          <AccordionTrigger className="px-4 py-3 text-xs text-muted-foreground hover:no-underline">
-            I have my own S&S Activewear account (optional)
-          </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4 space-y-3">
-            <p className="text-xs text-muted-foreground">Connect your own account for custom pricing and direct inventory access.</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Account Number</Label>
-                <Input placeholder="Your account #" value={ssAccount} onChange={(e) => setSsAccount(e.target.value)} className="h-8 text-xs" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">API Key</Label>
-                <Input type="password" placeholder="Your API key" value={ssApiKey} onChange={(e) => setSsApiKey(e.target.value)} className="h-8 text-xs" />
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-
-      {/* Search & Filters */}
-      <div className="space-y-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            defaultValue=""
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge
+          variant={activeCategory === null ? "default" : "outline"}
+          className="cursor-pointer text-xs"
+          onClick={() => setActiveCategory(null)}
+        >
+          All
+        </Badge>
+        {categories.map((cat) => (
           <Badge
-            variant={activeCategory === null ? "default" : "outline"}
+            key={cat}
+            variant={activeCategory === cat ? "default" : "outline"}
             className="cursor-pointer text-xs"
-            onClick={() => setActiveCategory(null)}
+            onClick={() => setActiveCategory(cat === activeCategory ? null : cat)}
           >
-            All
+            {cat}
           </Badge>
-          {categories.map((cat) => (
-            <Badge
-              key={cat}
-              variant={activeCategory === cat ? "default" : "outline"}
-              className="cursor-pointer text-xs"
-              onClick={() => setActiveCategory(cat === activeCategory ? null : cat)}
-            >
-              {cat}
-            </Badge>
-          ))}
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {selected.size} selected · {products.length} loaded{hasMore ? "+" : ""}
-          </span>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={selectAllVisible} className="text-xs h-7">Select Visible</Button>
-            <Button variant="ghost" size="sm" onClick={selectNone} className="text-xs h-7">Clear</Button>
-          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">
+          {selected.size} selected · {products.length} loaded{hasMore ? "+" : ""}
+        </span>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={selectAllVisible} className="text-xs h-7">Select Visible</Button>
+          <Button variant="ghost" size="sm" onClick={selectNone} className="text-xs h-7">Clear</Button>
         </div>
       </div>
+    </div>
+  );
 
-      {/* Product Grid */}
+  const productGrid = (isFullscreen: boolean) => (
+    <>
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-48 rounded-lg" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 rounded-lg" />
           ))}
         </div>
       ) : (
         <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-1"
+          ref={isFullscreen ? fullscreenScrollRef : scrollRef}
+          onScroll={(e) => handleScroll(e.currentTarget)}
+          className={`grid gap-3 overflow-y-auto pr-1 ${
+            isFullscreen
+              ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 max-h-[calc(100vh-220px)]"
+              : "grid-cols-2 md:grid-cols-3 max-h-[500px]"
+          }`}
         >
           {products.map((product) => (
             <ProductCard
@@ -332,10 +285,10 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
               onToggleColor={toggleColor}
               onToggleSize={toggleSize}
               onExpand={(id) => setExpandedProduct(expandedProduct === id ? null : id)}
+              onSetMarkup={setItemMarkup}
             />
           ))}
 
-          {/* Loading more indicator */}
           {loadingMore && (
             <div className="col-span-full flex items-center justify-center py-6">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -350,8 +303,73 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
           )}
         </div>
       )}
+    </>
+  );
 
-      {/* Actions */}
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-6"
+    >
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <ShoppingBag className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-foreground">Build Your Catalog</h2>
+            <p className="text-muted-foreground">Select the products you want to offer your clients</p>
+          </div>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setFullscreen(true)}>
+            <Maximize2 className="w-4 h-4" /> Fullscreen
+          </Button>
+        </div>
+      </div>
+
+      <ChatBubble
+        message="Browse the Brand-Shop Apparel catalog below. Select items, pick colors & sizes, and optionally set per-item markup. Use Fullscreen for a better browsing experience."
+        delay={0.2}
+      />
+
+      {isFallback && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+          <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+          <p className="text-xs text-destructive">Showing sample catalog — full catalog unavailable. Please try again later.</p>
+        </div>
+      )}
+
+      {searchAndFilters}
+      {productGrid(false)}
+
+      {/* Fullscreen Catalog Dialog */}
+      <Dialog open={fullscreen} onOpenChange={setFullscreen}>
+        <DialogContent className="max-w-[95vw] w-full h-[95vh] flex flex-col p-0 gap-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Brand-Shop Apparel Catalog</h2>
+              <p className="text-sm text-muted-foreground">{selected.size} products selected</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setFullscreen(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="px-6 py-3 border-b border-border">
+            {searchAndFilters}
+          </div>
+          <div className="flex-1 overflow-hidden px-6 py-3">
+            {productGrid(true)}
+          </div>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/30">
+            <span className="text-sm font-medium text-foreground">{selected.size} products selected</span>
+            <Button onClick={() => setFullscreen(false)} className="gap-2">
+              Done <Check className="w-4 h-4" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">Back</Button>
         <Button onClick={handleNext} disabled={selected.size === 0 || saving} className="flex-1 gap-2">
@@ -363,7 +381,7 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   );
 };
 
-// --- Extracted product card component ---
+// --- Product Card ---
 
 interface ProductCardProps {
   product: SSStyle;
@@ -373,88 +391,119 @@ interface ProductCardProps {
   onToggleColor: (id: number, color: string) => void;
   onToggleSize: (id: number, size: string) => void;
   onExpand: (id: number) => void;
+  onSetMarkup: (id: number, markup: number | undefined) => void;
 }
 
-const ProductCard = ({ product, selected, expandedProduct, onToggle, onToggleColor, onToggleSize, onExpand }: ProductCardProps) => {
+const ProductCard = ({ product, selected, expandedProduct, onToggle, onToggleColor, onToggleSize, onExpand, onSetMarkup }: ProductCardProps) => {
   const isSelected = selected.has(product.styleID);
   const sel = selected.get(product.styleID);
   const isExpanded = expandedProduct === product.styleID;
 
   return (
     <Card
-      className={`border cursor-pointer transition-all ${
+      className={`border transition-all ${
         isSelected ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/40"
       }`}
     >
-      <CardContent className="p-3 space-y-2">
-        <div className="flex items-start gap-2">
-          <Checkbox checked={isSelected} onCheckedChange={() => onToggle(product)} className="mt-0.5" />
-          <div className="flex-1 min-w-0" onClick={() => onToggle(product)}>
-            <p className="text-xs font-medium text-foreground truncate">{product.title}</p>
-            <p className="text-[10px] text-muted-foreground">{product.brandName}</p>
-          </div>
-        </div>
-
-        <div className="aspect-square bg-muted rounded-md overflow-hidden" onClick={() => onToggle(product)}>
-          {product.styleImage ? (
-            <img src={product.styleImage} alt={product.title} className="w-full h-full object-contain" loading="lazy" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
+      <CardContent className="p-0">
+        {/* Image */}
+        <div className="relative cursor-pointer" onClick={() => onToggle(product)}>
+          <ProductImage
+            src={product.styleImage}
+            alt={product.title}
+            className="w-full aspect-square rounded-t-lg"
+          />
+          {isSelected && (
+            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+              <Check className="w-3.5 h-3.5 text-primary-foreground" />
+            </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">${product.piecePrice?.toFixed(2) || "—"}</span>
-          <Badge variant="secondary" className="text-[10px]">{product.baseCategory}</Badge>
-        </div>
-
-        {isSelected && (
-          <div className="space-y-2 border-t border-border pt-2">
-            <button
-              className="flex items-center justify-between w-full text-xs text-muted-foreground"
-              onClick={(e) => { e.stopPropagation(); onExpand(product.styleID); }}
-            >
-              <span>{sel?.selectedColors.length} colors, {sel?.selectedSizes.length} sizes</span>
-              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-
-            {isExpanded && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="space-y-2">
-                <div>
-                  <p className="text-[10px] font-medium text-foreground mb-1">Colors</p>
-                  <div className="flex flex-wrap gap-1">
-                    {product.availableColors.map((c) => (
-                      <button
-                        key={c.name}
-                        onClick={(e) => { e.stopPropagation(); onToggleColor(product.styleID, c.name); }}
-                        className={`w-5 h-5 rounded-full border-2 transition-all ${
-                          sel?.selectedColors.includes(c.name) ? "border-primary scale-110" : "border-transparent opacity-40"
-                        }`}
-                        style={{ backgroundColor: c.hex }}
-                        title={c.name}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[10px] font-medium text-foreground mb-1">Sizes</p>
-                  <div className="flex flex-wrap gap-1">
-                    {product.availableSizes.map((s) => (
-                      <Badge
-                        key={s}
-                        variant={sel?.selectedSizes.includes(s) ? "default" : "outline"}
-                        className="text-[10px] cursor-pointer px-1.5 py-0"
-                        onClick={(e) => { e.stopPropagation(); onToggleSize(product.styleID, s); }}
-                      >
-                        {s}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
+        <div className="p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <Checkbox checked={isSelected} onCheckedChange={() => onToggle(product)} className="mt-0.5" />
+            <div className="flex-1 min-w-0" onClick={() => onToggle(product)}>
+              <p className="text-xs font-medium text-foreground truncate cursor-pointer">{product.title}</p>
+              <p className="text-[10px] text-muted-foreground">{product.brandName}</p>
+            </div>
           </div>
-        )}
+
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground">${product.piecePrice?.toFixed(2) || "—"}</span>
+            <Badge variant="secondary" className="text-[10px]">{product.baseCategory}</Badge>
+          </div>
+
+          {isSelected && (
+            <div className="space-y-2 border-t border-border pt-2">
+              <button
+                className="flex items-center justify-between w-full text-xs text-muted-foreground"
+                onClick={(e) => { e.stopPropagation(); onExpand(product.styleID); }}
+              >
+                <span>{sel?.selectedColors.length} colors, {sel?.selectedSizes.length} sizes</span>
+                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+
+              {isExpanded && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="space-y-2">
+                  {/* Colors */}
+                  <div>
+                    <p className="text-[10px] font-medium text-foreground mb-1">Colors</p>
+                    <div className="flex flex-wrap gap-1">
+                      {product.availableColors.map((c) => (
+                        <button
+                          key={c.name}
+                          onClick={(e) => { e.stopPropagation(); onToggleColor(product.styleID, c.name); }}
+                          className={`w-5 h-5 rounded-full border-2 transition-all ${
+                            sel?.selectedColors.includes(c.name) ? "border-primary scale-110" : "border-transparent opacity-40"
+                          }`}
+                          style={{ backgroundColor: c.hex }}
+                          title={c.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  {/* Sizes */}
+                  <div>
+                    <p className="text-[10px] font-medium text-foreground mb-1">Sizes</p>
+                    <div className="flex flex-wrap gap-1">
+                      {product.availableSizes.map((s) => (
+                        <Badge
+                          key={s}
+                          variant={sel?.selectedSizes.includes(s) ? "default" : "outline"}
+                          className="text-[10px] cursor-pointer px-1.5 py-0"
+                          onClick={(e) => { e.stopPropagation(); onToggleSize(product.styleID, s); }}
+                        >
+                          {s}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Per-item markup */}
+                  <div>
+                    <p className="text-[10px] font-medium text-foreground mb-1 flex items-center gap-1">
+                      <DollarSign className="w-3 h-3" /> Item Markup (%)
+                    </p>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={500}
+                      placeholder="Use global"
+                      value={sel?.itemMarkup ?? ""}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        const val = e.target.value;
+                        onSetMarkup(product.styleID, val === "" ? undefined : Number(val));
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-7 text-xs w-24"
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
