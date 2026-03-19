@@ -35,6 +35,7 @@ import OrderRoutingManager from "./pages/app/OrderRoutingManager";
 import StoreList from "./pages/app/StoreList";
 import Suppliers from "./pages/app/Suppliers";
 import Settings from "./pages/app/Settings";
+import PublicStorefront from "./pages/app/PublicStorefront";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,9 @@ const App = () => (
             <Route path="/for/distributors" element={<ForDistributors />} />
             <Route path="/for/decorators" element={<ForDecorators />} />
             <Route path="/for/referral-partners" element={<ForReferralPartners />} />
+
+            {/* Public storefront */}
+            <Route path="/store/:slug" element={<PublicStorefront />} />
 
             {/* Protected platform app routes */}
             <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
