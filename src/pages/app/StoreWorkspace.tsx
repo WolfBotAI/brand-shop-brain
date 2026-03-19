@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Store, ShoppingBag, DollarSign, Image, Globe, CreditCard, CheckCircle2, ExternalLink, Copy, Loader2, Save, Upload } from "lucide-react";
+import { ArrowLeft, Store, ShoppingBag, DollarSign, Image, Globe, CreditCard, CheckCircle2, ExternalLink, Copy, Loader2, Save, Upload, Bot, Phone, Download, FileSpreadsheet, Settings2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { StorefrontPreview, type ThemeConfig } from "@/components/app/store/StorefrontPreview";
 import { fetchStyleById, type SSStyle } from "@/lib/api/ssProducts";
 import { useToast } from "@/hooks/use-toast";
@@ -135,12 +137,14 @@ const StoreWorkspace = () => {
       </div>
 
       <Tabs defaultValue="storefront" className="space-y-4">
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-8 w-full">
           <TabsTrigger value="storefront">Storefront</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="catalog">Catalog</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
           <TabsTrigger value="mockups">Mockups</TabsTrigger>
+          <TabsTrigger value="ai-agents">AI Agents</TabsTrigger>
+          <TabsTrigger value="accounting">Accounting</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
@@ -338,6 +342,134 @@ const StoreWorkspace = () => {
                   {!mockupLogo ? "Upload a logo to preview mockups." : "Add products to your catalog first."}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* AI Agents */}
+        <TabsContent value="ai-agents">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Bot className="w-5 h-5" /> AI Agents</CardTitle>
+              <CardDescription>Enable AI-powered chat and voice support for this store. Each agent is billed per store.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">AI Chat Widget</p>
+                  <p className="text-xs text-muted-foreground">24/7 AI assistant embedded on your storefront and order tracking page</p>
+                  <p className="text-xs text-primary font-medium">$29/mo per store</p>
+                </div>
+                <Switch
+                  checked={(dbStore as any)?.ai_chat_enabled ?? true}
+                  onCheckedChange={async (checked) => {
+                    await supabase.from("stores").update({ ai_chat_enabled: checked } as any).eq("id", storeId!);
+                    queryClient.invalidateQueries({ queryKey: ["store", storeId] });
+                    toast({ title: checked ? "AI Chat enabled" : "AI Chat disabled" });
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">AI Voice Agent</p>
+                  <p className="text-xs text-muted-foreground">Phone-based AI support for order status, returns, and general inquiries</p>
+                  <p className="text-xs text-primary font-medium">$49/mo per store</p>
+                </div>
+                <Switch
+                  checked={(dbStore as any)?.ai_voice_enabled ?? false}
+                  onCheckedChange={async (checked) => {
+                    await supabase.from("stores").update({ ai_voice_enabled: checked } as any).eq("id", storeId!);
+                    queryClient.invalidateQueries({ queryKey: ["store", storeId] });
+                    toast({ title: checked ? "AI Voice enabled" : "AI Voice disabled" });
+                  }}
+                />
+              </div>
+
+              {(dbStore as any)?.ai_voice_enabled && (
+                <div className="space-y-2">
+                  <Label htmlFor="voiceNumber">AI Voice Agent Phone Number</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="voiceNumber"
+                      placeholder="+1 (555) 123-4567"
+                      defaultValue={(dbStore as any)?.ai_voice_number || ""}
+                      onBlur={async (e) => {
+                        const num = e.target.value.trim();
+                        await supabase.from("stores").update({ ai_voice_number: num || null } as any).eq("id", storeId!);
+                        queryClient.invalidateQueries({ queryKey: ["store", storeId] });
+                        toast({ title: "Voice number saved" });
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">This number will be displayed on the storefront and order tracking page.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Accounting */}
+        <TabsContent value="accounting">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><FileSpreadsheet className="w-5 h-5" /> Accounting Integration</CardTitle>
+              <CardDescription>Connect accounting software or export orders as spreadsheet.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card className="border-border">
+                  <CardContent className="p-4 space-y-2">
+                    <p className="text-sm font-medium text-foreground">QuickBooks Online</p>
+                    <p className="text-xs text-muted-foreground">Auto-sync orders as invoices</p>
+                    <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
+                  </CardContent>
+                </Card>
+                <Card className="border-border">
+                  <CardContent className="p-4 space-y-2">
+                    <p className="text-sm font-medium text-foreground">Xero</p>
+                    <p className="text-xs text-muted-foreground">Auto-sync orders as invoices</p>
+                    <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
+                  </CardContent>
+                </Card>
+                <Card className="border-border">
+                  <CardContent className="p-4 space-y-2">
+                    <p className="text-sm font-medium text-foreground">CSV Export</p>
+                    <p className="text-xs text-muted-foreground">Download all orders as a spreadsheet</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 mt-1"
+                      onClick={async () => {
+                        const { data: orders } = await supabase
+                          .from("orders")
+                          .select("*")
+                          .eq("store_id", storeId!)
+                          .order("created_at", { ascending: false });
+                        if (!orders?.length) {
+                          toast({ title: "No orders", description: "No orders to export yet." });
+                          return;
+                        }
+                        const header = "Order ID,Date,Customer,Email,Status,Total,Items\n";
+                        const rows = orders.map((o: any) => {
+                          const items = (o.items || []).map((i: any) => `${i.title} x${i.qty}`).join("; ");
+                          return `${o.id},${o.created_at},${o.customer_name},${o.customer_email},${o.status},${o.total},"${items}"`;
+                        }).join("\n");
+                        const blob = new Blob([header + rows], { type: "text/csv" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `orders-${storeName.replace(/\s+/g, "-").toLowerCase()}.csv`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast({ title: "Exported!", description: `${orders.length} orders downloaded.` });
+                      }}
+                    >
+                      <Download className="w-3.5 h-3.5" /> Export CSV
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

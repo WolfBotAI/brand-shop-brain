@@ -1,114 +1,372 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, ShoppingBag, Store } from "lucide-react";
+import {
+  Loader2, Search, ShoppingBag, Store, Package, CheckCircle2,
+  Truck, Clock, Phone, MessageCircle, ChevronDown, ChevronUp
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import { StorefrontChatWidget } from "@/components/app/store/StorefrontChatWidget";
+
+interface StatusStep {
+  label: string;
+  status: "completed" | "current" | "upcoming";
+  timestamp?: string;
+}
+
+interface EnrichedOrder {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  status: string;
+  status_label: string;
+  items: any[];
+  total: number;
+  customer_email: string;
+  customer_name: string;
+  timeline: StatusStep[];
+}
+
+const statusIcons: Record<string, any> = {
+  "Order Received": Clock,
+  "Confirmed": CheckCircle2,
+  "In Production": Package,
+  "Decorated": Package,
+  "Shipped": Truck,
+  "Delivered": CheckCircle2,
+};
 
 export default function CustomerOrders() {
   const { slug } = useParams();
-  const [email, setEmail] = useState("");
-  const [searchEmail, setSearchEmail] = useState("");
+  const [lookupValue, setLookupValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchType, setSearchType] = useState<"email" | "order_id">("email");
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   const { data: store } = useQuery({
     queryKey: ["customer-store", slug],
     queryFn: async () => {
-      const { data, error } = await supabase.from("stores").select("id, store_name, logo_url").eq("slug", slug!).single();
+      const { data, error } = await supabase
+        .from("stores")
+        .select("id, store_name, logo_url, ai_chat_enabled, ai_voice_enabled, ai_voice_number, theme_config, metadata")
+        .eq("slug", slug!)
+        .single();
       if (error) throw error;
       return data;
     },
     enabled: !!slug,
   });
 
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ["customer-orders", store?.id, searchEmail],
+  const { data: ordersData, isLoading } = useQuery({
+    queryKey: ["order-status", store?.id, searchTerm, searchType],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("store_id", store!.id)
-        .eq("customer_email", searchEmail)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      const payload: any = {};
+      if (searchType === "order_id") {
+        payload.order_id = searchTerm;
+      } else {
+        payload.email = searchTerm;
+        payload.store_id = store!.id;
+      }
+      const resp = await supabase.functions.invoke("check-order-status", { body: payload });
+      if (resp.error) throw resp.error;
+      return resp.data as { orders: EnrichedOrder[] };
     },
-    enabled: !!store?.id && !!searchEmail,
+    enabled: !!searchTerm && (searchType === "order_id" || !!store?.id),
   });
+
+  const orders = ordersData?.orders || [];
+  const theme = (store?.theme_config as any) || {};
+  const accentColor = theme.accent || theme.primary || "#6366f1";
+  const products = ((store?.metadata as any)?.products || []).map((p: any) => ({
+    title: p.title,
+    price: p.piecePrice,
+    brandName: p.brandName,
+  }));
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchEmail(email.trim().toLowerCase());
+    const val = lookupValue.trim();
+    if (!val) return;
+    // Detect if it's a UUID (order ID) or email
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    setSearchType(isUuid ? "order_id" : "email");
+    setSearchTerm(isUuid ? val : val.toLowerCase());
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border px-6 py-4 flex items-center gap-3">
-        {store?.logo_url && <img src={store.logo_url} alt="" className="h-6 w-6 rounded object-contain" />}
-        <span className="font-bold">{store?.store_name || "Store"}</span>
-        <span className="text-muted-foreground text-sm ml-1">— Order History</span>
+    <div className="min-h-screen bg-background" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+      {/* Header */}
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to={`/store/${slug}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            {store?.logo_url ? (
+              <img src={store.logo_url} alt="" className="h-9 w-9 rounded-lg object-contain" />
+            ) : (
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Store className="h-4 w-4 text-primary" />
+              </div>
+            )}
+            <div>
+              <span className="font-bold text-foreground">{store?.store_name || "Store"}</span>
+              <span className="text-muted-foreground text-xs block">Order Tracking</span>
+            </div>
+          </Link>
+          {store?.ai_voice_enabled && store?.ai_voice_number && (
+            <a
+              href={`tel:${store.ai_voice_number}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors bg-primary/10 text-primary hover:bg-primary/20"
+            >
+              <Phone className="h-3.5 w-3.5" />
+              Call Support
+            </a>
+          )}
+        </div>
       </header>
 
-      <div className="max-w-xl mx-auto p-6 space-y-6">
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <Input
-            type="email"
-            placeholder="Enter your email to look up orders"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Button type="submit"><Search className="h-4 w-4 mr-1" /> Look Up</Button>
-        </form>
+      <div className="max-w-3xl mx-auto p-6 space-y-8">
+        {/* Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-3 pt-4"
+        >
+          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center bg-primary/10">
+            <Package className="w-8 h-8 text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Track Your Order</h1>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Enter your order number or email address to get real-time updates on your order status.
+          </p>
+        </motion.div>
 
+        {/* Search Form */}
+        <motion.form
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          onSubmit={handleSearch}
+          className="flex gap-2"
+        >
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Order number or email address"
+              value={lookupValue}
+              onChange={(e) => setLookupValue(e.target.value)}
+              className="pl-10 h-12 rounded-xl text-base"
+              required
+            />
+          </div>
+          <Button type="submit" className="h-12 px-6 rounded-xl gap-2">
+            <Search className="h-4 w-4" /> Track
+          </Button>
+        </motion.form>
+
+        {/* Loading */}
         {isLoading && (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         )}
 
-        {searchEmail && !isLoading && (!orders || orders.length === 0) && (
-          <div className="text-center py-8 space-y-2">
-            <ShoppingBag className="h-10 w-10 text-muted-foreground mx-auto" />
-            <p className="text-sm text-muted-foreground">No orders found for {searchEmail}</p>
-          </div>
+        {/* No results */}
+        {searchTerm && !isLoading && orders.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12 space-y-3"
+          >
+            <ShoppingBag className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+            <p className="text-muted-foreground">No orders found. Double-check your order number or email.</p>
+          </motion.div>
         )}
 
-        {orders && orders.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">{orders.length} order(s) found</p>
-            {orders.map((order) => (
-              <Card key={order.id}>
-                <CardContent className="p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
-                      {format(parseISO(order.created_at), "MMM dd, yyyy")}
-                    </span>
-                    <Badge variant={order.status === "pending" ? "secondary" : "default"}>
-                      {order.status}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1">
-                    {((order.items as any[]) || []).map((item: any, i: number) => (
-                      <div key={i} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{item.title} × {item.qty}</span>
-                        <span>${((item.price || 0) * (item.qty || 1)).toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-between font-bold pt-1 border-t border-border">
-                    <span>Total</span>
-                    <span>${Number(order.total).toFixed(2)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        {/* Order Results */}
+        <AnimatePresence mode="wait">
+          {orders.length > 0 && (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
+              <p className="text-sm text-muted-foreground font-medium">
+                {orders.length} order{orders.length !== 1 ? "s" : ""} found
+              </p>
+
+              {orders.map((order) => {
+                const isExpanded = expandedOrder === order.id;
+                return (
+                  <Card key={order.id} className="border-border overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Order Header */}
+                      <button
+                        onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
+                        className="w-full p-5 flex items-center justify-between text-left hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground">
+                              Order #{order.id.slice(0, 8).toUpperCase()}
+                            </span>
+                            <Badge
+                              variant={order.status === "delivered" ? "default" : "secondary"}
+                              className="text-[10px]"
+                            >
+                              {order.status_label}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {format(parseISO(order.created_at), "MMM dd, yyyy 'at' h:mm a")}
+                            {" · "}${Number(order.total).toFixed(2)}
+                          </p>
+                        </div>
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+
+                      {/* Expanded Details */}
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-5 pb-5 space-y-5 border-t border-border pt-5">
+                              {/* Status Timeline */}
+                              <div className="space-y-1">
+                                <p className="text-sm font-semibold text-foreground mb-3">Order Progress</p>
+                                <div className="relative">
+                                  {order.timeline.map((step, i) => {
+                                    const Icon = statusIcons[step.label] || Package;
+                                    const isLast = i === order.timeline.length - 1;
+                                    return (
+                                      <div key={step.label} className="flex gap-3 relative">
+                                        {/* Vertical line */}
+                                        {!isLast && (
+                                          <div
+                                            className={`absolute left-[15px] top-[30px] w-0.5 h-[calc(100%-10px)] ${
+                                              step.status === "completed" ? "bg-primary" : "bg-border"
+                                            }`}
+                                          />
+                                        )}
+                                        {/* Icon */}
+                                        <div
+                                          className={`relative z-10 w-[30px] h-[30px] rounded-full flex items-center justify-center flex-shrink-0 ${
+                                            step.status === "completed"
+                                              ? "bg-primary text-primary-foreground"
+                                              : step.status === "current"
+                                              ? "bg-primary/20 text-primary ring-2 ring-primary/30"
+                                              : "bg-muted text-muted-foreground"
+                                          }`}
+                                        >
+                                          <Icon className="w-3.5 h-3.5" />
+                                        </div>
+                                        {/* Label */}
+                                        <div className="pb-5 min-w-0">
+                                          <p
+                                            className={`text-sm font-medium ${
+                                              step.status === "upcoming" ? "text-muted-foreground" : "text-foreground"
+                                            }`}
+                                          >
+                                            {step.label}
+                                          </p>
+                                          {step.timestamp && (
+                                            <p className="text-xs text-muted-foreground">
+                                              {format(parseISO(step.timestamp), "MMM dd, h:mm a")}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Items */}
+                              <div className="space-y-2">
+                                <p className="text-sm font-semibold text-foreground">Items</p>
+                                {((order.items as any[]) || []).map((item: any, i: number) => (
+                                  <div key={i} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
+                                    <span className="text-muted-foreground">
+                                      {item.title}
+                                      {item.color && ` · ${item.color}`}
+                                      {item.size && ` · ${item.size}`}
+                                      {" × "}{item.qty}
+                                    </span>
+                                    <span className="font-medium text-foreground">
+                                      ${((item.price || 0) * (item.qty || 1)).toFixed(2)}
+                                    </span>
+                                  </div>
+                                ))}
+                                <div className="flex justify-between font-bold pt-2 text-foreground">
+                                  <span>Total</span>
+                                  <span>${Number(order.total).toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Voice agent CTA */}
+        {store?.ai_voice_enabled && store?.ai_voice_number && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="rounded-xl border border-border p-5 flex items-center gap-4 bg-muted/30"
+          >
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Phone className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Need help? Call our AI Support Agent</p>
+              <p className="text-xs text-muted-foreground">Available 24/7 for order status, returns, and more.</p>
+            </div>
+            <a
+              href={`tel:${store.ai_voice_number}`}
+              className="px-5 py-2.5 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              {store.ai_voice_number}
+            </a>
+          </motion.div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="py-6 text-center text-xs text-muted-foreground border-t border-border mt-12">
+        <p>Powered by <span className="font-semibold">Brand-Shop.AI</span></p>
+      </footer>
+
+      {/* AI Chat Widget (conditional) */}
+      {store?.ai_chat_enabled && (
+        <StorefrontChatWidget
+          storeName={store?.store_name || "Store"}
+          products={products}
+          accentColor={accentColor}
+        />
+      )}
     </div>
   );
 }

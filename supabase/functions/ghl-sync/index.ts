@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GHL_BASE = "https://rest.gohighlevel.com/v1";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -19,22 +21,23 @@ serve(async (req) => {
     );
   }
 
+  const headers = {
+    Authorization: `Bearer ${ghlApiKey}`,
+    "Content-Type": "application/json",
+  };
+
   try {
     const body = await req.json();
     const { action, payload } = body;
 
     switch (action) {
       case "sync_order": {
-        // Create/update contact and log order as a note
         const { customer_name, customer_email, order_id, items, total, store_name } = payload;
 
         // 1. Upsert contact
-        const contactResp = await fetch("https://rest.gohighlevel.com/v1/contacts/", {
+        const contactResp = await fetch(`${GHL_BASE}/contacts/`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${ghlApiKey}`,
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify({
             name: customer_name,
             email: customer_email,
@@ -51,12 +54,9 @@ serve(async (req) => {
             .map((i: any) => `${i.title} (${i.color}/${i.size}) x${i.qty} - $${i.price}`)
             .join("\n");
 
-          await fetch(`https://rest.gohighlevel.com/v1/contacts/${contactId}/notes/`, {
+          await fetch(`${GHL_BASE}/contacts/${contactId}/notes/`, {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${ghlApiKey}`,
-              "Content-Type": "application/json",
-            },
+            headers,
             body: JSON.stringify({
               body: `📦 New Order #${order_id}\nStore: ${store_name}\nTotal: $${total}\n\n${orderSummary}`,
             }),
@@ -69,16 +69,65 @@ serve(async (req) => {
         );
       }
 
+      case "log_communication": {
+        const { contact_email, message, channel, store_name } = payload;
+
+        // Find contact by email
+        const searchResp = await fetch(
+          `${GHL_BASE}/contacts/lookup?email=${encodeURIComponent(contact_email)}`,
+          { headers }
+        );
+        const searchData = await searchResp.json();
+        const contactId = searchData?.contacts?.[0]?.id;
+
+        if (contactId) {
+          await fetch(`${GHL_BASE}/contacts/${contactId}/notes/`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              body: `💬 [${channel || "Chat"}] ${store_name || ""}\n${message}`,
+            }),
+          });
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, contactId }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      case "update_order_status": {
+        const { contact_email, order_id, new_status, store_name } = payload;
+
+        const searchResp = await fetch(
+          `${GHL_BASE}/contacts/lookup?email=${encodeURIComponent(contact_email)}`,
+          { headers }
+        );
+        const searchData = await searchResp.json();
+        const contactId = searchData?.contacts?.[0]?.id;
+
+        if (contactId) {
+          await fetch(`${GHL_BASE}/contacts/${contactId}/notes/`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              body: `📋 Order Status Update\nOrder: #${order_id}\nStore: ${store_name}\nNew Status: ${new_status}`,
+            }),
+          });
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, contactId }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       case "create_sub_account": {
-        // Create a GHL sub-account/location for a store
         const { store_name, store_id, owner_email } = payload;
 
-        const locationResp = await fetch("https://rest.gohighlevel.com/v1/locations/", {
+        const locationResp = await fetch(`${GHL_BASE}/locations/`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${ghlApiKey}`,
-            "Content-Type": "application/json",
-          },
+          headers,
           body: JSON.stringify({
             name: store_name,
             email: owner_email,

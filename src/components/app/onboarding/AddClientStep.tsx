@@ -122,6 +122,22 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
 
       if (error) throw error;
 
+      // Fire-and-forget GHL sub-account creation
+      try {
+        await supabase.functions.invoke("ghl-sync", {
+          body: {
+            action: "create_sub_account",
+            payload: {
+              store_name: storeName,
+              store_id: data.id,
+              owner_email: user!.email || clientEmail.trim(),
+            },
+          },
+        });
+      } catch (ghlErr) {
+        console.warn("GHL sub-account creation failed (non-blocking):", ghlErr);
+      }
+
       toast({ title: "Client store created!", description: `${storeName} is live.` });
       onNext({
         storeId: data.id,
