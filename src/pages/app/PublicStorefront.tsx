@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart, Plus, X, Store, Loader2, ChevronRight, Clock, Minus,
-  Search, Filter, Heart, Eye, ShoppingBag, ArrowRight, Check
+  Search, Filter, Heart, Eye, ShoppingBag, ArrowRight, Check, Phone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
