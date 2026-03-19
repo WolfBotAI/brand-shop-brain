@@ -33,9 +33,13 @@ import StoreWorkspace from "./pages/app/StoreWorkspace";
 import AIVisionJobs from "./pages/app/AIVisionJobs";
 import OrderRoutingManager from "./pages/app/OrderRoutingManager";
 import StoreList from "./pages/app/StoreList";
+import StoreList from "./pages/app/StoreList";
 import Suppliers from "./pages/app/Suppliers";
 import Settings from "./pages/app/Settings";
 import PublicStorefront from "./pages/app/PublicStorefront";
+import Reporting from "./pages/app/Reporting";
+import SiteMigrationWizard from "./pages/app/SiteMigrationWizard";
+import CustomerOrders from "./pages/app/CustomerOrders";
 
 const queryClient = new QueryClient();
 
