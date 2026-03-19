@@ -490,6 +490,12 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
       // Persist to database
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Generate slug from store name
+        const slug = storeName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now().toString(36);
+
+        // Persist full product objects so public storefront can render them
+        const productsForMetadata = catalogProducts.filter((p) => p.selected).map(({ selected, ...rest }) => rest);
+
         const { data: dbStore, error: dbError } = await supabase
           .from("stores")
           .insert({
@@ -503,8 +509,9 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
             logo_url: logoUrl || null,
             theme_config: themeConfig as any,
             status: "draft",
-            metadata: { selectedProducts, pricingModel: billingModel },
-          })
+            slug,
+            metadata: { selectedProducts, products: productsForMetadata, pricingModel: billingModel },
+          } as any)
           .select("id")
           .single();
 
