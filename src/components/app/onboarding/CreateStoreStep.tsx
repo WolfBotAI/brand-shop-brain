@@ -180,6 +180,8 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
   const [scraping, setScraping] = useState(false);
   const [scrapedBranding, setScrapedBranding] = useState<BrandingData | null>(null);
   const [creatingStore, setCreatingStore] = useState(false);
+  const [storeType, setStoreType] = useState<"standard" | "popup">("standard");
+  const [expiresAt, setExpiresAt] = useState("");
 
   // Discovery state
   const [discoveryStep, setDiscoveryStep] = useState(0);
