@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      orders: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          id: string
+          items: Json
+          shipping_address: Json | null
+          status: string
+          store_id: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name?: string
+          id?: string
+          items?: Json
+          shipping_address?: Json | null
+          status?: string
+          store_id: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          id?: string
+          items?: Json
+          shipping_address?: Json | null
+          status?: string
+          store_id?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -50,6 +97,42 @@ export type Database = {
         }
         Relationships: []
       }
+      routing_rules: {
+        Row: {
+          category: string
+          created_at: string
+          decoration_type: string
+          decorator: string
+          id: string
+          priority: number
+          supplier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          decoration_type: string
+          decorator: string
+          id?: string
+          priority?: number
+          supplier: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          decoration_type?: string
+          decorator?: string
+          id?: string
+          priority?: number
+          supplier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       stores: {
         Row: {
           brand_vertical: string
@@ -61,6 +144,7 @@ export type Database = {
           id: string
           logo_url: string | null
           metadata: Json | null
+          slug: string | null
           status: string
           store_name: string
           tenant_id: string | null
@@ -78,6 +162,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           metadata?: Json | null
+          slug?: string | null
           status?: string
           store_name: string
           tenant_id?: string | null
@@ -95,10 +180,50 @@ export type Database = {
           id?: string
           logo_url?: string | null
           metadata?: Json | null
+          slug?: string | null
           status?: string
           store_name?: string
           tenant_id?: string | null
           theme_config?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vision_jobs: {
+        Row: {
+          created_at: string
+          customer: string
+          error_flag: string | null
+          extracted_fields: Json | null
+          id: string
+          source: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer?: string
+          error_flag?: string | null
+          extracted_fields?: Json | null
+          id?: string
+          source?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer?: string
+          error_flag?: string | null
+          extracted_fields?: Json | null
+          id?: string
+          source?: string
+          status?: string
+          subject?: string
           updated_at?: string
           user_id?: string
         }
