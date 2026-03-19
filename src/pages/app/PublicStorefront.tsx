@@ -618,16 +618,28 @@ export default function PublicStorefront() {
         <p>Powered by <span className="font-semibold">Brand-Shop.AI</span></p>
       </footer>
 
-      {/* AI Chat Widget */}
-      <StorefrontChatWidget
-        storeName={storeName}
-        products={products.map((p) => ({
-          title: p.title,
-          price: calcRetail(p.customerPrice || p.piecePrice || 0),
-          brandName: p.brandName,
-        }))}
-        accentColor={theme.accent}
-      />
+      {/* AI Chat Widget (conditional) */}
+      {(store as any)?.ai_chat_enabled !== false && (
+        <StorefrontChatWidget
+          storeName={storeName}
+          products={products.map((p) => ({
+            title: p.title,
+            price: calcRetail(p.customerPrice || p.piecePrice || 0),
+            brandName: p.brandName,
+          }))}
+          accentColor={theme.accent}
+        />
+      )}
+
+      {/* AI Voice Agent CTA */}
+      {(store as any)?.ai_voice_enabled && (store as any)?.ai_voice_number && (
+        <a
+          href={`tel:${(store as any).ai_voice_number}`}
+          className="fixed bottom-5 left-5 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg bg-primary text-primary-foreground text-sm font-medium hover:scale-105 transition-transform"
+        >
+          <Phone className="w-4 h-4" /> AI Voice Support
+        </a>
+      )}
     </div>
   );
 }
