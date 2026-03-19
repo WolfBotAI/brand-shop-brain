@@ -14,10 +14,6 @@ import { StorefrontPreview, type ThemeConfig } from "@/components/app/store/Stor
 import { fetchStyleById, type SSStyle } from "@/lib/api/ssProducts";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { StorefrontPreview, type ThemeConfig } from "@/components/app/store/StorefrontPreview";
-import { fetchStyleById, type SSStyle } from "@/lib/api/ssProducts";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 // --- Pricing helpers ---
 interface PricingConfig {
