@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Store, ShoppingBag, DollarSign, Image, Globe, CreditCard, CheckCircle2, ExternalLink, Copy, Loader2, Save, Upload, Bot, Phone, Download, FileSpreadsheet, Settings2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { StorefrontPreview, type ThemeConfig } from "@/components/app/store/StorefrontPreview";
 import { fetchStyleById, type SSStyle } from "@/lib/api/ssProducts";
 import { useToast } from "@/hooks/use-toast";
