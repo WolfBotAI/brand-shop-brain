@@ -1,48 +1,44 @@
+# Production Build Plan — Status
 
+## ✅ Completed
 
-# Redesign the "White-Glove Service" Hub Diagram
+### Phase 1 — Auth & App Shell
+- Supabase Auth, protected routes, profile persistence — DONE
 
-## Problem
-The current diagram uses 4 circles in corners of a 320x320 box with dashed lines to a center hub. Issues:
-- AI Agent circle isn't visually centered (it is positioned correctly but the 4 corner nodes crowd it)
-- Only 4 nodes — doesn't show all the individual channels (Web Chat, SMS, Email, Facebook, Instagram, Phone, PO/PDF, Web Widget)
-- Doesn't convey the "one brain" concept
-- Lines cross awkwardly, feels cramped
+### Phase 2 — Wiring & Persistence
+- Dashboard, Store List, Suppliers, Settings wired to real API/DB — DONE
 
-## New Design — `src/components/landing/ConnectSection.tsx`
+### Phase 3A — Real Catalog via S&S Activewear API
+- Created `ss-catalog` edge function proxying S&S API v2 with Basic auth
+- Replaced `ssProducts.ts` mock with live API calls (fallback to mock on failure)
+- Store Workspace Catalog tab fetches real product data — DONE
 
-Replace the 4-corner layout with a **true radial hub** with 7 channel nodes evenly spaced around a larger, more prominent center:
+### Phase 3B — Store Workspace Tabs
+- **Pricing**: Global markup slider, per-product preview table, saves to `stores.metadata.pricing` — DONE
+- **Mockups**: Logo overlay on product images using onboarding logo — DONE
+- **Billing**: Shows plan tier, billing model, creation date — DONE
 
-### Center Hub (larger, more prominent)
-- Larger circle (w-28 h-28) with pulsing ring animation to convey "one brain"
-- Label: "One Brain" with Bot icon
-- Subtle outer glow ring that pulses
+### Phase 4 — Operations Console (DB-backed)
+- Created `vision_jobs`, `routing_rules`, `orders` tables with RLS
+- AI Vision Jobs: full CRUD (create/approve/push/process), replaces MOCK_JOBS — DONE
+- Order Routing: full CRUD (add/edit/delete rules), replaces MOCK_RULES — DONE
 
-### 7 Satellite Nodes (evenly distributed around a 360-degree circle)
-Each node represents a specific channel, placed using trigonometry for even spacing:
-1. **Web Chat** (MessageSquare)
-2. **SMS** (Smartphone)
-3. **Email** (Mail)
-4. **Facebook** (MessageCircle)
-5. **Instagram** (Instagram icon or Camera)
-6. **Phone Calls** (Phone)
-7. **PO Vision** (Eye)
+### Phase 5 — Public Storefront & Checkout
+- Added `slug` column to stores, auto-generated on store creation
+- Public route `/store/:slug` with anon RLS policy
+- Full product grid with theme, cart, checkout form
+- Orders saved to `orders` table — DONE
 
-### Connections
-- Animated dashed lines from each satellite to center
-- Lines animate in sequentially for a "connecting" effect
-- All lines originate from center = "one brain" visual
+---
 
-### Layout
-- Increase container from w-80 h-80 to w-96 h-96 (or responsive)
-- Satellites positioned using `Math.cos`/`Math.sin` at equal angular intervals
-- Each satellite: small circle (w-14 h-14) with icon + label below
+## 🔲 Remaining (Phase 6)
 
-### Animation
-- Center hub scales in first
-- Pulse ring animates continuously
-- Lines draw from center outward
-- Satellites pop in sequentially around the circle
-
-No changes to the right-side content (headline, bullet points, CTA). Only the left visual is rebuilt.
-
+| Feature | Status |
+|---------|--------|
+| KPI Reports page (recharts + date filters) | Not started |
+| Pop-Up Stores (expires_at, countdown) | Not started |
+| Site Migration wizard (Firecrawl import) | Not started |
+| AI Chat Widget (public storefront) | Not started |
+| Multi-Store bulk actions | Not started |
+| Customer Portal (order history) | Not started |
+| White-Label / custom domain | Not started |
