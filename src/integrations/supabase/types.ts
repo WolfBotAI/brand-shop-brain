@@ -50,6 +50,60 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          brand_vertical: string
+          catalog_id: string | null
+          client_name: string
+          created_at: string
+          domain: string | null
+          external_store_id: string | null
+          id: string
+          logo_url: string | null
+          metadata: Json | null
+          status: string
+          store_name: string
+          tenant_id: string | null
+          theme_config: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_vertical?: string
+          catalog_id?: string | null
+          client_name?: string
+          created_at?: string
+          domain?: string | null
+          external_store_id?: string | null
+          id?: string
+          logo_url?: string | null
+          metadata?: Json | null
+          status?: string
+          store_name: string
+          tenant_id?: string | null
+          theme_config?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_vertical?: string
+          catalog_id?: string | null
+          client_name?: string
+          created_at?: string
+          domain?: string | null
+          external_store_id?: string | null
+          id?: string
+          logo_url?: string | null
+          metadata?: Json | null
+          status?: string
+          store_name?: string
+          tenant_id?: string | null
+          theme_config?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

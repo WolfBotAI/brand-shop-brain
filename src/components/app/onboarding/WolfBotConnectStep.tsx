@@ -8,6 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChatBubble } from "@/components/features/ChatBubble";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { connectWolfBot } from "@/lib/api/tenant";
+import { setTenantContext } from "@/lib/api/client";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 interface WolfBotConnectStepProps {
@@ -21,6 +24,7 @@ export const WolfBotConnectStep = ({ onNext, onBack }: WolfBotConnectStepProps) 
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
   const [result, setResult] = useState<{ tenantId: string; locationId: string } | null>(null);
+  const { user, refreshProfile } = useAuth();
   const { toast } = useToast();
 
   const handleConnect = async () => {
@@ -30,6 +34,17 @@ export const WolfBotConnectStep = ({ onNext, onBack }: WolfBotConnectStepProps) 
       const res = await connectWolfBot({ tenantName: tenantName.trim(), locationId: locationId.trim() });
       setResult({ tenantId: res.tenantId, locationId: res.locationId });
       setConnected(true);
+
+      // Persist tenant context
+      setTenantContext(res.tenantId, res.locationId);
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ tenant_id: res.tenantId, location_id: res.locationId, business_name: tenantName.trim() })
+          .eq("id", user.id);
+        refreshProfile();
+      }
+
       toast({ title: "Connected!", description: "Wolf Bot AI is now linked to your account." });
     } catch (err: any) {
       toast({ title: "Connection failed", description: err.message || "Please check your details and try again.", variant: "destructive" });

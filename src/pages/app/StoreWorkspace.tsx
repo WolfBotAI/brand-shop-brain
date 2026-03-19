@@ -1,11 +1,13 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Store, ShoppingBag, DollarSign, Image, Globe, CreditCard, CheckCircle2, ExternalLink, Copy } from "lucide-react";
+import { ArrowLeft, Store, ShoppingBag, DollarSign, Image, Globe, CreditCard, CheckCircle2, ExternalLink, Copy, Loader2 } from "lucide-react";
 import { StorefrontPreview, type ThemeConfig } from "@/components/app/store/StorefrontPreview";
 import type { SSStyle } from "@/lib/api/ssProducts";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const StoreWorkspace = () => {
   const { storeId } = useParams();
@@ -13,20 +15,35 @@ const StoreWorkspace = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // Receive store data from onboarding navigation state
-  const state = location.state as {
+  // Try location.state first (from onboarding), then fall back to DB
+  const navState = location.state as {
     storeName?: string;
     products?: SSStyle[];
     theme?: ThemeConfig;
     logoUrl?: string;
   } | null;
 
-  const storeName = state?.storeName || "My Store";
-  const products = state?.products || [];
-  const theme: ThemeConfig = state?.theme || {
+  const { data: dbStore, isLoading } = useQuery({
+    queryKey: ["store", storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("stores")
+        .select("*")
+        .eq("id", storeId!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!storeId && !navState?.storeName,
+  });
+
+  const storeName = navState?.storeName || dbStore?.store_name || "My Store";
+  const products = navState?.products || [];
+  const dbTheme = dbStore?.theme_config as unknown as ThemeConfig | null;
+  const theme: ThemeConfig = navState?.theme || dbTheme || {
     primary: "#2d3436", secondary: "#0984e3", accent: "#fdcb6e", background: "#ffffff",
   };
-  const logoUrl = state?.logoUrl || theme.logoUrl;
+  const logoUrl = navState?.logoUrl || dbStore?.logo_url || theme.logoUrl;
 
   const storeUrl = `${window.location.origin}/app/stores/${storeId}`;
 
@@ -35,10 +52,18 @@ const StoreWorkspace = () => {
     toast({ title: "Link copied!", description: "Share this link with your client." });
   };
 
+  if (isLoading && !navState) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/app/dashboard")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/app/stores")}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex items-center gap-3 flex-1">
@@ -51,7 +76,10 @@ const StoreWorkspace = () => {
           )}
           <div>
             <h1 className="text-xl font-bold text-foreground">{storeName}</h1>
-            <p className="text-sm text-muted-foreground">ID: {storeId}</p>
+            <p className="text-sm text-muted-foreground">
+              {dbStore?.status && <span className="capitalize">{dbStore.status} · </span>}
+              {dbStore?.client_name || ""}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -74,7 +102,6 @@ const StoreWorkspace = () => {
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
-        {/* Storefront Preview Tab — default */}
         <TabsContent value="storefront">
           <div className="space-y-4">
             <Card>
@@ -84,12 +111,7 @@ const StoreWorkspace = () => {
               </CardHeader>
               <CardContent>
                 {products.length > 0 ? (
-                  <StorefrontPreview
-                    storeName={storeName}
-                    products={products}
-                    theme={theme}
-                    logoUrl={logoUrl}
-                  />
+                  <StorefrontPreview storeName={storeName} products={products} theme={theme} logoUrl={logoUrl} />
                 ) : (
                   <div className="rounded-lg border border-border p-8 text-center space-y-3">
                     <Store className="w-10 h-10 text-muted-foreground mx-auto" />
@@ -112,7 +134,7 @@ const StoreWorkspace = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: "Status", value: "Syncing Products", icon: CheckCircle2 },
+                  { label: "Status", value: dbStore?.status ?? "Syncing", icon: CheckCircle2 },
                   { label: "Theme", value: "Applied", icon: Globe },
                   { label: "Billing", value: "Brand-Shop Managed", icon: CreditCard },
                   { label: "Products", value: `${products.length} items`, icon: ShoppingBag },
