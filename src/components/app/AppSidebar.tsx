@@ -8,6 +8,8 @@ import {
   Route,
   Sparkles,
   LogOut,
+  BarChart3,
+  ArrowRightLeft,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
