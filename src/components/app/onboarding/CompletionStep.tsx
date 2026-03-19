@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { PartyPopper, CheckCircle2, ArrowRight, Copy, ExternalLink } from "lucide-react";
+import { PartyPopper, CheckCircle2, ArrowRight, Copy, ShoppingBag, DollarSign, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatBubble } from "@/components/features/ChatBubble";
@@ -16,7 +16,7 @@ interface CompletionStepProps {
   logoUrl?: string | null;
 }
 
-export const CompletionStep = ({ storeId, storeName = "My Store", products = [], theme, logoUrl }: CompletionStepProps) => {
+export const CompletionStep = ({ storeId, storeName, products = [], theme, logoUrl }: CompletionStepProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -24,25 +24,20 @@ export const CompletionStep = ({ storeId, storeName = "My Store", products = [],
     primary: "#2d3436", secondary: "#0984e3", accent: "#fdcb6e", background: "#ffffff",
   };
 
-  const storeUrl = `${window.location.origin}/app/stores/${storeId}`;
+  const hasStore = !!storeId;
+  const storeUrl = hasStore ? `${window.location.origin}/app/stores/${storeId}` : "";
 
   const checklist = [
-    { label: "Wolf Bot AI connected", done: true },
-    { label: "Supplier account linked", done: true },
-    { label: "First store created", done: true },
-    { label: "Catalog sync triggered", done: true },
-    { label: "Storefront live", done: true },
+    { label: "Distributor profile completed", done: true, icon: CheckCircle2 },
+    { label: "Product catalog configured", done: true, icon: ShoppingBag },
+    { label: "Pricing & markup set", done: true, icon: DollarSign },
+    { label: "First client store created", done: hasStore, icon: Users },
   ];
 
   const copyLink = () => {
+    if (!storeUrl) return;
     navigator.clipboard.writeText(storeUrl);
     toast({ title: "Link copied!", description: "Share this link with your client." });
-  };
-
-  const goToWorkspace = () => {
-    navigate(`/app/stores/${storeId}`, {
-      state: { storeName, products, theme: defaultTheme, logoUrl },
-    });
   };
 
   return (
@@ -60,47 +55,57 @@ export const CompletionStep = ({ storeId, storeName = "My Store", products = [],
         >
           <PartyPopper className="w-8 h-8 text-primary" />
         </motion.div>
-        <h2 className="text-2xl font-bold text-foreground">Your Store is Live!</h2>
+        <h2 className="text-2xl font-bold text-foreground">
+          {hasStore ? "You're All Set!" : "Account Setup Complete!"}
+        </h2>
         <p className="text-muted-foreground">
-          {storeName} is ready to take orders. Share the link with your client.
+          {hasStore
+            ? `${storeName} is live and ready to take orders.`
+            : "Your distributor account is ready. Head to the dashboard to start adding clients."
+          }
         </p>
       </div>
 
       <ChatBubble
-        message="Your store is live! Below is a preview of what your customers will see. Head to the workspace to manage catalog, pricing, and mockups."
+        message={hasStore
+          ? "Your first client store is live! Head to the dashboard to manage your stores, add more clients, and track orders."
+          : "Your catalog and pricing are set up. You can add your first client from the dashboard whenever you're ready."
+        }
         delay={0.4}
       />
 
-      {/* Share Link */}
-      <Card className="border-primary/30 bg-primary/5">
-        <CardContent className="p-4 flex items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground mb-1">Store URL</p>
-            <p className="text-sm font-mono text-foreground truncate">{storeUrl}</p>
-          </div>
-          <Button variant="outline" size="sm" className="gap-1.5 flex-shrink-0" onClick={copyLink}>
-            <Copy className="w-3.5 h-3.5" /> Copy
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Store Link */}
+      {hasStore && storeUrl && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground mb-1">Client Store URL</p>
+              <p className="text-sm font-mono text-foreground truncate">{storeUrl}</p>
+            </div>
+            <Button variant="outline" size="sm" className="gap-1.5 flex-shrink-0" onClick={copyLink}>
+              <Copy className="w-3.5 h-3.5" /> Copy
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Storefront Mini-Preview */}
-      {products.length > 0 && (
-        <div className="max-h-80 overflow-hidden rounded-xl border border-border relative">
+      {/* Storefront Preview */}
+      {hasStore && products.length > 0 && (
+        <div className="max-h-72 overflow-hidden rounded-xl border border-border relative">
           <StorefrontPreview
-            storeName={storeName}
+            storeName={storeName || "Client Store"}
             products={products.slice(0, 6)}
             theme={defaultTheme}
             logoUrl={logoUrl}
           />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent" />
         </div>
       )}
 
       {/* Checklist */}
       <Card className="border-border">
         <CardContent className="p-6 space-y-3">
-          <h3 className="font-semibold text-foreground text-sm">Onboarding Checklist</h3>
+          <h3 className="font-semibold text-foreground text-sm">Setup Checklist</h3>
           {checklist.map((item, i) => (
             <motion.div
               key={i}
@@ -109,8 +114,8 @@ export const CompletionStep = ({ storeId, storeName = "My Store", products = [],
               transition={{ delay: 0.5 + i * 0.1 }}
               className="flex items-center gap-2"
             >
-              <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-              <span className="text-sm text-foreground">{item.label}</span>
+              <item.icon className={`w-4 h-4 flex-shrink-0 ${item.done ? "text-primary" : "text-muted-foreground"}`} />
+              <span className={`text-sm ${item.done ? "text-foreground" : "text-muted-foreground"}`}>{item.label}</span>
             </motion.div>
           ))}
         </CardContent>
@@ -120,9 +125,14 @@ export const CompletionStep = ({ storeId, storeName = "My Store", products = [],
         <Button variant="outline" onClick={() => navigate("/app/dashboard")} className="flex-1">
           Go to Dashboard
         </Button>
-        <Button onClick={goToWorkspace} className="flex-1 gap-2">
-          Open Store Workspace <ArrowRight className="w-4 h-4" />
-        </Button>
+        {hasStore && (
+          <Button
+            onClick={() => navigate(`/app/stores/${storeId}`, { state: { storeName, products, theme: defaultTheme, logoUrl } })}
+            className="flex-1 gap-2"
+          >
+            Open Store Workspace <ArrowRight className="w-4 h-4" />
+          </Button>
+        )}
       </div>
     </motion.div>
   );
