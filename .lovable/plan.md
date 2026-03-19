@@ -1,48 +1,128 @@
 
 
-# Redesign the "White-Glove Service" Hub Diagram
+# Phase 3–6: Complete Production Build Plan
 
-## Problem
-The current diagram uses 4 circles in corners of a 320x320 box with dashed lines to a center hub. Issues:
-- AI Agent circle isn't visually centered (it is positioned correctly but the 4 corner nodes crowd it)
-- Only 4 nodes — doesn't show all the individual channels (Web Chat, SMS, Email, Facebook, Instagram, Phone, PO/PDF, Web Widget)
-- Doesn't convey the "one brain" concept
-- Lines cross awkwardly, feels cramped
+## Summary
 
-## New Design — `src/components/landing/ConnectSection.tsx`
+The backend at `api.brand-shop.ai` provides: dashboard summary, integration status, supplier accounts, store builder trigger, and GHL connect. It does NOT expose catalog browsing, AI vision job management, or order routing rule endpoints. However, we have `SS_API_KEY` and `SS_ACCOUNT_NUMBER` secrets configured, so we can call the S&S Activewear API directly via an edge function.
 
-Replace the 4-corner layout with a **true radial hub** with 7 channel nodes evenly spaced around a larger, more prominent center:
+---
 
-### Center Hub (larger, more prominent)
-- Larger circle (w-28 h-28) with pulsing ring animation to convey "one brain"
-- Label: "One Brain" with Bot icon
-- Subtle outer glow ring that pulses
+## Phase 3A — Real Catalog via S&S Activewear API
 
-### 7 Satellite Nodes (evenly distributed around a 360-degree circle)
-Each node represents a specific channel, placed using trigonometry for even spacing:
-1. **Web Chat** (MessageSquare)
-2. **SMS** (Smartphone)
-3. **Email** (Mail)
-4. **Facebook** (MessageCircle)
-5. **Instagram** (Instagram icon or Camera)
-6. **Phone Calls** (Phone)
-7. **PO Vision** (Eye)
+**Edge Function: `ss-catalog`**
+- Create a backend function that proxies requests to the S&S Activewear API (`https://api.ssactivewear.com/v2/`)
+- Uses `SS_API_KEY` and `SS_ACCOUNT_NUMBER` secrets (already configured)
+- Endpoints to proxy: `GET /styles` (list/search), `GET /styles/{styleID}` (detail), `GET /products` (SKU-level variants)
+- Auth: Basic auth with account number + API key per S&S docs
 
-### Connections
-- Animated dashed lines from each satellite to center
-- Lines animate in sequentially for a "connecting" effect
-- All lines originate from center = "one brain" visual
+**Replace `ssProducts.ts` mock data**
+- Rewrite `searchStyles()`, `getAllStyles()`, `getStyleById()`, `getProductsByStyle()` to call the edge function instead of returning hardcoded arrays
+- Map S&S API response fields to existing `SSStyle` and `SSProduct` interfaces
+- Keep `getSearchQueriesForVertical()` as-is (it drives search terms)
 
-### Layout
-- Increase container from w-80 h-80 to w-96 h-96 (or responsive)
-- Satellites positioned using `Math.cos`/`Math.sin` at equal angular intervals
-- Each satellite: small circle (w-14 h-14) with icon + label below
+**Store Workspace — Catalog tab**
+- Persist selected product style IDs in `stores.metadata` during onboarding
+- Workspace Catalog tab fetches product details from the edge function using stored style IDs
 
-### Animation
-- Center hub scales in first
-- Pulse ring animates continuously
-- Lines draw from center outward
-- Satellites pop in sequentially around the circle
+---
 
-No changes to the right-side content (headline, bullet points, CTA). Only the left visual is rebuilt.
+## Phase 3B — Store Workspace Tabs
+
+**Pricing tab**
+- Build markup rules UI: global percentage markup, per-category overrides, per-product overrides
+- Store pricing config in `stores.metadata.pricing` (JSON in existing column)
+- Calculate retail price = cost × (1 + markup)
+
+**Mockups tab**
+- Build logo-on-product mockup generator using canvas overlay
+- User uploads logo (already have logo from onboarding), positions it on product images
+- Save generated mockup URLs to store metadata
+
+**Billing tab**
+- Display current billing model (Brand-Shop Managed)
+- Show store creation date, plan tier info
+- Placeholder for Stripe integration
+
+---
+
+## Phase 4 — Operations Console (DB-backed)
+
+Since the backend doesn't expose vision/routing endpoints, we'll persist this data in Supabase.
+
+**Database migration**
+- Create `vision_jobs` table: id, user_id, source (email/pdf/photo), subject, customer, status, extracted_fields (jsonb), error_flag, created_at
+- Create `routing_rules` table: id, user_id, category, decoration_type, supplier, decorator, priority, created_at
+- RLS: users see only their own data
+
+**AI Vision Jobs page**
+- Replace `MOCK_JOBS` with Supabase queries
+- Add "Create Job" flow (manual entry or future email integration)
+- Wire Approve/Push buttons to update status in DB
+
+**Order Routing Manager page**
+- Replace `MOCK_RULES` and `MOCK_INVOICE_ITEMS` with Supabase queries
+- Wire Add/Edit/Delete rule buttons to real CRUD operations
+- Split Order Viewer reads rules from DB to compute routing
+
+---
+
+## Phase 5 — Public Storefront
+
+**Route: `/store/:slug`** (unprotected)
+- Add `slug` column to `stores` table (unique, auto-generated from store name)
+- Public page fetches store config (theme, logo, name) from Supabase with a public RLS policy on slug lookup
+- Fetches catalog products via the ss-catalog edge function using stored style IDs
+- Renders StorefrontPreview-style layout with real product data, cart, and theme
+
+**Checkout**
+- Cart state management with React context
+- Checkout form (name, email, shipping address)
+- Order saved to new `orders` table in Supabase
+- Future: Stripe payment integration
+
+---
+
+## Phase 6 — Remaining Features
+
+- **KPI Reports page**: Charts (recharts) with date range filters, pulling from dashboard API
+- **Pop-Up Stores**: Add `expires_at` field to stores table, countdown/splash page logic
+- **Site Migration**: Wizard UI that calls Firecrawl to scrape existing store, import products
+- **AI Chat Widget**: Embed chat component on public storefront using Lovable AI model
+- **Notifications settings**: Wire to profile preferences
+
+---
+
+## Implementation Order
+
+| Step | Scope | Depends On |
+|------|-------|------------|
+| 1 | SS Catalog edge function | SS_API_KEY (already set) |
+| 2 | Replace ssProducts.ts with real API calls | Step 1 |
+| 3 | Vision Jobs + Routing Rules DB tables | Nothing |
+| 4 | Wire AI Vision & Order Routing to DB | Step 3 |
+| 5 | Store Workspace tabs (Pricing, Mockups) | Step 2 |
+| 6 | Public Storefront + slug | Steps 2, 5 |
+| 7 | KPI Reports, Pop-Up Stores, remaining | Step 6 |
+
+Steps 1+3 can run in parallel. Steps 2+4 can run in parallel after their dependencies.
+
+---
+
+## Technical Details
+
+**S&S Activewear API** (confirmed docs pattern):
+- Base URL: `https://api.ssactivewear.com/v2/`
+- Auth: HTTP Basic (`SS_ACCOUNT_NUMBER:SS_API_KEY`)
+- Key endpoints: `/styles`, `/styles/{id}`, `/products`, `/categories`
+- Response: JSON array of style/product objects
+
+**New DB tables:**
+```
+vision_jobs: id, user_id, source, subject, customer, status, extracted_fields, error_flag, created_at
+routing_rules: id, user_id, category, decoration_type, supplier, decorator, priority, created_at
+orders: id, store_id, customer_email, customer_name, shipping_address, items, total, status, created_at
+```
+
+All tables get RLS restricting to `auth.uid() = user_id`. The `stores` table gets a public SELECT policy for slug-based lookups on the public storefront.
 
