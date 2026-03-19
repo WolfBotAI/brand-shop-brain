@@ -33,7 +33,6 @@ import StoreWorkspace from "./pages/app/StoreWorkspace";
 import AIVisionJobs from "./pages/app/AIVisionJobs";
 import OrderRoutingManager from "./pages/app/OrderRoutingManager";
 import StoreList from "./pages/app/StoreList";
-import StoreList from "./pages/app/StoreList";
 import Suppliers from "./pages/app/Suppliers";
 import Settings from "./pages/app/Settings";
 import PublicStorefront from "./pages/app/PublicStorefront";
