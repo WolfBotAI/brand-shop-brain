@@ -124,22 +124,43 @@ export default function PublicStorefront() {
     if (!store) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("orders").insert({
+      const orderItems = cart.map((i) => ({
+        title: i.product.title,
+        color: i.color,
+        size: i.size,
+        qty: i.qty,
+        price: calcRetail(i.product.customerPrice || i.product.piecePrice || 0),
+      }));
+      const { data: orderData, error } = await supabase.from("orders").insert({
         store_id: store.id,
         customer_email: checkoutForm.email,
         customer_name: checkoutForm.name,
         shipping_address: { address: checkoutForm.address },
-        items: cart.map((i) => ({
-          title: i.product.title,
-          color: i.color,
-          size: i.size,
-          qty: i.qty,
-          price: calcRetail(i.product.customerPrice || i.product.piecePrice || 0),
-        })),
+        items: orderItems,
         total: cartTotal,
         status: "pending",
-      } as any);
+      } as any).select("id").single();
       if (error) throw error;
+
+      // Sync order to GHL (fire-and-forget)
+      try {
+        await supabase.functions.invoke("ghl-sync", {
+          body: {
+            action: "sync_order",
+            payload: {
+              customer_name: checkoutForm.name,
+              customer_email: checkoutForm.email,
+              order_id: orderData?.id,
+              items: orderItems,
+              total: cartTotal,
+              store_name: storeName,
+            },
+          },
+        });
+      } catch (ghlErr) {
+        console.warn("GHL sync failed (non-blocking):", ghlErr);
+      }
+
       setOrderPlaced(true);
       setCart([]);
     } catch (e) {
