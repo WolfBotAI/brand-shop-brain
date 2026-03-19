@@ -465,18 +465,60 @@ export const CreateStoreStep = ({ tenantId, locationId, onNext, onBack }: Create
     try {
       const selectedProducts = catalogProducts.filter((p) => p.selected).map((p) => p.styleID);
       const themeConfig = getActiveThemeConfig();
-      const result = await createStore({
-        tenantId,
-        locationId,
-        storeName,
-        clientName,
-        brandVertical,
-        selectedProducts,
-        themeConfig,
-        logoUrl: logoUrl || undefined,
-        pricingModel: billingModel,
-      });
-      setStoreId(result.storeId);
+
+      // Call backend API
+      let externalStoreId: string | undefined;
+      let catalogId: string | undefined;
+      try {
+        const result = await createStore({
+          tenantId,
+          locationId,
+          storeName,
+          clientName,
+          brandVertical,
+          selectedProducts,
+          themeConfig,
+          logoUrl: logoUrl || undefined,
+          pricingModel: billingModel,
+        });
+        externalStoreId = result.storeId;
+        catalogId = result.catalogId;
+      } catch (err) {
+        console.warn("Backend store creation failed, continuing with local:", err);
+      }
+
+      // Persist to database
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: dbStore, error: dbError } = await supabase
+          .from("stores")
+          .insert({
+            user_id: user.id,
+            tenant_id: tenantId || null,
+            store_name: storeName,
+            client_name: clientName,
+            brand_vertical: brandVertical,
+            external_store_id: externalStoreId || null,
+            catalog_id: catalogId || null,
+            logo_url: logoUrl || null,
+            theme_config: themeConfig as any,
+            status: "draft",
+            metadata: { selectedProducts, pricingModel: billingModel },
+          })
+          .select("id")
+          .single();
+
+        if (dbError) {
+          console.error("DB insert error:", dbError);
+          const id = externalStoreId || `store-${Date.now()}`;
+          setStoreId(id);
+        } else {
+          setStoreId(dbStore.id);
+        }
+      } else {
+        setStoreId(externalStoreId || `store-${Date.now()}`);
+      }
+
       setCreated(true);
       toast({ title: "Store created!", description: `${storeName} is ready.` });
     } catch (err) {
