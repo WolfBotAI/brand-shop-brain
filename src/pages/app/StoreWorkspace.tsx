@@ -140,12 +140,14 @@ const StoreWorkspace = () => {
       </div>
 
       <Tabs defaultValue="storefront" className="space-y-4">
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-8 w-full">
           <TabsTrigger value="storefront">Storefront</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="catalog">Catalog</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
           <TabsTrigger value="mockups">Mockups</TabsTrigger>
+          <TabsTrigger value="ai-agents">AI Agents</TabsTrigger>
+          <TabsTrigger value="accounting">Accounting</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
