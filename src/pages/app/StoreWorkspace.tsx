@@ -39,7 +39,7 @@ const StoreWorkspace = () => {
 
   const storeName = navState?.storeName || dbStore?.store_name || "My Store";
   const products = navState?.products || [];
-  const dbTheme = dbStore?.theme_config as ThemeConfig | null;
+  const dbTheme = dbStore?.theme_config as unknown as ThemeConfig | null;
   const theme: ThemeConfig = navState?.theme || dbTheme || {
     primary: "#2d3436", secondary: "#0984e3", accent: "#fdcb6e", background: "#ffffff",
   };
