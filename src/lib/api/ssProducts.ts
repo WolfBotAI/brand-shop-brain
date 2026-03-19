@@ -34,18 +34,31 @@ export interface SSProduct {
   imageUrl: string | null;
 }
 
+// --- Image proxy helper ---
+
+/**
+ * Converts an S&S CDN image URL into a proxied URL through our edge function.
+ * S&S images require authentication; this proxy handles that server-side.
+ */
+export function getProxiedImageUrl(originalUrl: string | null | undefined): string | null {
+  if (!originalUrl) return null;
+  // If it's already a placehold.co or data URL, return as-is
+  if (originalUrl.startsWith("https://placehold.co") || originalUrl.startsWith("data:")) return originalUrl;
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  if (!projectId) return originalUrl;
+  return `https://${projectId}.supabase.co/functions/v1/ss-catalog?action=image&url=${encodeURIComponent(originalUrl)}`;
+}
+
+/** Placeholder gradient image for when product images fail to load */
+export function getPlaceholderImage(label: string): string {
+  const encoded = encodeURIComponent(label.substring(0, 20).replace(/ /g, "+"));
+  return `https://placehold.co/400x400/1a1a2e/e2e8f0?text=${encoded}`;
+}
+
 // --- Edge function caller ---
 
 async function callCatalog(params: Record<string, string>): Promise<any> {
   const qs = new URLSearchParams(params).toString();
-  const { data, error } = await supabase.functions.invoke("ss-catalog", {
-    body: null,
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-
-  // supabase.functions.invoke doesn't support query params well for GET,
-  // so we use fetch directly with the project URL
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const url = `https://${projectId}.supabase.co/functions/v1/ss-catalog?${qs}`;
@@ -105,20 +118,13 @@ function mapProduct(raw: any): SSProduct {
   };
 }
 
-// --- Reliable placeholder images (fallback if API fails) ---
-
-function placeholdImg(label: string, bg = "e2e8f0", fg = "475569"): string {
-  const encoded = encodeURIComponent(label.replace(/ /g, "+"));
-  return `https://placehold.co/400x400/${bg}/${fg}?text=${encoded}`;
-}
-
 // --- Fallback mock catalog (used when edge function is unavailable) ---
 
 const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 1, title: "Premium Heavyweight Tee", description: "6.1 oz ringspun cotton",
     brandName: "Brand-Shop Basics", baseCategory: "T-Shirts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/G500_fm.jpg",
+    styleImage: null,
     customerPrice: 8.50, piecePrice: 12.99,
     availableColors: [{ name: "White", hex: "#FFFFFF" }, { name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Heather Grey", hex: "#B0B0B0" }, { name: "Red", hex: "#DC2626" }, { name: "Royal Blue", hex: "#2E5EAA" }],
     availableSizes: ["S", "M", "L", "XL", "2XL", "3XL"],
@@ -126,7 +132,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 2, title: "Performance Polo", description: "Moisture-wicking polyester blend",
     brandName: "Brand-Shop Performance", baseCategory: "Polos",
-    styleImage: "https://www.ssactivewear.com/Images/Style/K500_fm.jpg",
+    styleImage: null,
     customerPrice: 14.00, piecePrice: 22.99,
     availableColors: [{ name: "White", hex: "#FFFFFF" }, { name: "Black", hex: "#1a1a1a" }, { name: "Royal Blue", hex: "#2E5EAA" }, { name: "Red", hex: "#DC2626" }],
     availableSizes: ["S", "M", "L", "XL", "2XL", "3XL"],
@@ -134,7 +140,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 3, title: "Classic Pullover Hoodie", description: "8 oz fleece blend, double-lined hood",
     brandName: "Brand-Shop Basics", baseCategory: "Hoodies & Sweatshirts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/18500_fm.jpg",
+    styleImage: null,
     customerPrice: 16.50, piecePrice: 28.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Charcoal", hex: "#36454F" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Forest Green", hex: "#228B22" }, { name: "Maroon", hex: "#800000" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
@@ -142,7 +148,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 4, title: "Snapback Trucker Cap", description: "Structured 6-panel, mesh back",
     brandName: "Brand-Shop Headwear", baseCategory: "Caps & Hats",
-    styleImage: "https://www.ssactivewear.com/Images/Style/112_fm.jpg",
+    styleImage: null,
     customerPrice: 6.00, piecePrice: 14.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "White", hex: "#FFFFFF" }, { name: "Red", hex: "#DC2626" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Charcoal", hex: "#36454F" }],
     availableSizes: ["One Size"],
@@ -150,7 +156,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 5, title: "Quarter-Zip Pullover", description: "Lightweight performance fleece",
     brandName: "Brand-Shop Performance", baseCategory: "Outerwear",
-    styleImage: "https://www.ssactivewear.com/Images/Style/ST850_fm.jpg",
+    styleImage: null,
     customerPrice: 18.00, piecePrice: 32.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Grey", hex: "#808080" }, { name: "True Royal", hex: "#2E5EAA" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
@@ -158,7 +164,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 6, title: "Unisex Tank Top", description: "4.2 oz jersey knit",
     brandName: "Brand-Shop Basics", baseCategory: "T-Shirts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/2200_fm.jpg",
+    styleImage: null,
     customerPrice: 5.50, piecePrice: 9.99,
     availableColors: [{ name: "White", hex: "#FFFFFF" }, { name: "Black", hex: "#1a1a1a" }, { name: "Heather Grey", hex: "#B0B0B0" }, { name: "Navy", hex: "#1B2A4A" }],
     availableSizes: ["S", "M", "L", "XL"],
@@ -166,7 +172,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 7, title: "Crewneck Sweatshirt", description: "7.8 oz 50/50 fleece blend",
     brandName: "Brand-Shop Basics", baseCategory: "Hoodies & Sweatshirts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/18000_fm.jpg",
+    styleImage: null,
     customerPrice: 12.00, piecePrice: 21.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Ash Grey", hex: "#B2BEB5" }, { name: "Sport Grey", hex: "#97999B" }, { name: "Maroon", hex: "#800000" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
@@ -174,7 +180,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 8, title: "Softshell Jacket", description: "Wind and water resistant, 3-layer bonded",
     brandName: "Brand-Shop Performance", baseCategory: "Outerwear",
-    styleImage: "https://www.ssactivewear.com/Images/Style/J317_fm.jpg",
+    styleImage: null,
     customerPrice: 28.00, piecePrice: 49.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Battleship Grey", hex: "#6B6B6B" }],
     availableSizes: ["S", "M", "L", "XL", "2XL", "3XL"],
@@ -182,7 +188,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 9, title: "Jogger Pants", description: "French terry fleece, tapered leg",
     brandName: "Brand-Shop Basics", baseCategory: "Pants & Shorts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/73120_fm.jpg",
+    styleImage: null,
     customerPrice: 14.00, piecePrice: 24.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Charcoal", hex: "#36454F" }, { name: "Heather Grey", hex: "#B0B0B0" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
@@ -190,7 +196,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 10, title: "V-Neck Performance Tee", description: "4.5 oz moisture-wicking polyester",
     brandName: "Brand-Shop Performance", baseCategory: "T-Shirts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/ST356_fm.jpg",
+    styleImage: null,
     customerPrice: 7.50, piecePrice: 13.99,
     availableColors: [{ name: "White", hex: "#FFFFFF" }, { name: "Black", hex: "#1a1a1a" }, { name: "True Royal", hex: "#2E5EAA" }, { name: "Iron Grey", hex: "#48494B" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
@@ -198,7 +204,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 11, title: "Classic Dad Cap", description: "Unstructured low-profile, adjustable strap",
     brandName: "Brand-Shop Headwear", baseCategory: "Caps & Hats",
-    styleImage: "https://www.ssactivewear.com/Images/Style/AD969_fm.jpg",
+    styleImage: null,
     customerPrice: 5.50, piecePrice: 12.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "White", hex: "#FFFFFF" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Khaki", hex: "#C3B091" }, { name: "Stone", hex: "#928E85" }],
     availableSizes: ["One Size"],
@@ -206,7 +212,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 12, title: "Canvas Tote Bag", description: "12 oz heavyweight cotton canvas",
     brandName: "Brand-Shop Accessories", baseCategory: "Bags & Accessories",
-    styleImage: "https://www.ssactivewear.com/Images/Style/8503_fm.jpg",
+    styleImage: null,
     customerPrice: 4.00, piecePrice: 8.99,
     availableColors: [{ name: "Natural", hex: "#F5F0E1" }, { name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Red", hex: "#DC2626" }],
     availableSizes: ["One Size"],
@@ -214,7 +220,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 13, title: "Zip-Up Hoodie", description: "8 oz 50/50 fleece, full zip front",
     brandName: "Brand-Shop Basics", baseCategory: "Hoodies & Sweatshirts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/18600_fm.jpg",
+    styleImage: null,
     customerPrice: 18.00, piecePrice: 31.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Dark Heather", hex: "#3F3F3F" }, { name: "Red", hex: "#DC2626" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
@@ -222,7 +228,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 14, title: "Athletic Shorts", description: "100% polyester mesh, 9\" inseam",
     brandName: "Brand-Shop Performance", baseCategory: "Pants & Shorts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/ST515_fm.jpg",
+    styleImage: null,
     customerPrice: 8.00, piecePrice: 15.99,
     availableColors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy", hex: "#1B2A4A" }, { name: "True Royal", hex: "#2E5EAA" }, { name: "Red", hex: "#DC2626" }, { name: "Silver", hex: "#C0C0C0" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
@@ -230,14 +236,14 @@ const FALLBACK_CATALOG: SSStyle[] = [
   {
     styleID: 15, title: "Ladies Fitted V-Neck", description: "4.3 oz fine jersey, contoured fit",
     brandName: "Brand-Shop Basics", baseCategory: "T-Shirts",
-    styleImage: "https://www.ssactivewear.com/Images/Style/L3607_fm.jpg",
+    styleImage: null,
     customerPrice: 6.50, piecePrice: 11.99,
     availableColors: [{ name: "White", hex: "#FFFFFF" }, { name: "Black", hex: "#1a1a1a" }, { name: "Heather Grey", hex: "#B0B0B0" }, { name: "Navy", hex: "#1B2A4A" }, { name: "Hot Pink", hex: "#FF69B4" }],
     availableSizes: ["S", "M", "L", "XL", "2XL"],
   },
 ];
 
-// --- Public API (tries live, falls back to mock) ---
+// --- Public API ---
 
 export interface FetchStylesPageResult {
   styles: SSStyle[];
@@ -267,12 +273,10 @@ export async function fetchStylesPage(
         isFallback: false,
       };
     }
-    // Empty page — no more results
     return { styles: [], hasMore: false, isFallback: false };
   } catch (e) {
     console.warn("SS catalog fetchStylesPage failed, using fallback:", e);
     if (page > 1) return { styles: [], hasMore: false, isFallback: true };
-    // Only return fallback on page 1
     let filtered = [...FALLBACK_CATALOG];
     if (filters?.keyword) {
       const lower = filters.keyword.toLowerCase();
@@ -313,7 +317,6 @@ export async function fetchCategories(): Promise<string[]> {
 }
 
 export function getStyleById(styleID: number): SSStyle | undefined {
-  // Synchronous fallback — for async use fetchStyleById
   return FALLBACK_CATALOG.find((s) => s.styleID === styleID);
 }
 

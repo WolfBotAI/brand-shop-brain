@@ -28,11 +28,37 @@ serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action") || "styles";
 
+    // Image proxy — returns binary image data, not JSON
+    if (action === "image") {
+      const imageUrl = url.searchParams.get("url");
+      if (!imageUrl) {
+        return new Response("Missing url param", { status: 400, headers: corsHeaders });
+      }
+
+      const imgResp = await fetch(imageUrl, {
+        headers: { Authorization: authHeader, Accept: "image/*" },
+      });
+
+      if (!imgResp.ok) {
+        return new Response("Image not found", { status: 404, headers: corsHeaders });
+      }
+
+      const contentType = imgResp.headers.get("content-type") || "image/jpeg";
+      const body = await imgResp.arrayBuffer();
+
+      return new Response(body, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": contentType,
+          "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        },
+      });
+    }
+
     let ssUrl: string;
 
     switch (action) {
       case "styles": {
-        // List/search styles — supports ?keyword=xxx&category=xxx
         const keyword = url.searchParams.get("keyword") || "";
         const category = url.searchParams.get("category") || "";
         const page = url.searchParams.get("page") || "1";
