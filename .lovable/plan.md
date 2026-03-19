@@ -29,16 +29,15 @@
 - Full product grid with theme, cart, checkout form
 - Orders saved to `orders` table — DONE
 
+### Phase 6 — Remaining Features
+- **KPI Reports** (`/app/reporting`): Revenue over time, orders by store, top products, status breakdown charts with date range + store filters — DONE
+- **Pop-Up Stores**: Added `expires_at`, `store_type`, `custom_domain` columns to stores. Onboarding has store type selector + expiry picker. Public storefront shows expired splash or countdown banner — DONE
+- **Site Migration** (`/app/migrate`): Wizard scrapes URL via Firecrawl, extracts branding/colors/logo, creates new store — DONE
+- **AI Chat Widget**: `ai-chat` edge function using Lovable AI (gemini-2.5-flash). Floating chat widget on public storefront with streaming responses — DONE
+- **Multi-Store Bulk Actions**: StoreList has checkboxes, bulk status update, bulk delete — DONE
+- **Customer Portal** (`/store/:slug/orders`): Email lookup for order history with anon RLS — DONE
+- **White-Label / Custom Domain**: Settings page has per-store custom domain config with DNS instructions — DONE
+
 ---
 
-## 🔲 Remaining (Phase 6)
-
-| Feature | Status |
-|---------|--------|
-| KPI Reports page (recharts + date filters) | Not started |
-| Pop-Up Stores (expires_at, countdown) | Not started |
-| Site Migration wizard (Firecrawl import) | Not started |
-| AI Chat Widget (public storefront) | Not started |
-| Multi-Store bulk actions | Not started |
-| Customer Portal (order history) | Not started |
-| White-Label / custom domain | Not started |
+## 🎉 All Phases Complete
