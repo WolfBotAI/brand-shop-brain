@@ -1,31 +1,42 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Rocket, Link2, PackageCheck, Store, PartyPopper } from "lucide-react";
+import { Rocket, Building2, ShoppingBag, DollarSign, Users, PartyPopper } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { StepIndicator } from "@/components/features/AnimatedStep";
 import { WelcomeStep } from "@/components/app/onboarding/WelcomeStep";
-import { WolfBotConnectStep } from "@/components/app/onboarding/WolfBotConnectStep";
-import { SupplierStep } from "@/components/app/onboarding/SupplierStep";
-import { CreateStoreStep } from "@/components/app/onboarding/CreateStoreStep";
+import { DistributorProfileStep } from "@/components/app/onboarding/DistributorProfileStep";
+import { CatalogSetupStep, type CatalogSelection, type SelectedProduct } from "@/components/app/onboarding/CatalogSetupStep";
+import { PricingStep, type PricingRules } from "@/components/app/onboarding/PricingStep";
+import { AddClientStep } from "@/components/app/onboarding/AddClientStep";
 import { CompletionStep } from "@/components/app/onboarding/CompletionStep";
 import type { ThemeConfig } from "@/components/app/store/StorefrontPreview";
-import type { SSStyle } from "@/lib/api/ssProducts";
 
 const steps = [
   { title: "Welcome", icon: Rocket },
-  { title: "Wolf Bot AI", icon: Link2 },
-  { title: "Supplier", icon: PackageCheck },
-  { title: "First Store", icon: Store },
+  { title: "Profile", icon: Building2 },
+  { title: "Catalog", icon: ShoppingBag },
+  { title: "Pricing", icon: DollarSign },
+  { title: "First Client", icon: Users },
   { title: "Complete", icon: PartyPopper },
 ];
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [tenantId, setTenantId] = useState("");
-  const [locationId, setLocationId] = useState("");
+
+  // Distributor profile data
+  const [businessName, setBusinessName] = useState("");
+  const [distributorLogoUrl, setDistributorLogoUrl] = useState<string | null>(null);
+
+  // Catalog data
+  const [catalogId, setCatalogId] = useState("");
+  const [catalogProducts, setCatalogProducts] = useState<SelectedProduct[]>([]);
+
+  // Pricing
+  const [pricingRules, setPricingRules] = useState<PricingRules | null>(null);
+
+  // Client store data
   const [storeId, setStoreId] = useState("");
   const [storeName, setStoreName] = useState("");
-  const [storeProducts, setStoreProducts] = useState<SSStyle[]>([]);
   const [storeTheme, setStoreTheme] = useState<ThemeConfig | undefined>();
   const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
 
@@ -63,46 +74,62 @@ const Onboarding = () => {
                 <WelcomeStep key="welcome" onNext={() => setCurrentStep(1)} />
               )}
               {currentStep === 1 && (
-              <WolfBotConnectStep
-                  key="wolfbot"
+                <DistributorProfileStep
+                  key="profile"
                   onNext={(data) => {
-                    setTenantId(data.tenantId);
-                    setLocationId(data.locationId);
+                    setBusinessName(data.businessName);
+                    setDistributorLogoUrl(data.logoUrl);
                     setCurrentStep(2);
                   }}
                   onBack={() => setCurrentStep(0)}
                 />
               )}
               {currentStep === 2 && (
-                <SupplierStep
-                  key="supplier"
-                  tenantId={tenantId}
-                  onNext={() => setCurrentStep(3)}
+                <CatalogSetupStep
+                  key="catalog"
+                  onNext={(data: CatalogSelection) => {
+                    setCatalogId(data.catalogId);
+                    setCatalogProducts(data.products);
+                    setCurrentStep(3);
+                  }}
                   onBack={() => setCurrentStep(1)}
                 />
               )}
               {currentStep === 3 && (
-                <CreateStoreStep
-                  key="store"
-                  tenantId={tenantId}
-                  locationId={locationId}
-                  onNext={(data) => {
-                    setStoreId(data.storeId);
-                    if (data.storeName) setStoreName(data.storeName);
-                    if (data.products) setStoreProducts(data.products);
-                    if (data.theme) setStoreTheme(data.theme);
-                    if (data.logoUrl !== undefined) setStoreLogoUrl(data.logoUrl);
+                <PricingStep
+                  key="pricing"
+                  products={catalogProducts}
+                  catalogId={catalogId}
+                  onNext={(rules) => {
+                    setPricingRules(rules);
                     setCurrentStep(4);
                   }}
                   onBack={() => setCurrentStep(2)}
                 />
               )}
               {currentStep === 4 && (
+                <AddClientStep
+                  key="client"
+                  catalogId={catalogId}
+                  products={catalogProducts}
+                  pricingRules={pricingRules!}
+                  onNext={(data) => {
+                    setStoreId(data.storeId);
+                    setStoreName(data.storeName);
+                    setStoreTheme(data.theme);
+                    setStoreLogoUrl(data.logoUrl);
+                    setCurrentStep(5);
+                  }}
+                  onSkip={() => setCurrentStep(5)}
+                  onBack={() => setCurrentStep(3)}
+                />
+              )}
+              {currentStep === 5 && (
                 <CompletionStep
                   key="complete"
                   storeId={storeId}
                   storeName={storeName}
-                  products={storeProducts}
+                  products={catalogProducts}
                   theme={storeTheme}
                   logoUrl={storeLogoUrl}
                 />

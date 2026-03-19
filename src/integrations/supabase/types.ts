@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      distributor_catalogs: {
+        Row: {
+          catalog_name: string
+          created_at: string
+          id: string
+          pricing_rules: Json
+          selected_products: Json
+          shipping_config: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          catalog_name?: string
+          created_at?: string
+          id?: string
+          pricing_rules?: Json
+          selected_products?: Json
+          shipping_config?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          catalog_name?: string
+          created_at?: string
+          id?: string
+          pricing_rules?: Json
+          selected_products?: Json
+          shipping_config?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -65,35 +98,44 @@ export type Database = {
         Row: {
           avatar_url: string | null
           business_name: string | null
+          company_logo_url: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
           location_id: string | null
+          phone: string | null
           tenant_id: string | null
           updated_at: string
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
           business_name?: string | null
+          company_logo_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
           location_id?: string | null
+          phone?: string | null
           tenant_id?: string | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
           business_name?: string | null
+          company_logo_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
           location_id?: string | null
+          phone?: string | null
           tenant_id?: string | null
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }

@@ -10,9 +10,10 @@ interface WelcomeStepProps {
 
 export const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
   const steps = [
-    "Connect Wolf Bot AI to link your CRM",
-    "Add your supplier credentials for product sourcing",
-    "Create your first branded store in minutes",
+    "Set up your distributor profile and branding",
+    "Browse and select products from the Brand-Shop Apparel catalog",
+    "Set your pricing and markup for your clients",
+    "Create your first client store in minutes",
   ];
 
   return (
@@ -29,13 +30,13 @@ export const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-foreground">Welcome to Brand-Shop.AI</h2>
-            <p className="text-muted-foreground">Let's get your first store live in under 10 minutes</p>
+            <p className="text-muted-foreground">Your all-in-one branded apparel distribution platform</p>
           </div>
         </div>
       </div>
 
       <ChatBubble
-        message="I'll guide you through each step. We'll connect your systems, set up your supplier, and launch your first store — all automated."
+        message="I'll walk you through setting up your distributor account. You'll build your catalog, set your prices, and launch your first client store — all in one flow."
         delay={0.3}
       />
 
