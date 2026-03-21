@@ -114,6 +114,37 @@ export default function CustomerOrders() {
     setSearchTerm(isUuid ? val : val.toLowerCase());
   };
 
+  const renderTimeline = (timeline: StatusStep[]) => (
+    <div className="relative">
+      {timeline.map((step, i) => {
+        const Icon = statusIcons[step.label] || Package;
+        const isLast = i === timeline.length - 1;
+        return (
+          <div key={step.label} className="flex gap-3 relative">
+            {!isLast && (
+              <div className={`absolute left-[15px] top-[30px] w-0.5 h-[calc(100%-10px)] ${step.status === "completed" ? "bg-primary" : "bg-border"}`} />
+            )}
+            <div className={`relative z-10 w-[30px] h-[30px] rounded-full flex items-center justify-center flex-shrink-0 ${
+              step.status === "completed" ? "bg-primary text-primary-foreground"
+                : step.status === "current" ? "bg-primary/20 text-primary ring-2 ring-primary/30"
+                : "bg-muted text-muted-foreground"
+            }`}>
+              <Icon className="w-3.5 h-3.5" />
+            </div>
+            <div className="pb-5 min-w-0">
+              <p className={`text-sm font-medium ${step.status === "upcoming" ? "text-muted-foreground" : "text-foreground"}`}>
+                {step.label}
+              </p>
+              {step.timestamp && (
+                <p className="text-xs text-muted-foreground">{format(parseISO(step.timestamp), "MMM dd, h:mm a")}</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header */}
