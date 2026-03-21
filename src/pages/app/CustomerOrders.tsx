@@ -261,55 +261,50 @@ export default function CustomerOrders() {
                             className="overflow-hidden"
                           >
                             <div className="px-5 pb-5 space-y-5 border-t border-border pt-5">
-                              {/* Status Timeline */}
-                              <div className="space-y-1">
-                                <p className="text-sm font-semibold text-foreground mb-3">Order Progress</p>
-                                <div className="relative">
-                                  {order.timeline.map((step, i) => {
-                                    const Icon = statusIcons[step.label] || Package;
-                                    const isLast = i === order.timeline.length - 1;
-                                    return (
-                                      <div key={step.label} className="flex gap-3 relative">
-                                        {/* Vertical line */}
-                                        {!isLast && (
-                                          <div
-                                            className={`absolute left-[15px] top-[30px] w-0.5 h-[calc(100%-10px)] ${
-                                              step.status === "completed" ? "bg-primary" : "bg-border"
-                                            }`}
-                                          />
+                              {/* Fulfillment Groups (multi-source) */}
+                              {(order.fulfillment_groups && order.fulfillment_groups.length > 1) ? (
+                                order.fulfillment_groups.map((group: FulfillmentGroup, gi: number) => (
+                                  <div key={gi} className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="text-[10px]">
+                                        {group.source === "printful" ? "Print-on-Demand" : group.decorator ? `Decorator: ${group.decorator}` : "Apparel"}
+                                      </Badge>
+                                      <Badge variant={group.status === "shipped" || group.status === "delivered" ? "default" : "secondary"} className="text-[10px]">
+                                        {group.statusLabel}
+                                      </Badge>
+                                    </div>
+                                    {group.trackingNumber && (
+                                      <div className="flex items-center gap-2 text-xs">
+                                        <Truck className="w-3 h-3 text-primary" />
+                                        {group.trackingUrl ? (
+                                          <a href={group.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                                            {group.carrier && `${group.carrier}: `}{group.trackingNumber}
+                                          </a>
+                                        ) : (
+                                          <span className="text-muted-foreground">{group.carrier && `${group.carrier}: `}{group.trackingNumber}</span>
                                         )}
-                                        {/* Icon */}
-                                        <div
-                                          className={`relative z-10 w-[30px] h-[30px] rounded-full flex items-center justify-center flex-shrink-0 ${
-                                            step.status === "completed"
-                                              ? "bg-primary text-primary-foreground"
-                                              : step.status === "current"
-                                              ? "bg-primary/20 text-primary ring-2 ring-primary/30"
-                                              : "bg-muted text-muted-foreground"
-                                          }`}
-                                        >
-                                          <Icon className="w-3.5 h-3.5" />
-                                        </div>
-                                        {/* Label */}
-                                        <div className="pb-5 min-w-0">
-                                          <p
-                                            className={`text-sm font-medium ${
-                                              step.status === "upcoming" ? "text-muted-foreground" : "text-foreground"
-                                            }`}
-                                          >
-                                            {step.label}
-                                          </p>
-                                          {step.timestamp && (
-                                            <p className="text-xs text-muted-foreground">
-                                              {format(parseISO(step.timestamp), "MMM dd, h:mm a")}
-                                            </p>
-                                          )}
-                                        </div>
                                       </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
+                                    )}
+                                    {group.estimatedDelivery && (
+                                      <p className="text-xs text-muted-foreground">Est. delivery: {group.estimatedDelivery}</p>
+                                    )}
+                                    {renderTimeline(group.timeline)}
+                                    <div className="text-xs text-muted-foreground space-y-1">
+                                      {(group.items || []).map((item: any, ii: number) => (
+                                        <p key={ii}>{item.title} {item.color && `· ${item.color}`} {item.size && `· ${item.size}`} × {item.qty}</p>
+                                      ))}
+                                    </div>
+                                    {gi < (order.fulfillment_groups?.length || 0) - 1 && <hr className="border-border" />}
+                                  </div>
+                                ))
+                              ) : (
+                                <>
+                                  <div className="space-y-1">
+                                    <p className="text-sm font-semibold text-foreground mb-3">Order Progress</p>
+                                    {renderTimeline(order.timeline)}
+                                  </div>
+                                </>
+                              )}
 
                               {/* Items */}
                               <div className="space-y-2">
