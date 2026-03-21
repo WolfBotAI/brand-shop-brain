@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const SS_BASE = "https://api.ssactivewear.com/v2";
-const SS_MEDIA_BASE = "https://www.ssactivewear.com";
+const SS_CDN = "https://cdni.ssactivewear.com";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -29,31 +29,26 @@ serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action") || "styles";
 
-    // Image proxy — returns binary image data, not JSON
+    // Image proxy — returns binary image data
     if (action === "image") {
       const imageUrl = url.searchParams.get("url");
       if (!imageUrl) {
         return new Response("Missing url param", { status: 400, headers: corsHeaders });
       }
 
-      // Fix relative URLs from S&S API — prepend base domain
+      // Convert relative S&S paths to CDN URLs
       let fullUrl = imageUrl;
       if (!imageUrl.startsWith("http")) {
-        fullUrl = `${SS_MEDIA_BASE}/${imageUrl.replace(/^\//, "")}`;
+        fullUrl = `${SS_CDN}/${imageUrl.replace(/^\//, "")}`;
       }
+      // Also fix www.ssactivewear.com URLs to use CDN
+      fullUrl = fullUrl.replace("www.ssactivewear.com", "cdni.ssactivewear.com");
 
-      const imgResp = await fetch(fullUrl, {
-        headers: { Authorization: authHeader, Accept: "image/*" },
-      });
-
-      if (!imgResp.ok) {
-        // Try without auth as some S&S images are publicly accessible
-        const publicResp = await fetch(fullUrl, { headers: { Accept: "image/*" } });
-        if (!publicResp.ok) {
-          return new Response("Image not found", { status: 404, headers: corsHeaders });
-        }
-        const contentType = publicResp.headers.get("content-type") || "image/jpeg";
-        const body = await publicResp.arrayBuffer();
+      // Try CDN first (no auth needed for public CDN)
+      const cdnResp = await fetch(fullUrl, { headers: { Accept: "image/*" } });
+      if (cdnResp.ok) {
+        const contentType = cdnResp.headers.get("content-type") || "image/jpeg";
+        const body = await cdnResp.arrayBuffer();
         return new Response(body, {
           headers: {
             ...corsHeaders,
@@ -63,15 +58,104 @@ serve(async (req) => {
         });
       }
 
+      // Fall back to authenticated fetch from API domain
+      const authUrl = fullUrl.replace("cdni.ssactivewear.com", "www.ssactivewear.com");
+      const imgResp = await fetch(authUrl, {
+        headers: { Authorization: authHeader, Accept: "image/*" },
+      });
+
+      if (!imgResp.ok) {
+        return new Response("Image not found", { status: 404, headers: corsHeaders });
+      }
+
       const contentType = imgResp.headers.get("content-type") || "image/jpeg";
       const body = await imgResp.arrayBuffer();
-
       return new Response(body, {
         headers: {
           ...corsHeaders,
           "Content-Type": contentType,
           "Cache-Control": "public, max-age=86400, s-maxage=86400",
         },
+      });
+    }
+
+    // styleDetail — fetches /products/?styleID=X and aggregates colors, sizes, pricing
+    if (action === "styleDetail") {
+      const styleID = url.searchParams.get("styleID");
+      if (!styleID) {
+        return new Response(
+          JSON.stringify({ error: "styleID required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const ssResp = await fetch(`${SS_BASE}/products/?styleID=${styleID}`, {
+        headers: { Authorization: authHeader, Accept: "application/json" },
+      });
+
+      if (!ssResp.ok) {
+        const errBody = await ssResp.text();
+        console.error(`SS products API error [${ssResp.status}]: ${errBody}`);
+        return new Response(
+          JSON.stringify({ error: `SS API returned ${ssResp.status}` }),
+          { status: ssResp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const products = await ssResp.json();
+      if (!Array.isArray(products) || products.length === 0) {
+        return new Response(
+          JSON.stringify({ colors: [], sizes: [], pricing: null, products: [] }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Aggregate unique colors
+      const colorMap = new Map<string, { name: string; hex: string; image: string | null; backImage: string | null }>();
+      const sizeSet = new Set<string>();
+      let minCustomerPrice = Infinity;
+      let maxCustomerPrice = 0;
+      let minPiecePrice = Infinity;
+      let maxPiecePrice = 0;
+
+      for (const p of products) {
+        const colorName = p.colorName || p.ColorName || "";
+        const hex = p.color1 || p.Color1 || "#888888";
+        const frontImg = p.colorFrontImage || p.ColorFrontImage || null;
+        const backImg = p.colorBackImage || p.ColorBackImage || null;
+        const sizeName = p.sizeName || p.SizeName || "";
+        const custPrice = p.customerPrice || p.CustomerPrice || 0;
+        const piecePrice = p.piecePrice || p.PiecePrice || 0;
+
+        if (colorName && !colorMap.has(colorName)) {
+          colorMap.set(colorName, { name: colorName, hex: `#${hex.replace(/^#/, "")}`, image: frontImg, backImage: backImg });
+        }
+        if (sizeName) sizeSet.add(sizeName);
+        if (custPrice > 0) {
+          minCustomerPrice = Math.min(minCustomerPrice, custPrice);
+          maxCustomerPrice = Math.max(maxCustomerPrice, custPrice);
+        }
+        if (piecePrice > 0) {
+          minPiecePrice = Math.min(minPiecePrice, piecePrice);
+          maxPiecePrice = Math.max(maxPiecePrice, piecePrice);
+        }
+      }
+
+      const result = {
+        colors: Array.from(colorMap.values()),
+        sizes: Array.from(sizeSet),
+        pricing: {
+          customerPrice: { min: minCustomerPrice === Infinity ? 0 : minCustomerPrice, max: maxCustomerPrice },
+          piecePrice: { min: minPiecePrice === Infinity ? 0 : minPiecePrice, max: maxPiecePrice },
+        },
+        description: products[0]?.description || products[0]?.Description || "",
+        brandName: products[0]?.brandName || products[0]?.BrandName || "",
+        styleName: products[0]?.styleName || products[0]?.StyleName || "",
+        totalSkus: products.length,
+      };
+
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Shirt, HardHat, ShoppingBag, Footprints } from "lucide-react";
-import { getProxiedImageUrl } from "@/lib/api/ssProducts";
+import { getCdnImageUrl } from "@/lib/api/ssProducts";
 import { cn } from "@/lib/utils";
 
 interface ProductImageProps {
@@ -30,8 +30,9 @@ const getCategoryGradient = (alt: string) => {
 
 export const ProductImage = ({ src, alt, className, iconSize = "md" }: ProductImageProps) => {
   const [failed, setFailed] = useState(false);
-  const proxiedUrl = getProxiedImageUrl(src);
-  const showImage = proxiedUrl && !failed;
+  // Use CDN URL directly instead of proxy
+  const imageUrl = src ? getCdnImageUrl(src) || src : null;
+  const showImage = imageUrl && !failed;
 
   const iconSizes = { sm: "w-6 h-6", md: "w-10 h-10", lg: "w-16 h-16" };
   const Icon = getCategoryIcon(alt);
@@ -48,7 +49,7 @@ export const ProductImage = ({ src, alt, className, iconSize = "md" }: ProductIm
 
   return (
     <img
-      src={proxiedUrl}
+      src={imageUrl}
       alt={alt}
       className={cn("object-cover", className)}
       loading="lazy"

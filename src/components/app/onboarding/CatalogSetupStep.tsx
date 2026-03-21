@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, ArrowRight, Search, Loader2, ChevronDown, ChevronUp, AlertTriangle, Maximize2, X, Check, DollarSign } from "lucide-react";
+import { motion } from "framer-motion";
+import { ShoppingBag, ArrowRight, Search, Loader2, AlertTriangle, Maximize2, X, Check, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { fetchStylesPage, fetchCategories, type SSStyle } from "@/lib/api/ssProducts";
 import { ProductImage } from "./ProductImage";
+import { ProductDetailModal, type ProductVariantSelection } from "./ProductDetailModal";
 
 export interface CatalogSelection {
   catalogId: string;
@@ -31,7 +32,6 @@ interface CatalogSetupStepProps {
   onBack: () => void;
 }
 
-// Parent category grouping for S&S sub-categories
 const PARENT_CATEGORIES: Record<string, string[]> = {
   "T-Shirts": ["T-Shirts", "Tee", "Tank", "Jersey", "Short Sleeve"],
   "Polos": ["Polo", "Knit"],
@@ -74,8 +74,8 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const [saving, setSaving] = useState(false);
-  const [expandedProduct, setExpandedProduct] = useState<number | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [detailProduct, setDetailProduct] = useState<SSStyle | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fullscreenScrollRef = useRef<HTMLDivElement>(null);
 
@@ -89,14 +89,11 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
     });
   }, []);
 
-  // Map selected parent group → matching raw categories for API filtering
   const getFilterCategory = useCallback(() => {
     if (!activeCategory) return undefined;
-    // If it's a raw category, use it directly
     if (categories.includes(activeCategory)) return activeCategory;
-    // Otherwise find matching raw categories and use the first as keyword
     const keywords = PARENT_CATEGORIES[activeCategory];
-    if (keywords) return keywords[0]; // Use primary keyword for search
+    if (keywords) return keywords[0];
     return activeCategory;
   }, [activeCategory, categories]);
 
@@ -157,40 +154,24 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
     });
   };
 
-  const toggleColor = (styleID: number, colorName: string) => {
+  const handleVariantChange = (styleID: number, selection: ProductVariantSelection) => {
     setSelected((prev) => {
       const next = new Map(prev);
       const item = next.get(styleID);
       if (!item) return prev;
-      const colors = item.selectedColors.includes(colorName)
-        ? item.selectedColors.filter((c) => c !== colorName)
-        : [...item.selectedColors, colorName];
-      next.set(styleID, { ...item, selectedColors: colors });
+      next.set(styleID, {
+        ...item,
+        selectedColors: selection.colors,
+        selectedSizes: selection.sizes,
+        itemMarkup: selection.itemMarkup,
+      });
       return next;
     });
   };
 
-  const toggleSize = (styleID: number, size: string) => {
-    setSelected((prev) => {
-      const next = new Map(prev);
-      const item = next.get(styleID);
-      if (!item) return prev;
-      const sizes = item.selectedSizes.includes(size)
-        ? item.selectedSizes.filter((s) => s !== size)
-        : [...item.selectedSizes, size];
-      next.set(styleID, { ...item, selectedSizes: sizes });
-      return next;
-    });
-  };
-
-  const setItemMarkup = (styleID: number, markup: number | undefined) => {
-    setSelected((prev) => {
-      const next = new Map(prev);
-      const item = next.get(styleID);
-      if (!item) return prev;
-      next.set(styleID, { ...item, itemMarkup: markup });
-      return next;
-    });
+  const handleDetailToggle = (styleID: number) => {
+    const product = products.find((p) => p.styleID === styleID) || detailProduct;
+    if (product) toggleProduct(product);
   };
 
   const selectAllVisible = () => {
@@ -308,16 +289,12 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
           }`}
         >
           {products.map((product) => (
-            <ProductCard
+            <StyleCard
               key={product.styleID}
               product={product}
-              selected={selected}
-              expandedProduct={expandedProduct}
-              onToggle={toggleProduct}
-              onToggleColor={toggleColor}
-              onToggleSize={toggleSize}
-              onExpand={(id) => setExpandedProduct(expandedProduct === id ? null : id)}
-              onSetMarkup={setItemMarkup}
+              isSelected={selected.has(product.styleID)}
+              onToggle={() => toggleProduct(product)}
+              onViewDetails={() => setDetailProduct(product)}
             />
           ))}
 
@@ -352,7 +329,7 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
           </div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-foreground">Build Your Catalog</h2>
-            <p className="text-muted-foreground">Select the products you want to offer your clients</p>
+            <p className="text-muted-foreground">Browse and select products. Click "View Details" for colors, sizes & pricing.</p>
           </div>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setFullscreen(true)}>
             <Maximize2 className="w-4 h-4" /> Fullscreen
@@ -397,6 +374,25 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
         </DialogContent>
       </Dialog>
 
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={detailProduct}
+        open={!!detailProduct}
+        onOpenChange={(open) => !open && setDetailProduct(null)}
+        isSelected={detailProduct ? selected.has(detailProduct.styleID) : false}
+        onToggleSelect={handleDetailToggle}
+        variantSelection={
+          detailProduct && selected.has(detailProduct.styleID)
+            ? {
+                colors: selected.get(detailProduct.styleID)!.selectedColors,
+                sizes: selected.get(detailProduct.styleID)!.selectedSizes,
+                itemMarkup: selected.get(detailProduct.styleID)!.itemMarkup,
+              }
+            : undefined
+        }
+        onVariantChange={handleVariantChange}
+      />
+
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">Back</Button>
         <Button onClick={handleNext} disabled={selected.size === 0 || saving} className="flex-1 gap-2">
@@ -408,24 +404,16 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   );
 };
 
-// --- Product Card ---
+// --- Style Card (simplified — no inline color/size pickers) ---
 
-interface ProductCardProps {
+interface StyleCardProps {
   product: SSStyle;
-  selected: Map<number, SelectedProduct>;
-  expandedProduct: number | null;
-  onToggle: (p: SSStyle) => void;
-  onToggleColor: (id: number, color: string) => void;
-  onToggleSize: (id: number, size: string) => void;
-  onExpand: (id: number) => void;
-  onSetMarkup: (id: number, markup: number | undefined) => void;
+  isSelected: boolean;
+  onToggle: () => void;
+  onViewDetails: () => void;
 }
 
-const ProductCard = ({ product, selected, expandedProduct, onToggle, onToggleColor, onToggleSize, onExpand, onSetMarkup }: ProductCardProps) => {
-  const isSelected = selected.has(product.styleID);
-  const sel = selected.get(product.styleID);
-  const isExpanded = expandedProduct === product.styleID;
-
+const StyleCard = ({ product, isSelected, onToggle, onViewDetails }: StyleCardProps) => {
   return (
     <Card
       className={`border transition-all ${
@@ -433,8 +421,7 @@ const ProductCard = ({ product, selected, expandedProduct, onToggle, onToggleCol
       }`}
     >
       <CardContent className="p-0">
-        {/* Image */}
-        <div className="relative cursor-pointer" onClick={() => onToggle(product)}>
+        <div className="relative cursor-pointer" onClick={onViewDetails}>
           <ProductImage
             src={product.styleImage}
             alt={product.title}
@@ -445,91 +432,22 @@ const ProductCard = ({ product, selected, expandedProduct, onToggle, onToggleCol
               <Check className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
           )}
+          <div className="absolute bottom-2 right-2">
+            <Button variant="secondary" size="sm" className="h-7 text-xs gap-1 shadow-md" onClick={(e) => { e.stopPropagation(); onViewDetails(); }}>
+              <Eye className="w-3 h-3" /> Details
+            </Button>
+          </div>
         </div>
 
         <div className="p-3 space-y-2">
           <div className="flex items-start gap-2">
-            <Checkbox checked={isSelected} onCheckedChange={() => onToggle(product)} className="mt-0.5" />
-            <div className="flex-1 min-w-0" onClick={() => onToggle(product)}>
-              <p className="text-xs font-medium text-foreground truncate cursor-pointer">{product.title}</p>
+            <Checkbox checked={isSelected} onCheckedChange={onToggle} className="mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-foreground truncate">{product.title}</p>
               <p className="text-[10px] text-muted-foreground">{product.brandName}</p>
             </div>
           </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">${product.piecePrice?.toFixed(2) || "—"}</span>
-            <Badge variant="secondary" className="text-[10px]">{product.baseCategory}</Badge>
-          </div>
-
-          {isSelected && (
-            <div className="space-y-2 border-t border-border pt-2">
-              <button
-                className="flex items-center justify-between w-full text-xs text-muted-foreground"
-                onClick={(e) => { e.stopPropagation(); onExpand(product.styleID); }}
-              >
-                <span>{sel?.selectedColors.length} colors, {sel?.selectedSizes.length} sizes</span>
-                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              </button>
-
-              {isExpanded && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="space-y-2">
-                  {/* Colors */}
-                  <div>
-                    <p className="text-[10px] font-medium text-foreground mb-1">Colors</p>
-                    <div className="flex flex-wrap gap-1">
-                      {product.availableColors.map((c) => (
-                        <button
-                          key={c.name}
-                          onClick={(e) => { e.stopPropagation(); onToggleColor(product.styleID, c.name); }}
-                          className={`w-5 h-5 rounded-full border-2 transition-all ${
-                            sel?.selectedColors.includes(c.name) ? "border-primary scale-110" : "border-transparent opacity-40"
-                          }`}
-                          style={{ backgroundColor: c.hex }}
-                          title={c.name}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  {/* Sizes */}
-                  <div>
-                    <p className="text-[10px] font-medium text-foreground mb-1">Sizes</p>
-                    <div className="flex flex-wrap gap-1">
-                      {product.availableSizes.map((s) => (
-                        <Badge
-                          key={s}
-                          variant={sel?.selectedSizes.includes(s) ? "default" : "outline"}
-                          className="text-[10px] cursor-pointer px-1.5 py-0"
-                          onClick={(e) => { e.stopPropagation(); onToggleSize(product.styleID, s); }}
-                        >
-                          {s}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Per-item markup */}
-                  <div>
-                    <p className="text-[10px] font-medium text-foreground mb-1 flex items-center gap-1">
-                      <DollarSign className="w-3 h-3" /> Item Markup (%)
-                    </p>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={500}
-                      placeholder="Use global"
-                      value={sel?.itemMarkup ?? ""}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        const val = e.target.value;
-                        onSetMarkup(product.styleID, val === "" ? undefined : Number(val));
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      className="h-7 text-xs w-24"
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          )}
+          <Badge variant="secondary" className="text-[10px]">{product.baseCategory}</Badge>
         </div>
       </CardContent>
     </Card>
