@@ -20,6 +20,20 @@ interface StatusStep {
   timestamp?: string;
 }
 
+interface FulfillmentGroup {
+  source: "printful" | "ss" | "manual";
+  externalId?: string;
+  decorator?: string;
+  items: any[];
+  status: string;
+  statusLabel: string;
+  timeline: StatusStep[];
+  trackingNumber?: string;
+  trackingUrl?: string;
+  carrier?: string;
+  estimatedDelivery?: string;
+}
+
 interface EnrichedOrder {
   id: string;
   created_at: string;
@@ -31,6 +45,7 @@ interface EnrichedOrder {
   customer_email: string;
   customer_name: string;
   timeline: StatusStep[];
+  fulfillment_groups?: FulfillmentGroup[];
 }
 
 const statusIcons: Record<string, any> = {
