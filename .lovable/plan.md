@@ -1,76 +1,69 @@
 
 
-# Fix: Catalog UX, Broken Images, Pricing, AI Interaction, Theme Customization
+# Fix: Real Catalog with Images, Colors, Sizes, and Pricing from S&S API
 
-## Problems (from screenshots)
+## Root Causes
 
-1. **Category tags list is absurd** — hundreds of S&S category tags displayed as a wall of badges (screenshot shows 100+ tags like "2025 Fleece Guide Retail - Crewnecks"). Unnavigable.
-2. **All product images broken** — S&S image proxy returns placeholder icons everywhere (catalog, storefront, mockups). The proxy likely fails or S&S returns auth errors.
-3. **Platform Fee Structure is confusing** — "Owner Markup 15%" shown to distributors. They shouldn't see internal platform terminology. Rename and simplify.
-4. **Pricing only adjusts by category** — no "Adjust by Brand" or "Adjust by Item" sections in the accordion.
-5. **Shipping options missing** — no ShipStation or Shippo options, only Brand-Shop/FedEx/UPS.
-6. **ChatBubble is a static text block** — not interactive, not a conversation. Zero AI feel. Just a styled `<p>` tag with a bot icon.
-7. **Template selection is preset-only** — no custom color picker, no font selector, no hex/RGB input.
-8. **Product description renders raw HTML** — storefront quick-view shows `<p><span style="color: #0000ff">` raw markup instead of rendered content.
-9. **Product prices show $0.00** — pricing data not flowing through to storefront correctly.
+After testing the live S&S API, here's what's actually happening:
 
-## Plan
+1. **Images return 404** — `www.ssactivewear.com` blocks direct image fetches (requires browser session/cookies). The edge function proxy tries both auth and no-auth, both fail.
+2. **Styles endpoint returns NO colors, sizes, or pricing** — it only returns `styleID`, `title`, `description`, `brandName`, `baseCategory`, and `styleImage` (a relative path). No `availableColors`, `availableSizes`, `customerPrice`, or `piecePrice`.
+3. **Products endpoint HAS everything** — colors with hex codes, sizes, pricing tiers (piece/dozen/case/customer), front/back/side images per color, inventory qty.
 
-### 1. Fix category tags — group into parent categories
-Instead of showing 100+ S&S sub-categories as individual tags, group them into ~10-15 parent categories (T-Shirts, Polos, Fleece, Outerwear, Caps & Hats, Bags, Pants & Shorts, etc.). Add a search-within-categories approach. Show a clean dropdown or collapsible group instead of a wall of badges.
+The current code calls `/styles` and tries to map `availableColors` and `availableSizes` which simply don't exist in that response, so every product shows 0 colors, 0 sizes, and no pricing.
 
-### 2. Fix broken images
-The `ss-catalog` edge function image proxy is failing. Diagnose: check if S&S image URLs are correct, if auth header works for images. Add better fallback — use S&S's public CDN pattern if available (`media.ssactivewear.com`), or generate colored product silhouettes with category-specific icons instead of generic shirt icon.
+## Solution: Two-Phase Data Loading
 
-### 3. Rename Platform Fee Structure
-Change "Owner Markup" → "Brand-Shop Fee", "Platform Surcharge" → "Technology Fee". Make it clear these are non-negotiable platform costs, not something the distributor is paying to an "owner."
+### Phase 1 — Browse by Styles (grid view)
+- Show style cards with: title, brand, category, description (rendered as HTML)
+- For images: use the S&S CDN pattern `https://cdni.ssactivewear.com/` instead of `www.ssactivewear.com` — this is the public CDN that works without auth. Replace `_fm` with `_fl` for large images.
+- If CDN still fails, show category-specific placeholder icons (already built)
 
-### 4. Add "Adjust by Brand" and "Adjust by Item" to pricing
-Add two more accordion sections:
-- **Adjust by Brand** — list unique brands from selected products, allow per-brand markup override
-- **Adjust by Item** — list all selected products, allow per-item markup (already partially exists via `itemMarkups` map but no UI in PricingStep)
+### Phase 2 — Click to Expand (product details)
+- When a user clicks a style card, call the **products endpoint** (`/products/?styleID=XXXX`) to fetch all SKU-level data
+- This returns every color/size combination with:
+  - `colorName`, `color1` (hex), `colorFrontImage`, `colorBackImage`
+  - `sizeName`
+  - `customerPrice`, `piecePrice`, `dozenPrice`, `casePrice`
+- Aggregate into unique colors and sizes for the selection UI
+- Show real pricing with Brand-Shop markup applied
 
-### 5. Add ShipStation and Shippo shipping options
-Add to the shipping radio group: ShipStation and Shippo alongside FedEx/UPS/Brand-Shop.
+### Edge Function Changes (`ss-catalog/index.ts`)
+- Fix image proxy: try `cdni.ssactivewear.com` CDN domain instead of `www.ssactivewear.com`
+- Add a new action `styleDetail` that fetches `/products/?styleID=X` and returns aggregated colors, sizes, pricing, and image URLs
 
-### 6. Make ChatBubble interactive — real AI conversation
-Replace the static `ChatBubble` component with an **interactive AI assistant panel** that:
-- Shows as a chat thread on the right side of each step
-- Uses the existing `ai-chat` edge function to provide contextual guidance
-- Responds to user questions about the current step
-- Proactively suggests next actions based on what the user has done
-- Types out responses with a typing animation
-- Has an input field so users can ask questions
+### API Client Changes (`ssProducts.ts`)
+- Update `mapStyle()` to stop expecting colors/sizes/pricing from styles endpoint (they're not there)
+- Add `fetchStyleProducts(styleID)` that calls the products endpoint and returns aggregated color/size/pricing data
+- Fix image URL construction to use the CDN pattern: `https://cdni.ssactivewear.com/{path}` with `_fl` suffix for large images
 
-### 7. Custom theme builder in AddClientStep
-Replace the 4 preset-only template grid with:
-- Preset templates as quick-start options (keep these)
-- **"Custom" option** that reveals: color pickers for primary/secondary/accent/background, hex code inputs, font family dropdown (Inter, Poppins, Montserrat, Roboto, Playfair Display, etc.)
-- Optional: paste hex codes or RGB values directly
+### Catalog UI Changes (`CatalogSetupStep.tsx`)
+- Style cards show: image, title, brand, category badge, and a "View Details" button
+- Clicking a card opens `ProductDetailModal` which loads product-level data (colors, sizes, pricing) on demand
+- Modal shows: all color swatches (from `colorFrontImage`), all sizes, pricing tiers (piece/dozen/case), description rendered as HTML
+- User selects colors and sizes in the modal, sets per-item markup there
+- Price display: "Your Cost: $X.XX" (customerPrice) + "Retail: $X.XX" (with Brand-Shop fee + distributor markup applied)
 
-### 8. Fix raw HTML in product descriptions
-Sanitize and render product descriptions as HTML (use `dangerouslySetInnerHTML` with a sanitizer, or strip HTML tags for plain text display).
-
-### 9. Fix $0.00 prices on storefront
-The `calcRetail` function uses `pricingConfig.globalMarkup` from metadata but the base cost (`customerPrice`/`piecePrice`) is likely 0 in stored products. Ensure pricing data flows from S&S API through catalog selection into store metadata.
+### ProductDetailModal Changes
+- On open: call `fetchStyleProducts(styleID)` to get real data
+- Show loading spinner while fetching
+- Display color swatches with actual product images (each color has its own front/back image)
+- Show pricing breakdown: base cost → + Brand-Shop fee → your retail price
+- Render HTML description properly with `dangerouslySetInnerHTML`
 
 ## Files to Change
 
 | File | Change |
 |------|--------|
-| `src/components/app/onboarding/CatalogSetupStep.tsx` | Group categories into parent groups (~15 max), clean up tag display |
-| `src/components/app/onboarding/ProductImage.tsx` | Improve fallback with category-specific icons and colors |
-| `supabase/functions/ss-catalog/index.ts` | Debug image proxy, try alternate S&S image URL patterns |
-| `src/components/app/onboarding/PricingStep.tsx` | Rename fee labels, add "Adjust by Brand" and "Adjust by Item" accordions, add ShipStation/Shippo shipping options |
-| `src/components/features/ChatBubble.tsx` | Rewrite as interactive AI chat panel with input, streaming responses, and contextual awareness |
-| `src/components/app/onboarding/AddClientStep.tsx` | Add custom theme builder with color pickers, hex inputs, font selector alongside presets |
-| `src/pages/app/PublicStorefront.tsx` | Fix HTML rendering in product descriptions, fix $0.00 pricing, ensure costs flow correctly |
+| `supabase/functions/ss-catalog/index.ts` | Fix image CDN URL (`cdni.ssactivewear.com`), add `styleDetail` action that fetches products by styleID and aggregates colors/sizes/pricing |
+| `src/lib/api/ssProducts.ts` | Fix image URL helper to use CDN domain, add `fetchStyleProducts()`, update `mapStyle()` to not expect missing fields |
+| `src/components/app/onboarding/CatalogSetupStep.tsx` | Style cards show image + basic info only, click opens detail modal for color/size/price selection |
+| `src/components/app/onboarding/ProductDetailModal.tsx` | Load real product data on open, show color images, sizes, pricing tiers, HTML description |
+| `src/components/app/onboarding/ProductImage.tsx` | Update CDN URL construction |
 
 ## Implementation Order
-1. Fix category grouping (immediate UX improvement)
-2. Fix image proxy + fallbacks
-3. Interactive AI chat panel (biggest UX gap)
-4. Custom theme builder
-5. Pricing adjustments (brand/item/shipping)
-6. Fix storefront bugs (HTML, $0.00)
+1. Fix edge function image proxy + add styleDetail action
+2. Update API client with CDN URLs + fetchStyleProducts
+3. Update ProductDetailModal to load real data
+4. Update CatalogSetupStep cards to show images + link to modal
 
