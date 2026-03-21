@@ -211,6 +211,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ss_catalog_cache: {
+        Row: {
+          base_category: string
+          brand_name: string
+          colors: Json
+          description: string
+          pricing: Json
+          raw_categories: string
+          sizes: Json
+          style_id: number
+          style_image_url: string | null
+          title: string
+          total_skus: number
+          updated_at: string
+        }
+        Insert: {
+          base_category?: string
+          brand_name?: string
+          colors?: Json
+          description?: string
+          pricing?: Json
+          raw_categories?: string
+          sizes?: Json
+          style_id: number
+          style_image_url?: string | null
+          title?: string
+          total_skus?: number
+          updated_at?: string
+        }
+        Update: {
+          base_category?: string
+          brand_name?: string
+          colors?: Json
+          description?: string
+          pricing?: Json
+          raw_categories?: string
+          sizes?: Json
+          style_id?: number
+          style_image_url?: string | null
+          title?: string
+          total_skus?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stores: {
         Row: {
           accounting_config: Json | null
