@@ -269,10 +269,10 @@ export async function fetchStyleDetail(styleID: number): Promise<StyleDetailResu
           customerPrice: pricing.customerPrice || { min: 0, max: 0 },
           piecePrice: pricing.piecePrice || { min: 0, max: 0 },
         },
-        description: data.description || "",
-        brandName: data.brand_name || "",
-        styleName: data.title || "",
-        totalSkus: data.total_skus || 0,
+        description: row.description || "",
+        brandName: row.brand_name || "",
+        styleName: row.title || "",
+        totalSkus: row.total_skus || 0,
       };
     }
 
