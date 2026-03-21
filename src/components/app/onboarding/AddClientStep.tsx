@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, ArrowRight, Loader2, Upload, X, Palette, Sparkles, SkipForward } from "lucide-react";
+import { Users, ArrowRight, Loader2, Upload, X, Palette, Sparkles, SkipForward, Pipette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChatBubble } from "@/components/features/ChatBubble";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +50,11 @@ const templates: { id: string; name: string; theme: ThemeConfig; desc: string }[
   },
 ];
 
+const fontOptions = [
+  "Inter", "Poppins", "Montserrat", "Roboto", "Playfair Display",
+  "Oswald", "Raleway", "Lato", "Merriweather", "Bebas Neue",
+];
+
 export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSkip, onBack }: AddClientStepProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -62,6 +67,22 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
   const [selectedTemplate, setSelectedTemplate] = useState("clean-corporate");
   const [storeAccess, setStoreAccess] = useState<"curated" | "self-service">("curated");
   const [creating, setCreating] = useState(false);
+
+  // Custom theme
+  const [useCustomTheme, setUseCustomTheme] = useState(false);
+  const [customPrimary, setCustomPrimary] = useState("#1a1a2e");
+  const [customSecondary, setCustomSecondary] = useState("#6366f1");
+  const [customAccent, setCustomAccent] = useState("#f59e0b");
+  const [customBackground, setCustomBackground] = useState("#ffffff");
+  const [customFont, setCustomFont] = useState("Inter");
+
+  const getActiveTheme = (): ThemeConfig => {
+    if (useCustomTheme) {
+      return { primary: customPrimary, secondary: customSecondary, accent: customAccent, background: customBackground, fontFamily: customFont };
+    }
+    const t = templates.find((t) => t.id === selectedTemplate);
+    return t?.theme || templates[0].theme;
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,7 +106,7 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
     if (!clientName.trim()) return;
     setCreating(true);
     try {
-      const template = templates.find((t) => t.id === selectedTemplate) || templates[0];
+      const theme = getActiveTheme();
       const slug = clientName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now().toString(36);
       const storeName = `${clientName.trim()} Store`;
 
@@ -104,7 +125,7 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
           client_name: clientName.trim(),
           brand_vertical: "other",
           logo_url: clientLogoUrl,
-          theme_config: template.theme as any,
+          theme_config: theme as any,
           status: "live",
           slug,
           metadata: {
@@ -122,7 +143,6 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
 
       if (error) throw error;
 
-      // Fire-and-forget GHL sub-account creation
       try {
         await supabase.functions.invoke("ghl-sync", {
           body: {
@@ -139,19 +159,35 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
       }
 
       toast({ title: "Client store created!", description: `${storeName} is live.` });
-      onNext({
-        storeId: data.id,
-        storeName,
-        products,
-        theme: template.theme,
-        logoUrl: clientLogoUrl,
-      });
+      onNext({ storeId: data.id, storeName, products, theme, logoUrl: clientLogoUrl });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setCreating(false);
     }
   };
+
+  const ColorInput = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-2">
+        <div className="relative">
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-9 h-9 rounded-lg border border-border cursor-pointer p-0.5"
+          />
+        </div>
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#000000"
+          className="h-9 text-xs font-mono w-28"
+        />
+      </div>
+    </div>
+  );
 
   return (
     <motion.div
@@ -171,11 +207,6 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
           </div>
         </div>
       </div>
-
-      <ChatBubble
-        message="Now let's set up your first client store! Enter their info, pick a template, and we'll generate a branded storefront with your catalog and pricing."
-        delay={0.2}
-      />
 
       {/* Client Info */}
       <Card className="border-border">
@@ -231,33 +262,74 @@ export const AddClientStep = ({ catalogId, products, pricingRules, onNext, onSki
       <Card className="border-border">
         <CardContent className="p-6 space-y-4">
           <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
-            <Palette className="w-4 h-4" /> Store Template
+            <Palette className="w-4 h-4" /> Store Theme
           </h3>
+
+          {/* Preset templates */}
           <div className="grid grid-cols-2 gap-3">
             {templates.map((t) => (
               <label
                 key={t.id}
                 className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                  selectedTemplate === t.id ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/40"
+                  !useCustomTheme && selectedTemplate === t.id ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/40"
                 }`}
+                onClick={() => { setSelectedTemplate(t.id); setUseCustomTheme(false); }}
               >
-                <input
-                  type="radio"
-                  name="template"
-                  value={t.id}
-                  checked={selectedTemplate === t.id}
-                  onChange={() => setSelectedTemplate(t.id)}
-                  className="sr-only"
-                />
+                <input type="radio" name="template" className="sr-only" />
                 <div className="flex gap-1 mb-2">
-                  {t.theme.primary && <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: t.theme.primary }} />}
-                  {t.theme.secondary && <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: t.theme.secondary }} />}
-                  {t.theme.accent && <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: t.theme.accent }} />}
+                  <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: t.theme.primary }} />
+                  <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: t.theme.secondary }} />
+                  <div className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: t.theme.accent }} />
                 </div>
                 <p className="text-xs font-medium text-foreground">{t.name}</p>
                 <p className="text-[10px] text-muted-foreground">{t.desc}</p>
               </label>
             ))}
+          </div>
+
+          {/* Custom theme toggle */}
+          <div
+            className={`p-4 rounded-lg border cursor-pointer transition-all ${
+              useCustomTheme ? "border-primary ring-1 ring-primary/30 bg-primary/5" : "border-border hover:border-primary/40"
+            }`}
+            onClick={() => setUseCustomTheme(true)}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Pipette className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Custom Colors & Font</span>
+            </div>
+
+            {useCustomTheme && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="space-y-4 pt-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <ColorInput label="Primary" value={customPrimary} onChange={setCustomPrimary} />
+                  <ColorInput label="Secondary" value={customSecondary} onChange={setCustomSecondary} />
+                  <ColorInput label="Accent" value={customAccent} onChange={setCustomAccent} />
+                  <ColorInput label="Background" value={customBackground} onChange={setCustomBackground} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Font Family</Label>
+                  <Select value={customFont} onValueChange={setCustomFont}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fontOptions.map((f) => (
+                        <SelectItem key={f} value={f}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Preview */}
+                <div className="rounded-lg overflow-hidden border border-border">
+                  <div className="h-8" style={{ background: `linear-gradient(135deg, ${customPrimary}, ${customSecondary})` }} />
+                  <div className="p-3 flex items-center gap-2" style={{ backgroundColor: customBackground, fontFamily: customFont }}>
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: customAccent }} />
+                    <span className="text-xs" style={{ color: customPrimary, fontFamily: customFont }}>Preview text in {customFont}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
         </CardContent>
       </Card>

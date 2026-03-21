@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const SS_BASE = "https://api.ssactivewear.com/v2";
+const SS_MEDIA_BASE = "https://www.ssactivewear.com";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -35,12 +36,31 @@ serve(async (req) => {
         return new Response("Missing url param", { status: 400, headers: corsHeaders });
       }
 
-      const imgResp = await fetch(imageUrl, {
+      // Fix relative URLs from S&S API — prepend base domain
+      let fullUrl = imageUrl;
+      if (!imageUrl.startsWith("http")) {
+        fullUrl = `${SS_MEDIA_BASE}/${imageUrl.replace(/^\//, "")}`;
+      }
+
+      const imgResp = await fetch(fullUrl, {
         headers: { Authorization: authHeader, Accept: "image/*" },
       });
 
       if (!imgResp.ok) {
-        return new Response("Image not found", { status: 404, headers: corsHeaders });
+        // Try without auth as some S&S images are publicly accessible
+        const publicResp = await fetch(fullUrl, { headers: { Accept: "image/*" } });
+        if (!publicResp.ok) {
+          return new Response("Image not found", { status: 404, headers: corsHeaders });
+        }
+        const contentType = publicResp.headers.get("content-type") || "image/jpeg";
+        const body = await publicResp.arrayBuffer();
+        return new Response(body, {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": contentType,
+            "Cache-Control": "public, max-age=86400, s-maxage=86400",
+          },
+        });
       }
 
       const contentType = imgResp.headers.get("content-type") || "image/jpeg";

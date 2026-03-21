@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChatBubble } from "@/components/features/ChatBubble";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +16,7 @@ export interface PricingRules {
   globalMarkupPercent: number;
   globalMarkupDollar: number;
   categoryMarkups: Record<string, number>;
+  brandMarkups: Record<string, number>;
   itemMarkups: Record<number, number>;
   shippingAccount: string;
   decorationMethod: string;
@@ -44,13 +44,13 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
   const [globalPercent, setGlobalPercent] = useState(40);
   const [globalDollar, setGlobalDollar] = useState(0);
   const [categoryMarkups, setCategoryMarkups] = useState<Record<string, number>>({});
+  const [brandMarkups, setBrandMarkups] = useState<Record<string, number>>({});
   const [itemMarkups, setItemMarkups] = useState<Record<number, number>>({});
   const [shippingAccount, setShippingAccount] = useState("brandshop");
   const [decorationMethod, setDecorationMethod] = useState("Screen Print");
 
   const [platformFees, setPlatformFees] = useState<PlatformFees | null>(null);
 
-  // Seed itemMarkups from products that had per-item markup set in catalog step
   useEffect(() => {
     const fromCatalog: Record<number, number> = {};
     products.forEach((p) => {
@@ -59,7 +59,6 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
     if (Object.keys(fromCatalog).length > 0) setItemMarkups((prev) => ({ ...fromCatalog, ...prev }));
   }, [products]);
 
-  // Fetch platform fees
   useEffect(() => {
     supabase
       .from("platform_fees" as any)
@@ -84,6 +83,11 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
     [products]
   );
 
+  const brands = useMemo(
+    () => Array.from(new Set(products.map((p) => p.brandName).filter(Boolean))),
+    [products]
+  );
+
   const getDecorationFee = (): number => {
     if (!platformFees) return 0;
     const method = platformFees.decoration_methods.find((m) => m.method === decorationMethod);
@@ -92,25 +96,26 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
 
   const getDistributorMarkup = (product: SelectedProduct): number => {
     if (itemMarkups[product.styleID] !== undefined) return itemMarkups[product.styleID];
+    if (brandMarkups[product.brandName] !== undefined) return brandMarkups[product.brandName];
     if (categoryMarkups[product.baseCategory] !== undefined) return categoryMarkups[product.baseCategory];
     return markupType === "percent" ? globalPercent : globalDollar;
   };
 
   const getPriceBreakdown = (product: SelectedProduct) => {
     const baseCost = product.piecePrice || product.customerPrice || 0;
-    const ownerMarkup = platformFees ? baseCost * (platformFees.owner_markup_percent / 100) : 0;
+    const brandShopFee = platformFees ? baseCost * (platformFees.owner_markup_percent / 100) : 0;
     const decorationFee = getDecorationFee();
     const shipping = platformFees?.default_shipping_fee || 0;
     const distributorMarkupVal = getDistributorMarkup(product);
-    const afterOwner = baseCost + ownerMarkup;
+    const afterFee = baseCost + brandShopFee;
     const distributorAdd = markupType === "percent"
-      ? afterOwner * (distributorMarkupVal / 100)
+      ? afterFee * (distributorMarkupVal / 100)
       : distributorMarkupVal;
-    const apparelSubtotal = afterOwner + distributorAdd;
-    const platformSurcharge = platformFees ? apparelSubtotal * (platformFees.platform_surcharge_percent / 100) : 0;
-    const finalPrice = apparelSubtotal + decorationFee + shipping + platformSurcharge;
+    const apparelSubtotal = afterFee + distributorAdd;
+    const techFee = platformFees ? apparelSubtotal * (platformFees.platform_surcharge_percent / 100) : 0;
+    const finalPrice = apparelSubtotal + decorationFee + shipping + techFee;
 
-    return { baseCost, ownerMarkup, decorationFee, shipping, distributorAdd, platformSurcharge, finalPrice, apparelSubtotal };
+    return { baseCost, brandShopFee, decorationFee, shipping, distributorAdd, techFee, finalPrice, apparelSubtotal };
   };
 
   const handleSave = async () => {
@@ -120,6 +125,7 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
         globalMarkupPercent: markupType === "percent" ? globalPercent : 0,
         globalMarkupDollar: markupType === "dollar" ? globalDollar : 0,
         categoryMarkups,
+        brandMarkups,
         itemMarkups,
         shippingAccount,
         decorationMethod,
@@ -140,6 +146,14 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
     }
   };
 
+  const shippingOptions = [
+    { value: "brandshop", label: "Brand-Shop Shipping", desc: "We handle shipping rates and fulfillment" },
+    { value: "fedex", label: "My FedEx Account", desc: "Use your own FedEx account" },
+    { value: "ups", label: "My UPS Account", desc: "Use your own UPS account" },
+    { value: "shipstation", label: "ShipStation", desc: "Connect your ShipStation account" },
+    { value: "shippo", label: "Shippo", desc: "Connect your Shippo account" },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -159,31 +173,26 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
         </div>
       </div>
 
-      <ChatBubble
-        message="The final retail price includes: base cost, platform markup, your distributor markup, decoration fee, shipping, and a platform surcharge. You control the distributor markup — everything else is set by Brand-Shop."
-        delay={0.2}
-      />
-
       {/* Platform Fee Summary */}
       {platformFees && (
         <Card className="border-border bg-muted/30">
           <CardContent className="p-4">
             <h3 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
-              Platform Fee Structure
+              Brand-Shop Platform Fees
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger><Info className="w-3.5 h-3.5 text-muted-foreground" /></TooltipTrigger>
-                  <TooltipContent><p className="text-xs max-w-[200px]">These fees are set by Brand-Shop and applied to all products.</p></TooltipContent>
+                  <TooltipContent><p className="text-xs max-w-[200px]">These fees are set by Brand-Shop and included in the final price automatically.</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </h3>
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="flex justify-between p-2 rounded bg-background border border-border">
-                <span className="text-muted-foreground">Owner Markup</span>
+                <span className="text-muted-foreground">Brand-Shop Fee</span>
                 <span className="font-medium text-foreground">{platformFees.owner_markup_percent}%</span>
               </div>
               <div className="flex justify-between p-2 rounded bg-background border border-border">
-                <span className="text-muted-foreground">Platform Surcharge</span>
+                <span className="text-muted-foreground">Technology Fee</span>
                 <span className="font-medium text-foreground">{platformFees.platform_surcharge_percent}%</span>
               </div>
               <div className="flex justify-between p-2 rounded bg-background border border-border">
@@ -248,8 +257,8 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
         </CardContent>
       </Card>
 
-      {/* Category Markups */}
-      <Accordion type="single" collapsible>
+      {/* Adjust by Category / Brand / Item */}
+      <Accordion type="multiple" className="space-y-2">
         <AccordionItem value="category" className="border border-border rounded-lg">
           <AccordionTrigger className="px-4 py-3 text-sm hover:no-underline">Adjust by Category</AccordionTrigger>
           <AccordionContent className="px-4 pb-4 space-y-3">
@@ -276,6 +285,65 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
             ))}
           </AccordionContent>
         </AccordionItem>
+
+        <AccordionItem value="brand" className="border border-border rounded-lg">
+          <AccordionTrigger className="px-4 py-3 text-sm hover:no-underline">Adjust by Brand</AccordionTrigger>
+          <AccordionContent className="px-4 pb-4 space-y-3">
+            {brands.map((brand) => (
+              <div key={brand} className="flex items-center justify-between gap-3">
+                <span className="text-sm text-foreground">{brand}</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    placeholder={markupType === "percent" ? `${globalPercent}%` : `$${globalDollar}`}
+                    value={brandMarkups[brand] ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBrandMarkups((prev) => {
+                        if (val === "") { const next = { ...prev }; delete next[brand]; return next; }
+                        return { ...prev, [brand]: Number(val) };
+                      });
+                    }}
+                    className="w-20 h-8 text-xs"
+                  />
+                  <span className="text-xs text-muted-foreground">{markupType === "percent" ? "%" : "$"}</span>
+                </div>
+              </div>
+            ))}
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="item" className="border border-border rounded-lg">
+          <AccordionTrigger className="px-4 py-3 text-sm hover:no-underline">Adjust by Item ({products.length} products)</AccordionTrigger>
+          <AccordionContent className="px-4 pb-4">
+            <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+              {products.map((p) => (
+                <div key={p.styleID} className="flex items-center justify-between gap-3 py-1.5 border-b border-border last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground truncate">{p.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{p.brandName} · ${(p.piecePrice || 0).toFixed(2)} base</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Global"
+                      value={itemMarkups[p.styleID] ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setItemMarkups((prev) => {
+                          if (val === "") { const next = { ...prev }; delete next[p.styleID]; return next; }
+                          return { ...prev, [p.styleID]: Number(val) };
+                        });
+                      }}
+                      className="w-20 h-7 text-xs"
+                    />
+                    <span className="text-[10px] text-muted-foreground">{markupType === "percent" ? "%" : "$"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
 
       {/* Full Price Breakdown Preview */}
@@ -296,11 +364,11 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
                   </div>
                   <div className="grid grid-cols-3 gap-1 text-[10px] text-muted-foreground">
                     <span>Base: ${bd.baseCost.toFixed(2)}</span>
-                    <span>Owner: +${bd.ownerMarkup.toFixed(2)}</span>
+                    <span>BS Fee: +${bd.brandShopFee.toFixed(2)}</span>
                     <span>You: +${bd.distributorAdd.toFixed(2)}</span>
                     <span>Decor: +${bd.decorationFee.toFixed(2)}</span>
                     <span>Ship: +${bd.shipping.toFixed(2)}</span>
-                    <span>Plat: +${bd.platformSurcharge.toFixed(2)}</span>
+                    <span>Tech: +${bd.techFee.toFixed(2)}</span>
                   </div>
                 </div>
               );
@@ -316,11 +384,7 @@ export const PricingStep = ({ products, catalogId, onNext, onBack }: PricingStep
           <AccordionContent className="px-4 pb-4 space-y-3">
             <p className="text-xs text-muted-foreground">Choose how shipping is handled for your client stores.</p>
             <div className="space-y-2">
-              {[
-                { value: "brandshop", label: "Brand-Shop Shipping", desc: "We handle shipping rates and fulfillment" },
-                { value: "fedex", label: "My FedEx Account", desc: "Use your own FedEx account for shipping" },
-                { value: "ups", label: "My UPS Account", desc: "Use your own UPS account for shipping" },
-              ].map((opt) => (
+              {shippingOptions.map((opt) => (
                 <label
                   key={opt.value}
                   className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
