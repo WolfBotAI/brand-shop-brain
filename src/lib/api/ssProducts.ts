@@ -245,16 +245,17 @@ async function fetchStylesPageLive(
 export async function fetchStyleDetail(styleID: number): Promise<StyleDetailResult | null> {
   try {
     // Try cache first
-    const { data, error } = await supabase
+    const { data, error } = await (supabase
       .from("ss_catalog_cache" as any)
       .select("*")
       .eq("style_id", styleID)
-      .single();
+      .single() as any);
 
     if (!error && data) {
-      const colors = (data.colors || []) as any[];
-      const sizes = (data.sizes || []) as string[];
-      const pricing = data.pricing || {};
+      const row = data as any;
+      const colors = (row.colors || []) as any[];
+      const sizes = (row.sizes || []) as string[];
+      const pricing = row.pricing || {};
 
       return {
         colors: colors.map((c: any) => ({
