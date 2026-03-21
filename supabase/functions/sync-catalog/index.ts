@@ -8,8 +8,6 @@ const corsHeaders = {
 };
 
 const SS_BASE = "https://api.ssactivewear.com/v2";
-const BATCH_SIZE = 10;
-const DELAY_MS = 300;
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -37,48 +35,13 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const mode = url.searchParams.get("mode") || "metadata"; // "metadata" or "images"
-    const maxPages = parseInt(url.searchParams.get("maxPages") || "100");
-    const startPage = parseInt(url.searchParams.get("startPage") || "1");
-    const perPage = 100;
-    let totalSynced = 0;
-    let totalImages = 0;
+    const mode = url.searchParams.get("mode") || "styles"; 
+    // modes: "styles" = sync style list, "detail" = enrich one style with product data, "images" = download images for styles
 
-    if (mode === "images") {
-      // Phase 2: Download images for styles that don't have storage URLs yet
-      const { data: rows } = await supabase
-        .from("ss_catalog_cache")
-        .select("style_id, style_image_url, colors")
-        .is("style_image_url", null)
-        .limit(50);
-
-      if (rows) {
-        for (const row of rows as any[]) {
-          // Try to download main style image from S&S API
-          const imgUrl = await downloadAndUploadImage(
-            supabase, authHeader,
-            `Images/Style/${row.style_id}_fm.jpg`,
-            `styles/${row.style_id}`
-          );
-
-          if (imgUrl) {
-            await supabase
-              .from("ss_catalog_cache")
-              .update({ style_image_url: imgUrl })
-              .eq("style_id", row.style_id);
-            totalImages++;
-          }
-        }
-      }
-
-      return new Response(
-        JSON.stringify({ success: true, mode: "images", totalImages }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Phase 1: Sync metadata (styles + products data, no image downloads)
-    for (let page = startPage; page < startPage + maxPages; page++) {
+    if (mode === "styles") {
+      const page = parseInt(url.searchParams.get("page") || "1");
+      const perPage = 100;
+      
       console.log(`Fetching styles page ${page}...`);
       const ssResp = await fetch(
         `${SS_BASE}/styles/?page=${page}&perPage=${perPage}`,
@@ -86,122 +49,171 @@ serve(async (req) => {
       );
 
       if (!ssResp.ok) {
-        console.error(`SS API error on page ${page}: ${ssResp.status}`);
-        break;
+        return new Response(
+          JSON.stringify({ error: `SS API returned ${ssResp.status}` }),
+          { status: ssResp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const styles = await ssResp.json();
       if (!Array.isArray(styles) || styles.length === 0) {
-        console.log(`No more styles at page ${page}, done.`);
-        break;
+        return new Response(
+          JSON.stringify({ success: true, synced: 0, hasMore: false }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      // Process in batches — fetch product details for each style
-      for (let i = 0; i < styles.length; i += BATCH_SIZE) {
-        const batch = styles.slice(i, i + BATCH_SIZE);
+      const rows = styles.map((s: any) => ({
+        style_id: s.styleID ?? s.StyleID ?? 0,
+        title: s.title ?? s.Title ?? "",
+        brand_name: s.brandName ?? s.BrandName ?? "",
+        base_category: s.baseCategory ?? s.BaseCategory ?? "",
+        description: s.description ?? s.Description ?? "",
+        style_image_url: null,
+        colors: [],
+        sizes: [],
+        pricing: {},
+        total_skus: 0,
+        raw_categories: s.baseCategory ?? "",
+        updated_at: new Date().toISOString(),
+      })).filter((r: any) => r.style_id > 0);
 
-        const rows = await Promise.all(batch.map(async (style: any) => {
-          const styleID = style.styleID ?? style.StyleID ?? 0;
-          if (!styleID) return null;
+      const { error } = await supabase
+        .from("ss_catalog_cache")
+        .upsert(rows, { onConflict: "style_id", ignoreDuplicates: false });
 
-          const title = style.title ?? style.Title ?? "";
-          const brandName = style.brandName ?? style.BrandName ?? "";
-          const baseCategory = style.baseCategory ?? style.BaseCategory ?? "";
-          const description = style.description ?? style.Description ?? "";
+      if (error) throw error;
 
-          // Fetch product SKUs for colors/sizes/pricing
-          let colors: any[] = [];
-          let sizes: string[] = [];
-          let pricing: any = {};
-          let totalSkus = 0;
+      return new Response(
+        JSON.stringify({ success: true, synced: rows.length, hasMore: styles.length >= perPage, nextPage: page + 1 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-          try {
-            const prodResp = await fetch(
-              `${SS_BASE}/products/?styleID=${styleID}`,
-              { headers: { Authorization: authHeader, Accept: "application/json" } }
-            );
+    if (mode === "detail") {
+      // Enrich a batch of styles with product data (colors, sizes, pricing)
+      const limit = parseInt(url.searchParams.get("limit") || "5");
+      
+      // Get styles that haven't been enriched yet (total_skus = 0)
+      const { data: rows } = await supabase
+        .from("ss_catalog_cache")
+        .select("style_id")
+        .eq("total_skus", 0)
+        .limit(limit);
 
-            if (prodResp.ok) {
-              const products = await prodResp.json();
-              if (Array.isArray(products) && products.length > 0) {
-                totalSkus = products.length;
-                const colorMap = new Map<string, any>();
-                const sizeSet = new Set<string>();
-                let minCust = Infinity, maxCust = 0, minPiece = Infinity, maxPiece = 0;
+      if (!rows || rows.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, enriched: 0, remaining: 0 }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
-                for (const p of products) {
-                  const colorName = p.colorName || p.ColorName || "";
-                  const hex = p.color1 || p.Color1 || "888888";
-                  const frontImg = p.colorFrontImage || p.ColorFrontImage || null;
-                  const backImg = p.colorBackImage || p.ColorBackImage || null;
-                  const sizeName = p.sizeName || p.SizeName || "";
-                  const custPrice = p.customerPrice || p.CustomerPrice || 0;
-                  const piecePrice = p.piecePrice || p.PiecePrice || 0;
+      let enriched = 0;
 
-                  if (colorName && !colorMap.has(colorName)) {
-                    colorMap.set(colorName, {
-                      name: colorName,
-                      hex: `#${hex.replace(/^#/, "")}`,
-                      imageUrl: frontImg, // Store S&S path for now, download later
-                      backImageUrl: backImg,
-                    });
-                  }
-                  if (sizeName) sizeSet.add(sizeName);
-                  if (custPrice > 0) { minCust = Math.min(minCust, custPrice); maxCust = Math.max(maxCust, custPrice); }
-                  if (piecePrice > 0) { minPiece = Math.min(minPiece, piecePrice); maxPiece = Math.max(maxPiece, piecePrice); }
-                }
+      for (const row of rows as any[]) {
+        try {
+          const prodResp = await fetch(
+            `${SS_BASE}/products/?styleID=${row.style_id}`,
+            { headers: { Authorization: authHeader, Accept: "application/json" } }
+          );
 
-                colors = Array.from(colorMap.values());
-                sizes = Array.from(sizeSet);
-                pricing = {
-                  customerPrice: { min: minCust === Infinity ? 0 : minCust, max: maxCust },
-                  piecePrice: { min: minPiece === Infinity ? 0 : minPiece, max: maxPiece },
-                };
-              }
+          if (!prodResp.ok) continue;
+
+          const products = await prodResp.json();
+          if (!Array.isArray(products) || products.length === 0) {
+            // Mark as enriched with 0 SKUs so we don't retry
+            await supabase.from("ss_catalog_cache").update({ total_skus: -1 }).eq("style_id", row.style_id);
+            continue;
+          }
+
+          const colorMap = new Map<string, any>();
+          const sizeSet = new Set<string>();
+          let minCust = Infinity, maxCust = 0, minPiece = Infinity, maxPiece = 0;
+
+          for (const p of products) {
+            const colorName = p.colorName || p.ColorName || "";
+            const hex = p.color1 || p.Color1 || "888888";
+            const frontImg = p.colorFrontImage || p.ColorFrontImage || null;
+            const backImg = p.colorBackImage || p.ColorBackImage || null;
+            const sizeName = p.sizeName || p.SizeName || "";
+            const custPrice = p.customerPrice || p.CustomerPrice || 0;
+            const piecePrice = p.piecePrice || p.PiecePrice || 0;
+
+            if (colorName && !colorMap.has(colorName)) {
+              colorMap.set(colorName, { name: colorName, hex: `#${hex.replace(/^#/, "")}`, imageUrl: frontImg, backImageUrl: backImg });
             }
-          } catch (e) {
-            console.warn(`Products fetch failed for ${styleID}:`, e);
+            if (sizeName) sizeSet.add(sizeName);
+            if (custPrice > 0) { minCust = Math.min(minCust, custPrice); maxCust = Math.max(maxCust, custPrice); }
+            if (piecePrice > 0) { minPiece = Math.min(minPiece, piecePrice); maxPiece = Math.max(maxPiece, piecePrice); }
           }
 
-          return {
-            style_id: styleID,
-            title,
-            brand_name: brandName,
-            base_category: baseCategory,
-            description,
-            style_image_url: null as string | null, // Will be populated by image sync phase
-            colors,
-            sizes,
-            pricing,
-            total_skus: totalSkus,
-            raw_categories: baseCategory,
+          await supabase.from("ss_catalog_cache").update({
+            colors: Array.from(colorMap.values()),
+            sizes: Array.from(sizeSet),
+            pricing: {
+              customerPrice: { min: minCust === Infinity ? 0 : minCust, max: maxCust },
+              piecePrice: { min: minPiece === Infinity ? 0 : minPiece, max: maxPiece },
+            },
+            total_skus: products.length,
+            description: products[0]?.description || products[0]?.Description || "",
             updated_at: new Date().toISOString(),
-          };
-        }));
+          }).eq("style_id", row.style_id);
 
-        const validRows = rows.filter(Boolean);
-        if (validRows.length > 0) {
-          const { error } = await supabase
-            .from("ss_catalog_cache")
-            .upsert(validRows, { onConflict: "style_id" });
-
-          if (error) {
-            console.error(`Batch upsert failed:`, error);
-          } else {
-            totalSynced += validRows.length;
-          }
+          enriched++;
+        } catch (e) {
+          console.warn(`Failed to enrich style ${row.style_id}:`, e);
         }
-
-        await sleep(DELAY_MS);
+        await sleep(200);
       }
 
-      if (styles.length < perPage) break;
-      console.log(`Page ${page} done, ${totalSynced} synced so far`);
+      // Count remaining
+      const { count } = await supabase.from("ss_catalog_cache").select("style_id", { count: "exact", head: true }).eq("total_skus", 0);
+
+      return new Response(
+        JSON.stringify({ success: true, enriched, remaining: count || 0 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (mode === "images") {
+      // Download images for styles that don't have storage URLs yet
+      const limit = parseInt(url.searchParams.get("limit") || "10");
+
+      const { data: rows } = await supabase
+        .from("ss_catalog_cache")
+        .select("style_id")
+        .is("style_image_url", null)
+        .gt("total_skus", 0)
+        .limit(limit);
+
+      if (!rows || rows.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, uploaded: 0 }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      let uploaded = 0;
+      for (const row of rows as any[]) {
+        const imgUrl = await downloadAndUploadImage(
+          supabase, authHeader, `Images/Style/${row.style_id}_fm.jpg`, `styles/${row.style_id}`
+        );
+        if (imgUrl) {
+          await supabase.from("ss_catalog_cache").update({ style_image_url: imgUrl }).eq("style_id", row.style_id);
+          uploaded++;
+        }
+        await sleep(100);
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, uploaded }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
-      JSON.stringify({ success: true, mode: "metadata", totalSynced }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: `Unknown mode: ${mode}` }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("sync-catalog error:", err);
@@ -219,42 +231,32 @@ async function downloadAndUploadImage(
   storagePath: string
 ): Promise<string | null> {
   try {
-    let fullUrl = imagePath;
-    if (!imagePath.startsWith("http")) {
-      fullUrl = `https://www.ssactivewear.com/${imagePath.replace(/^\//, "")}`;
-    }
+    const fullUrl = `https://www.ssactivewear.com/${imagePath.replace(/^\//, "")}`;
 
-    // Try authenticated fetch
-    const resp = await fetch(fullUrl, {
-      headers: { Authorization: authHeader, Accept: "image/*" },
-    });
-
+    // Try authenticated
+    let resp = await fetch(fullUrl, { headers: { Authorization: authHeader, Accept: "image/*" } });
     if (!resp.ok) {
       // Try CDN
-      const cdnUrl = fullUrl.replace("www.ssactivewear.com", "cdni.ssactivewear.com");
-      const cdnResp = await fetch(cdnUrl, { headers: { Accept: "image/*" } });
-      if (!cdnResp.ok) return null;
-      const blob = await cdnResp.blob();
-      return await uploadBlob(supabase, blob, storagePath);
+      const cdnUrl = `https://cdni.ssactivewear.com/${imagePath.replace(/^\//, "")}`;
+      resp = await fetch(cdnUrl, { headers: { Accept: "image/*" } });
+      if (!resp.ok) return null;
     }
 
     const blob = await resp.blob();
-    return await uploadBlob(supabase, blob, storagePath);
+    if (blob.size < 100) return null; // Too small, probably error page
+
+    const ext = blob.type?.includes("png") ? "png" : "jpg";
+    const filePath = `${storagePath}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, blob, { contentType: blob.type || "image/jpeg", upsert: true });
+
+    if (error) return null;
+
+    const { data } = supabase.storage.from("product-images").getPublicUrl(filePath);
+    return data?.publicUrl || null;
   } catch {
     return null;
   }
-}
-
-async function uploadBlob(supabase: any, blob: Blob, storagePath: string): Promise<string | null> {
-  const ext = blob.type?.includes("png") ? "png" : "jpg";
-  const filePath = `${storagePath}.${ext}`;
-
-  const { error } = await supabase.storage
-    .from("product-images")
-    .upload(filePath, blob, { contentType: blob.type || "image/jpeg", upsert: true });
-
-  if (error) return null;
-
-  const { data } = supabase.storage.from("product-images").getPublicUrl(filePath);
-  return data?.publicUrl || null;
 }
