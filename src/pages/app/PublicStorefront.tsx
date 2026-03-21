@@ -32,6 +32,12 @@ interface CartItem {
   qty: number;
 }
 
+/** Strip HTML tags for plain text display */
+function stripHtml(html: string): string {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim();
+}
+
 export default function PublicStorefront() {
   const { slug } = useParams();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -67,11 +73,37 @@ export default function PublicStorefront() {
 
   const metadata = (store?.metadata as any) || {};
   const products: SSStyle[] = metadata.products || [];
-  const pricingConfig = metadata.pricing || { globalMarkup: 40 };
+  const pricingRules = metadata.pricingRules || metadata.pricing || {};
   const storeName = store?.store_name || "Store";
   const logoUrl = store?.logo_url || theme.logoUrl;
 
-  const calcRetail = (cost: number) => +(cost * (1 + pricingConfig.globalMarkup / 100)).toFixed(2);
+  /** Calculate retail price using the full pricing rules from onboarding */
+  const calcRetail = (product: SSStyle): number => {
+    const baseCost = product.piecePrice || product.customerPrice || 0;
+    if (baseCost === 0) return 0;
+
+    // Get markup from rules hierarchy: item > brand > category > global
+    let markupVal = pricingRules.globalMarkupPercent || pricingRules.globalMarkup || 40;
+    let markupType: "percent" | "dollar" = pricingRules.globalMarkupDollar && !pricingRules.globalMarkupPercent ? "dollar" : "percent";
+
+    if (pricingRules.categoryMarkups?.[product.baseCategory] !== undefined) {
+      markupVal = pricingRules.categoryMarkups[product.baseCategory];
+    }
+    if (pricingRules.brandMarkups?.[product.brandName] !== undefined) {
+      markupVal = pricingRules.brandMarkups[product.brandName];
+    }
+    if (pricingRules.itemMarkups?.[product.styleID] !== undefined) {
+      markupVal = pricingRules.itemMarkups[product.styleID];
+    }
+
+    const markup = markupType === "percent" ? baseCost * (markupVal / 100) : markupVal;
+    return +(baseCost + markup).toFixed(2);
+  };
+
+  const getDisplayPrice = (product: SSStyle): string => {
+    const price = calcRetail(product);
+    return price > 0 ? `$${price.toFixed(2)}` : "Contact for price";
+  };
 
   const isExpired = useMemo(() => {
     const expiresAt = (store as any)?.expires_at;
@@ -118,7 +150,7 @@ export default function PublicStorefront() {
 
   const removeFromCart = (index: number) => setCart((prev) => prev.filter((_, i) => i !== index));
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
-  const cartTotal = cart.reduce((sum, i) => sum + calcRetail(i.product.customerPrice || i.product.piecePrice || 0) * i.qty, 0);
+  const cartTotal = cart.reduce((sum, i) => sum + calcRetail(i.product) * i.qty, 0);
 
   const placeOrder = async () => {
     if (!store) return;
@@ -129,7 +161,7 @@ export default function PublicStorefront() {
         color: i.color,
         size: i.size,
         qty: i.qty,
-        price: calcRetail(i.product.customerPrice || i.product.piecePrice || 0),
+        price: calcRetail(i.product),
       }));
       const { data: orderData, error } = await supabase.from("orders").insert({
         store_id: store.id,
@@ -142,7 +174,6 @@ export default function PublicStorefront() {
       } as any).select("id").single();
       if (error) throw error;
 
-      // Sync order to GHL (fire-and-forget)
       try {
         await supabase.functions.invoke("ghl-sync", {
           body: {
@@ -355,7 +386,7 @@ export default function PublicStorefront() {
             {cart.map((item, i) => (
               <div key={i} className="flex justify-between text-sm">
                 <span>{item.product.title} × {item.qty}</span>
-                <span className="font-medium">${(calcRetail(item.product.customerPrice || item.product.piecePrice || 0) * item.qty).toFixed(2)}</span>
+                <span className="font-medium">${(calcRetail(item.product) * item.qty).toFixed(2)}</span>
               </div>
             ))}
             <div className="flex justify-between font-bold text-lg pt-3 border-t border-border">
@@ -434,7 +465,7 @@ export default function PublicStorefront() {
                       )}
                     </div>
                     <p className="text-lg font-bold text-foreground pt-1">
-                      ${calcRetail(product.customerPrice || product.piecePrice || 0).toFixed(2)}
+                      {getDisplayPrice(product)}
                     </p>
                   </div>
                 </motion.div>
@@ -459,11 +490,11 @@ export default function PublicStorefront() {
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{selectedProduct.brandName}</p>
                   <h2 className="text-xl font-bold text-foreground">{selectedProduct.title}</h2>
-                  <p className="text-sm text-muted-foreground mt-2">{selectedProduct.description}</p>
+                  <p className="text-sm text-muted-foreground mt-2">{stripHtml(selectedProduct.description)}</p>
                 </div>
 
                 <p className="text-2xl font-bold text-foreground">
-                  ${calcRetail(selectedProduct.customerPrice || selectedProduct.piecePrice || 0).toFixed(2)}
+                  {getDisplayPrice(selectedProduct)}
                 </p>
 
                 {/* Color selector */}
@@ -585,7 +616,7 @@ export default function PublicStorefront() {
                           <X className="w-4 h-4" />
                         </button>
                         <span className="text-sm font-bold">
-                          ${(calcRetail(item.product.customerPrice || item.product.piecePrice || 0) * item.qty).toFixed(2)}
+                          ${(calcRetail(item.product) * item.qty).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -624,7 +655,7 @@ export default function PublicStorefront() {
           storeName={storeName}
           products={products.map((p) => ({
             title: p.title,
-            price: calcRetail(p.customerPrice || p.piecePrice || 0),
+            price: calcRetail(p),
             brandName: p.brandName,
           }))}
           accentColor={theme.accent}
