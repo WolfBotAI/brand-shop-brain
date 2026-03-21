@@ -304,7 +304,7 @@ export async function fetchCategories(): Promise<string[]> {
       .limit(1000) as any);
 
     if (!error && data && data.length > 0) {
-      const cats = [...new Set(data.map((r: any) => r.base_category).filter(Boolean))];
+      const cats = [...new Set((data as any[]).map((r: any) => r.base_category as string).filter(Boolean))];
       return cats.sort();
     }
 
