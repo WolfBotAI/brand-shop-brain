@@ -3,8 +3,6 @@
  * which proxies the S&S Activewear API v2.
  */
 
-import { supabase } from "@/integrations/supabase/client";
-
 // --- Types ---
 
 export interface SSStyle {
@@ -34,16 +32,43 @@ export interface SSProduct {
   imageUrl: string | null;
 }
 
-// --- Image proxy helper ---
+export interface StyleDetailResult {
+  colors: { name: string; hex: string; image: string | null; backImage: string | null }[];
+  sizes: string[];
+  pricing: {
+    customerPrice: { min: number; max: number };
+    piecePrice: { min: number; max: number };
+  };
+  description: string;
+  brandName: string;
+  styleName: string;
+  totalSkus: number;
+}
 
-/**
- * Converts an S&S CDN image URL into a proxied URL through our edge function.
- * S&S images require authentication; this proxy handles that server-side.
- */
+// --- Image helpers ---
+
+const SS_CDN = "https://cdni.ssactivewear.com";
+
+/** Convert an S&S relative image path to a public CDN URL */
+export function getCdnImageUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http")) {
+    // Fix www domain to CDN
+    return path.replace("www.ssactivewear.com", "cdni.ssactivewear.com");
+  }
+  return `${SS_CDN}/${path.replace(/^\//, "")}`;
+}
+
+/** Get a proxied image URL through our edge function (for auth-required images) */
 export function getProxiedImageUrl(originalUrl: string | null | undefined): string | null {
   if (!originalUrl) return null;
-  // If it's already a placehold.co or data URL, return as-is
   if (originalUrl.startsWith("https://placehold.co") || originalUrl.startsWith("data:")) return originalUrl;
+  
+  // First try CDN URL directly (no proxy needed)
+  const cdnUrl = getCdnImageUrl(originalUrl);
+  if (cdnUrl) return cdnUrl;
+  
+  // Fallback to proxy
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   if (!projectId) return originalUrl;
   return `https://${projectId}.supabase.co/functions/v1/ss-catalog?action=image&url=${encodeURIComponent(originalUrl)}`;
@@ -81,40 +106,21 @@ async function callCatalog(params: Record<string, string>): Promise<any> {
 // --- Map S&S API response to our interfaces ---
 
 function mapStyle(raw: any): SSStyle {
+  // The /styles endpoint does NOT return colors, sizes, or pricing
+  // Those come from /products endpoint via fetchStyleDetail()
+  const styleImage = raw.styleImage ?? raw.StyleImage ?? raw.mainImage ?? null;
+  
   return {
     styleID: raw.styleID ?? raw.StyleID ?? raw.id ?? 0,
     title: raw.title ?? raw.Title ?? raw.styleName ?? "",
     description: raw.description ?? raw.Description ?? "",
     brandName: raw.brandName ?? raw.BrandName ?? raw.brand ?? "",
     baseCategory: raw.baseCategory ?? raw.BaseCategory ?? raw.category ?? "",
-    styleImage: raw.styleImage ?? raw.StyleImage ?? raw.mainImage ?? null,
-    customerPrice: raw.customerPrice ?? raw.CustomerPrice ?? raw.piecePrice ?? undefined,
-    piecePrice: raw.piecePrice ?? raw.PiecePrice ?? undefined,
-    availableColors: Array.isArray(raw.availableColors ?? raw.Colors)
-      ? (raw.availableColors ?? raw.Colors).map((c: any) => ({
-          name: c.name ?? c.ColorName ?? c.colorName ?? "",
-          hex: c.hex ?? c.HexCode ?? c.hexCode ?? "#888888",
-        }))
-      : [],
-    availableSizes: Array.isArray(raw.availableSizes ?? raw.Sizes)
-      ? (raw.availableSizes ?? raw.Sizes).map((s: any) => (typeof s === "string" ? s : s.name ?? s.SizeName ?? ""))
-      : [],
-  };
-}
-
-function mapProduct(raw: any): SSProduct {
-  return {
-    sku: raw.sku ?? raw.SKU ?? raw.Sku ?? "",
-    brandName: raw.brandName ?? raw.BrandName ?? "",
-    styleName: raw.styleName ?? raw.StyleName ?? "",
-    title: raw.title ?? raw.Title ?? `${raw.styleName ?? ""} ${raw.colorName ?? ""}`.trim(),
-    colorName: raw.colorName ?? raw.ColorName ?? "",
-    sizeName: raw.sizeName ?? raw.SizeName ?? "",
-    customerPrice: raw.customerPrice ?? raw.CustomerPrice ?? 0,
-    piecePrice: raw.piecePrice ?? raw.PiecePrice ?? 0,
-    dozenPrice: raw.dozenPrice ?? raw.DozenPrice ?? 0,
-    casePrice: raw.casePrice ?? raw.CasePrice ?? 0,
-    imageUrl: raw.colorFrontImage ?? raw.ColorFrontImage ?? raw.styleImage ?? null,
+    styleImage: getCdnImageUrl(styleImage),
+    customerPrice: undefined, // Not available from /styles
+    piecePrice: undefined,    // Not available from /styles
+    availableColors: [],      // Not available from /styles
+    availableSizes: [],       // Not available from /styles
   };
 }
 
@@ -226,7 +232,7 @@ const FALLBACK_CATALOG: SSStyle[] = [
     availableSizes: ["S", "M", "L", "XL", "2XL"],
   },
   {
-    styleID: 14, title: "Athletic Shorts", description: "100% polyester mesh, 9\" inseam",
+    styleID: 14, title: "Athletic Shorts", description: '100% polyester mesh, 9" inseam',
     brandName: "Brand-Shop Performance", baseCategory: "Pants & Shorts",
     styleImage: null,
     customerPrice: 8.00, piecePrice: 15.99,
@@ -294,6 +300,17 @@ export async function fetchStylesPage(
   }
 }
 
+/** Fetch detailed product data (colors, sizes, pricing) for a specific style */
+export async function fetchStyleDetail(styleID: number): Promise<StyleDetailResult | null> {
+  try {
+    const data = await callCatalog({ action: "styleDetail", styleID: String(styleID) });
+    return data as StyleDetailResult;
+  } catch (e) {
+    console.warn("fetchStyleDetail failed for styleID", styleID, e);
+    return null;
+  }
+}
+
 export async function searchStyles(query: string): Promise<SSStyle[]> {
   const result = await fetchStylesPage(1, 100, { keyword: query });
   return result.styles;
@@ -337,7 +354,19 @@ export async function getProductsByStyle(styleIds: (string | number)[]): Promise
   try {
     const data = await callCatalog({ action: "products", styleIDs: styleIds.join(",") });
     if (Array.isArray(data) && data.length > 0) {
-      return data.map(mapProduct);
+      return data.map((raw: any) => ({
+        sku: raw.sku ?? raw.SKU ?? "",
+        brandName: raw.brandName ?? raw.BrandName ?? "",
+        styleName: raw.styleName ?? raw.StyleName ?? "",
+        title: raw.title ?? raw.Title ?? `${raw.styleName ?? ""} ${raw.colorName ?? ""}`.trim(),
+        colorName: raw.colorName ?? raw.ColorName ?? "",
+        sizeName: raw.sizeName ?? raw.SizeName ?? "",
+        customerPrice: raw.customerPrice ?? raw.CustomerPrice ?? 0,
+        piecePrice: raw.piecePrice ?? raw.PiecePrice ?? 0,
+        dozenPrice: raw.dozenPrice ?? raw.DozenPrice ?? 0,
+        casePrice: raw.casePrice ?? raw.CasePrice ?? 0,
+        imageUrl: getCdnImageUrl(raw.colorFrontImage ?? raw.ColorFrontImage ?? raw.styleImage ?? null),
+      }));
     }
   } catch (e) {
     console.warn("SS catalog getProductsByStyle failed:", e);
@@ -348,12 +377,12 @@ export async function getProductsByStyle(styleIds: (string | number)[]): Promise
 // --- Vertical → search keywords ---
 
 const verticalKeywords: Record<string, string[]> = {
-  sports: ["tee", "polo", "hoodie", "cap", "shorts", "sweatshirt", "jogger", "quarter-zip", "tank", "jacket", "performance"],
-  corporate: ["polo", "jacket", "quarter-zip", "sweatshirt", "tee", "tote", "hat", "pullover", "softshell", "crewneck"],
-  schools: ["tee", "hoodie", "cap", "polo", "sweatshirt", "shorts", "jogger", "hat", "tank", "pullover"],
-  events: ["tee", "hoodie", "cap", "tank", "tote", "hat", "shorts", "sweatshirt", "jogger", "snapback"],
-  fashion: ["tee", "hoodie", "jogger", "snapback", "sweatshirt", "jacket", "hat", "shorts", "tank", "pullover"],
-  other: ["tee", "hoodie", "cap", "polo", "sweatshirt", "shorts", "tote", "hat", "jogger", "jacket"],
+  sports: ["tee", "polo", "hoodie", "cap", "shorts"],
+  corporate: ["polo", "jacket", "quarter-zip", "sweatshirt", "tee"],
+  schools: ["tee", "hoodie", "cap", "polo", "sweatshirt"],
+  events: ["tee", "hoodie", "cap", "tank", "tote"],
+  fashion: ["tee", "hoodie", "jogger", "snapback", "sweatshirt"],
+  other: ["tee", "hoodie", "cap", "polo", "sweatshirt"],
 };
 
 export function getSearchQueriesForVertical(vertical: string): string[] {
