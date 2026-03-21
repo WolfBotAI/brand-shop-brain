@@ -3,14 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, ArrowRight, Search, Loader2, ChevronDown, ChevronUp, AlertTriangle, Maximize2, X, Check, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChatBubble } from "@/components/features/ChatBubble";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +31,29 @@ interface CatalogSetupStepProps {
   onBack: () => void;
 }
 
+// Parent category grouping for S&S sub-categories
+const PARENT_CATEGORIES: Record<string, string[]> = {
+  "T-Shirts": ["T-Shirts", "Tee", "Tank", "Jersey", "Short Sleeve"],
+  "Polos": ["Polo", "Knit"],
+  "Hoodies & Sweatshirts": ["Hoodies", "Sweatshirt", "Fleece", "Pullover", "Crewneck"],
+  "Outerwear": ["Jacket", "Outerwear", "Coat", "Vest", "Windbreaker", "Softshell", "Quarter-Zip", "Full-Zip"],
+  "Caps & Hats": ["Cap", "Hat", "Beanie", "Visor", "Headwear", "Trucker"],
+  "Pants & Shorts": ["Pant", "Short", "Jogger", "Sweatpant"],
+  "Bags & Accessories": ["Bag", "Tote", "Backpack", "Accessori", "Towel", "Blanket", "Apron"],
+  "Dress Shirts": ["Dress Shirt", "Woven", "Oxford", "Button"],
+  "Performance": ["Performance", "Athletic", "Moisture", "Dri-Fit", "Sport"],
+  "Youth": ["Youth", "Kid", "Infant", "Toddler"],
+  "Ladies": ["Ladies", "Women"],
+};
+
+function groupCategory(rawCat: string): string {
+  const lower = rawCat.toLowerCase();
+  for (const [parent, keywords] of Object.entries(PARENT_CATEGORIES)) {
+    if (keywords.some((kw) => lower.includes(kw.toLowerCase()))) return parent;
+  }
+  return "Other";
+}
+
 export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,6 +61,7 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   const [products, setProducts] = useState<SSStyle[]>([]);
   const [selected, setSelected] = useState<Map<number, SelectedProduct>>(new Map());
   const [categories, setCategories] = useState<string[]>([]);
+  const [groupedCategories, setGroupedCategories] = useState<string[]>([]);
   const [isFallback, setIsFallback] = useState(false);
 
   const [page, setPage] = useState(1);
@@ -60,8 +82,23 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
   const PER_PAGE = 100;
 
   useEffect(() => {
-    fetchCategories().then(setCategories);
+    fetchCategories().then((cats) => {
+      setCategories(cats);
+      const groups = Array.from(new Set(cats.map(groupCategory))).sort();
+      setGroupedCategories(groups);
+    });
   }, []);
+
+  // Map selected parent group → matching raw categories for API filtering
+  const getFilterCategory = useCallback(() => {
+    if (!activeCategory) return undefined;
+    // If it's a raw category, use it directly
+    if (categories.includes(activeCategory)) return activeCategory;
+    // Otherwise find matching raw categories and use the first as keyword
+    const keywords = PARENT_CATEGORIES[activeCategory];
+    if (keywords) return keywords[0]; // Use primary keyword for search
+    return activeCategory;
+  }, [activeCategory, categories]);
 
   useEffect(() => {
     setProducts([]);
@@ -73,9 +110,10 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
 
   const loadPage = useCallback(async (pageNum: number, reset: boolean) => {
     try {
+      const filterCat = getFilterCategory();
       const result = await fetchStylesPage(pageNum, PER_PAGE, {
-        keyword: searchQuery || undefined,
-        category: activeCategory || undefined,
+        keyword: searchQuery || filterCat || undefined,
+        category: undefined,
       });
       setProducts((prev) => reset ? result.styles : [...prev, ...result.styles]);
       setHasMore(result.hasMore);
@@ -87,7 +125,7 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [searchQuery, activeCategory, toast]);
+  }, [searchQuery, activeCategory, toast, getFilterCategory]);
 
   const handleScroll = useCallback((el: HTMLDivElement | null) => {
     if (!el || loadingMore || !hasMore) return;
@@ -217,33 +255,27 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
 
   const searchAndFilters = (
     <div className="space-y-3">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search products..."
-          defaultValue=""
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <Badge
-          variant={activeCategory === null ? "default" : "outline"}
-          className="cursor-pointer text-xs"
-          onClick={() => setActiveCategory(null)}
-        >
-          All
-        </Badge>
-        {categories.map((cat) => (
-          <Badge
-            key={cat}
-            variant={activeCategory === cat ? "default" : "outline"}
-            className="cursor-pointer text-xs"
-            onClick={() => setActiveCategory(cat === activeCategory ? null : cat)}
-          >
-            {cat}
-          </Badge>
-        ))}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search products..."
+            defaultValue=""
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={activeCategory || "all"} onValueChange={(v) => setActiveCategory(v === "all" ? null : v)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {groupedCategories.map((cat) => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
@@ -327,11 +359,6 @@ export const CatalogSetupStep = ({ onNext, onBack }: CatalogSetupStepProps) => {
           </Button>
         </div>
       </div>
-
-      <ChatBubble
-        message="Browse the Brand-Shop Apparel catalog below. Select items, pick colors & sizes, and optionally set per-item markup. Use Fullscreen for a better browsing experience."
-        delay={0.2}
-      />
 
       {isFallback && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
