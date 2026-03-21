@@ -52,9 +52,11 @@ export type Database = {
           created_at: string
           customer_email: string
           customer_name: string
+          fulfillment_details: Json | null
           id: string
           items: Json
           shipping_address: Json | null
+          shipping_details: Json | null
           status: string
           store_id: string
           total: number
@@ -64,9 +66,11 @@ export type Database = {
           created_at?: string
           customer_email: string
           customer_name?: string
+          fulfillment_details?: Json | null
           id?: string
           items?: Json
           shipping_address?: Json | null
+          shipping_details?: Json | null
           status?: string
           store_id: string
           total?: number
@@ -76,9 +80,11 @@ export type Database = {
           created_at?: string
           customer_email?: string
           customer_name?: string
+          fulfillment_details?: Json | null
           id?: string
           items?: Json
           shipping_address?: Json | null
+          shipping_details?: Json | null
           status?: string
           store_id?: string
           total?: number
