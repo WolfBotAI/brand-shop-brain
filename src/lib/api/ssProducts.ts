@@ -298,10 +298,10 @@ export async function getAllStyles(): Promise<SSStyle[]> {
 export async function fetchCategories(): Promise<string[]> {
   try {
     // Get unique categories from cache
-    const { data, error } = await supabase
+    const { data, error } = await (supabase
       .from("ss_catalog_cache" as any)
       .select("base_category")
-      .limit(1000);
+      .limit(1000) as any);
 
     if (!error && data && data.length > 0) {
       const cats = [...new Set(data.map((r: any) => r.base_category).filter(Boolean))];
