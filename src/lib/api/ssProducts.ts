@@ -325,11 +325,11 @@ export function getStyleById(styleID: number): SSStyle | undefined {
 
 export async function fetchStyleById(styleID: number): Promise<SSStyle | undefined> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase
       .from("ss_catalog_cache" as any)
       .select("*")
       .eq("style_id", styleID)
-      .single();
+      .single() as any);
 
     if (!error && data) return mapCacheRow(data);
   } catch {}
