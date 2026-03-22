@@ -309,10 +309,15 @@ async function downloadAndUploadImage(
   try {
     let urls: string[];
     if (imagePath.startsWith("http")) {
-      urls = [imagePath];
+      // Replace any ssactivewear.com domain with cdn.ssactivewear.com
+      const cdnUrl = imagePath
+        .replace("www.ssactivewear.com", "cdn.ssactivewear.com")
+        .replace("cdni.ssactivewear.com", "cdn.ssactivewear.com");
+      urls = [cdnUrl, imagePath];
     } else {
       const cleanPath = imagePath.replace(/^\//, "");
       urls = [
+        `https://cdn.ssactivewear.com/${cleanPath}`,
         `https://www.ssactivewear.com/${cleanPath}`,
       ];
     }
