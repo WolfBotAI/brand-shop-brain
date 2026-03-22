@@ -36,7 +36,6 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const mode = url.searchParams.get("mode") || "styles"; 
-    // modes: "styles" = sync style list, "detail" = enrich one style with product data, "images" = download images for styles
 
     if (mode === "styles") {
       const page = parseInt(url.searchParams.get("page") || "1");
@@ -91,10 +90,9 @@ serve(async (req) => {
     }
 
     if (mode === "detail") {
-      // Enrich a batch of styles with product data (colors, sizes, pricing)
+      // Enrich a batch of styles with product data AND images
       const limit = parseInt(url.searchParams.get("limit") || "5");
       
-      // Get styles that haven't been enriched yet (total_skus = 0)
       const { data: rows } = await supabase
         .from("ss_catalog_cache")
         .select("style_id")
@@ -121,7 +119,6 @@ serve(async (req) => {
 
           const products = await prodResp.json();
           if (!Array.isArray(products) || products.length === 0) {
-            // Mark as enriched with 0 SKUs so we don't retry
             await supabase.from("ss_catalog_cache").update({ total_skus: -1 }).eq("style_id", row.style_id);
             continue;
           }
@@ -140,33 +137,73 @@ serve(async (req) => {
             const piecePrice = p.piecePrice || p.PiecePrice || 0;
 
             if (colorName && !colorMap.has(colorName)) {
-              colorMap.set(colorName, { name: colorName, hex: `#${hex.replace(/^#/, "")}`, imageUrl: frontImg, backImageUrl: backImg });
+              colorMap.set(colorName, { name: colorName, hex: `#${hex.replace(/^#/, "")}`, rawFrontImg: frontImg, rawBackImg: backImg });
             }
             if (sizeName) sizeSet.add(sizeName);
             if (custPrice > 0) { minCust = Math.min(minCust, custPrice); maxCust = Math.max(maxCust, custPrice); }
             if (piecePrice > 0) { minPiece = Math.min(minPiece, piecePrice); maxPiece = Math.max(maxPiece, piecePrice); }
           }
 
+          // Download and cache the FIRST color's front image as the style image
+          let styleImageUrl: string | null = null;
+          const colorEntries = Array.from(colorMap.values());
+          const cachedColors: any[] = [];
+
+          for (const color of colorEntries) {
+            let cachedFront: string | null = null;
+            let cachedBack: string | null = null;
+
+            // Cache front image
+            if (color.rawFrontImg) {
+              cachedFront = await downloadAndUploadImage(
+                supabase, authHeader, color.rawFrontImg, `colors/${row.style_id}/${encodeURIComponent(color.name)}_front`
+              );
+            }
+
+            // Cache back image (skip to save time, only do front)
+            // if (color.rawBackImg) { ... }
+
+            // Use first successful front image as style image
+            if (cachedFront && !styleImageUrl) {
+              styleImageUrl = cachedFront;
+            }
+
+            cachedColors.push({
+              name: color.name,
+              hex: color.hex,
+              imageUrl: cachedFront,
+              backImageUrl: cachedBack,
+            });
+          }
+
+          // If no color image worked, try the style image path
+          if (!styleImageUrl) {
+            styleImageUrl = await downloadAndUploadImage(
+              supabase, authHeader, `Images/Style/${row.style_id}_fm.jpg`, `styles/${row.style_id}`
+            );
+          }
+
           await supabase.from("ss_catalog_cache").update({
-            colors: Array.from(colorMap.values()),
+            colors: cachedColors,
             sizes: Array.from(sizeSet),
             pricing: {
               customerPrice: { min: minCust === Infinity ? 0 : minCust, max: maxCust },
               piecePrice: { min: minPiece === Infinity ? 0 : minPiece, max: maxPiece },
             },
             total_skus: products.length,
+            style_image_url: styleImageUrl,
             description: products[0]?.description || products[0]?.Description || "",
             updated_at: new Date().toISOString(),
           }).eq("style_id", row.style_id);
 
           enriched++;
+          console.log(`Enriched style ${row.style_id} — image: ${styleImageUrl ? 'yes' : 'no'}, colors: ${cachedColors.length}`);
         } catch (e) {
           console.warn(`Failed to enrich style ${row.style_id}:`, e);
         }
         await sleep(200);
       }
 
-      // Count remaining
       const { count } = await supabase.from("ss_catalog_cache").select("style_id", { count: "exact", head: true }).eq("total_skus", 0);
 
       return new Response(
@@ -176,37 +213,76 @@ serve(async (req) => {
     }
 
     if (mode === "images") {
-      // Download images for styles that don't have storage URLs yet
+      // Repair/backfill: re-download images for enriched styles missing style_image_url
       const limit = parseInt(url.searchParams.get("limit") || "10");
 
       const { data: rows } = await supabase
         .from("ss_catalog_cache")
-        .select("style_id")
+        .select("style_id, colors")
         .is("style_image_url", null)
         .gt("total_skus", 0)
         .limit(limit);
 
       if (!rows || rows.length === 0) {
         return new Response(
-          JSON.stringify({ success: true, uploaded: 0 }),
+          JSON.stringify({ success: true, uploaded: 0, remaining: 0 }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       let uploaded = 0;
       for (const row of rows as any[]) {
-        const imgUrl = await downloadAndUploadImage(
-          supabase, authHeader, `Images/Style/${row.style_id}_fm.jpg`, `styles/${row.style_id}`
-        );
-        if (imgUrl) {
-          await supabase.from("ss_catalog_cache").update({ style_image_url: imgUrl }).eq("style_id", row.style_id);
-          uploaded++;
+        // Try to get a color front image from the products API
+        let styleImageUrl: string | null = null;
+        
+        try {
+          const prodResp = await fetch(
+            `${SS_BASE}/products/?styleID=${row.style_id}`,
+            { headers: { Authorization: authHeader, Accept: "application/json" } }
+          );
+
+          if (prodResp.ok) {
+            const products = await prodResp.json();
+            if (Array.isArray(products) && products.length > 0) {
+              // Find first product with a front image
+              for (const p of products) {
+                const frontImg = p.colorFrontImage || p.ColorFrontImage;
+                if (frontImg) {
+                  styleImageUrl = await downloadAndUploadImage(
+                    supabase, authHeader, frontImg, `styles/${row.style_id}`
+                  );
+                  if (styleImageUrl) break;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.warn(`Failed to fetch products for image backfill ${row.style_id}:`, e);
         }
-        await sleep(100);
+
+        // Fallback: try style image path
+        if (!styleImageUrl) {
+          styleImageUrl = await downloadAndUploadImage(
+            supabase, authHeader, `Images/Style/${row.style_id}_fm.jpg`, `styles/${row.style_id}`
+          );
+        }
+
+        if (styleImageUrl) {
+          await supabase.from("ss_catalog_cache").update({ style_image_url: styleImageUrl }).eq("style_id", row.style_id);
+          uploaded++;
+          console.log(`Backfilled image for style ${row.style_id}: ${styleImageUrl}`);
+        }
+        await sleep(300);
       }
 
+      const { count } = await supabase
+        .from("ss_catalog_cache")
+        .select("style_id", { count: "exact", head: true })
+        .is("style_image_url", null)
+        .gt("total_skus", 0);
+
       return new Response(
-        JSON.stringify({ success: true, uploaded }),
+        JSON.stringify({ success: true, uploaded, remaining: count || 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -231,19 +307,50 @@ async function downloadAndUploadImage(
   storagePath: string
 ): Promise<string | null> {
   try {
-    const fullUrl = `https://www.ssactivewear.com/${imagePath.replace(/^\//, "")}`;
-
-    // Try authenticated
-    let resp = await fetch(fullUrl, { headers: { Authorization: authHeader, Accept: "image/*" } });
-    if (!resp.ok) {
-      // Try CDN
-      const cdnUrl = `https://cdni.ssactivewear.com/${imagePath.replace(/^\//, "")}`;
-      resp = await fetch(cdnUrl, { headers: { Accept: "image/*" } });
-      if (!resp.ok) return null;
+    // If it's already a full URL, use it directly; otherwise build URL
+    let urls: string[];
+    if (imagePath.startsWith("http")) {
+      urls = [imagePath];
+    } else {
+      const cleanPath = imagePath.replace(/^\//, "");
+      urls = [
+        `https://www.ssactivewear.com/${cleanPath}`,
+        `https://cdni.ssactivewear.com/${cleanPath}`,
+      ];
     }
 
-    const blob = await resp.blob();
-    if (blob.size < 100) return null; // Too small, probably error page
+    let blob: Blob | null = null;
+    for (const imgUrl of urls) {
+      try {
+        const resp = await fetch(imgUrl, { 
+          headers: { Authorization: authHeader, Accept: "image/*" } 
+        });
+        if (resp.ok) {
+          const b = await resp.blob();
+          if (b.size > 500) { // Must be a real image, not an error page
+            blob = b;
+            break;
+          }
+        }
+      } catch {
+        continue;
+      }
+      // Try without auth
+      try {
+        const resp = await fetch(imgUrl, { headers: { Accept: "image/*" } });
+        if (resp.ok) {
+          const b = await resp.blob();
+          if (b.size > 500) {
+            blob = b;
+            break;
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    if (!blob) return null;
 
     const ext = blob.type?.includes("png") ? "png" : "jpg";
     const filePath = `${storagePath}.${ext}`;
@@ -252,11 +359,15 @@ async function downloadAndUploadImage(
       .from("product-images")
       .upload(filePath, blob, { contentType: blob.type || "image/jpeg", upsert: true });
 
-    if (error) return null;
+    if (error) {
+      console.warn(`Upload failed for ${filePath}:`, error.message);
+      return null;
+    }
 
     const { data } = supabase.storage.from("product-images").getPublicUrl(filePath);
     return data?.publicUrl || null;
-  } catch {
+  } catch (e) {
+    console.warn(`downloadAndUploadImage failed for ${imagePath}:`, e);
     return null;
   }
 }
