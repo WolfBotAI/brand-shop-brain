@@ -1,122 +1,125 @@
 
+# Fix the Catalog Images Once and For All
 
-# Printful Integration + Unified Shipping + Multi-Source Order Tracking
+## What is actually broken
 
-## What This Adds to the Current Plan
+I inspected the code and data, and the issue is now very clear:
 
-Two critical features that tie the fulfillment pipeline together:
+- `ss_catalog_cache` currently has **5,760 styles**
+- **336** styles have colors/pricing enriched
+- **0** styles have `style_image_url`
+- The catalog grid renders cards from `product.styleImage`, which maps to `style_image_url`
+- So the grid is guaranteed to show placeholders for every item right now
 
-### 1. Unified Shipping Quotation for Split Orders
+There is a second bug too:
 
-**Problem:** When an order splits across two decorators (or Printful + a decorator), the customer sees two separate shipping charges. We need to calculate all shipping costs behind the scenes and present ONE unified shipping price.
+- In `sync-catalog` detail mode, color images are being stored as raw S&S image URLs (`colorFrontImage`, `colorBackImage`)
+- Those S&S URLs are not browser-safe/public for this app
+- So even enriched products can still fail in the detail modal
 
-**How it works:**
+So the real problem is not the React components. The real problem is the image pipeline:
+1. main style images are never populated
+2. color images are saved in the wrong format
+3. the nightly enrichment only enriches colors/sizes/pricing, not usable hosted images
+
+## What to build
+
+### 1. Replace the current image strategy with true cached hosting
+Update `sync-catalog` so it does all of this server-side:
+
+- For each style:
+  - fetch products from S&S
+  - extract usable image candidates
+  - download the image server-side
+  - upload it into the public `product-images` bucket
+  - save the public hosted URL into:
+    - `style_image_url`
+    - each color’s `imageUrl` / `backImageUrl`
+
+This means the frontend will only ever read our own hosted URLs, never direct S&S URLs.
+
+### 2. Merge image enrichment into the main detail sync
+Right now the process is split awkwardly:
+- `mode=detail` enriches metadata
+- `mode=images` tries to backfill style images later
+- nothing in the code appears to be actually running `mode=images`
+
+I would simplify this:
+
+- make `mode=detail` also generate hosted images
+- optionally keep `mode=images` only as a repair/backfill tool
+- nightly cron should call the unified enrichment path, not metadata-only
+
+### 3. Backfill the existing cache
+After the function is corrected, run a proper backfill so existing rows get repaired:
+
+- all rows with `style_image_url is null`
+- all rows where `colors[].imageUrl` still points to raw S&S URLs
+- prioritize already-enriched rows first so the visible catalog improves fast
+
+### 4. Make the UI prefer hosted cached images only
+Update the frontend image logic so it is deterministic:
+
+- grid card image source:
+  1. `style_image_url`
+  2. first cached color image from `colors`
+  3. placeholder
+- detail modal image source:
+  1. selected cached color image
+  2. `style_image_url`
+  3. placeholder
+
+Also, do not treat any random `http` URL as valid just because it starts with `http`. The UI should prefer known hosted URLs from our cache.
+
+### 5. Avoid showing “broken but technically loaded” image states
+The blank modal area in your screenshot should be hardened:
+
+- add a stricter image fallback state
+- if image load fails once, immediately swap to branded placeholder
+- show a lightweight “image syncing” badge if the product is enriched but image hosting is still pending
+
+### 6. Make catalog records production-ready
+To stop repeating this problem, the cache should be treated as the source of truth:
 
 ```text
-Customer cart at checkout
-  │
-  ├─ Items routed to Decorator A (via S&S)
-  │   └─ Get shipping quote from ShipStation API
-  │       (S&S → Decorator A → Customer)
-  │
-  ├─ Items routed to Decorator B (via S&S)  
-  │   └─ Get shipping quote from ShipStation API
-  │       (S&S → Decorator B → Customer)
-  │
-  └─ Items routed to Printful
-      └─ Get shipping quote from Printful API
-          (Printful → Customer, built-in)
-  │
-  COMBINE ALL QUOTES → Display single "Shipping: $XX.XX" to customer
+S&S API → sync-catalog edge function → product-images bucket + ss_catalog_cache → frontend
 ```
 
-**Shipping solution recommendation: ShipStation** for all non-Printful items.
-- ShipStation supports FedEx, UPS, USPS, DHL in one API
-- Provides real-time rate quotes via `POST /shipments/getrates`
-- Handles label creation and tracking
-- Distributors can connect their own ShipStation account or use the platform default
-- Printful handles its own shipping natively — no external shipping needed for those items
+The frontend should not depend on live S&S image URLs at all.
 
-**Implementation:**
-- Store `SHIPSTATION_API_KEY` and `SHIPSTATION_API_SECRET` as secrets
-- New edge function `quote-shipping` that:
-  - Accepts cart items + shipping address
-  - Splits items by fulfillment destination (using routing rules)
-  - Calls ShipStation rates API for each non-Printful shipment leg
-  - Calls Printful shipping rates API for Printful items
-  - Sums all quotes into one unified price
-  - Returns the combined shipping cost + breakdown (hidden from customer, visible to distributor)
-- Update `PublicStorefront.tsx` checkout to call `quote-shipping` before payment
-- Store the per-leg breakdown in `orders.shipping_details` (jsonb) for internal reference
+## Files to change
 
-### 2. Multi-Source Real-Time Order Status Tracking
+- `supabase/functions/sync-catalog/index.ts`
+  - download/upload style and color images during enrichment
+  - save public hosted URLs into cache
+  - optionally add a repair mode for missing images
 
-**Problem:** The current `check-order-status` edge function only reads from the local `orders` table status field. It needs to query all fulfillment sources for real-time data.
+- `src/lib/api/ssProducts.ts`
+  - map `style_image_url` and cached color image URLs cleanly
+  - prefer hosted cache URLs only
 
-**Status sources (checked in order, per line item):**
-1. **Printful API** — `GET /orders/{id}` returns status + tracking URL + carrier info
-2. **ShipStation API** — `GET /shipments?orderNumber={id}` returns tracking number + carrier + delivery status
-3. **GHL custom fields** — query contact record for manual status updates (when decorator has no API)
-4. **Local database** — fallback status from `orders.status` field
+- `src/components/app/onboarding/ProductImage.tsx`
+  - make fallback handling stricter and immediate
+  - stop assuming every external URL is usable
 
-**How tracking works:**
+- `src/components/app/onboarding/CatalogSetupStep.tsx`
+  - prefer fallback to first cached color image if `style_image_url` is missing
+  - optionally show “syncing image” state
 
-```text
-Customer enters Order # or Email on status page
-  │
-  └─ check-order-status edge function
-      │
-      ├─ Reads order from DB, gets fulfillment_details jsonb
-      │
-      ├─ For each line item group:
-      │   ├─ Printful items → GET Printful API /orders/{printful_id}
-      │   ├─ S&S/Decorator items → GET ShipStation /shipments/{tracking}
-      │   └─ Manual items → Read GHL contact custom field via API
-      │
-      └─ Merge into unified timeline per item group
-          └─ Return combined status to frontend
-```
+- `src/components/app/onboarding/ProductDetailModal.tsx`
+  - prefer cached selected color image, then hosted style image, then placeholder
 
-**Frontend changes to `CustomerOrders.tsx`:**
-- Show per-item-group status when order is split (e.g., "T-Shirts: Shipped" / "Mugs: In Production")
-- Display tracking numbers and carrier links when available
-- Show estimated delivery dates from ShipStation/Printful
+## Implementation order
 
-**GHL integration for manual status:**
-- Add custom fields to GHL contact: `order_status`, `tracking_number`, `decorator_notes`
-- The `check-order-status` function queries GHL API for these fields as fallback
-- Distributors or decorators update status in GHL manually when no API exists
+1. Fix `sync-catalog` so it uploads and stores usable hosted images
+2. Backfill existing cache rows with hosted image URLs
+3. Update frontend to prefer cached hosted URLs only
+4. Add stronger placeholder/syncing states so nothing looks broken during backfill
 
-## Database Changes
+## Expected result
 
-| Table | Change |
-|-------|--------|
-| `orders` | Add `shipping_details` jsonb (per-leg shipping breakdown), add `fulfillment_details` jsonb (per-item source, external IDs, tracking numbers) |
-
-## New Secrets Needed
-
-| Secret | Purpose |
-|--------|---------|
-| `SHIPSTATION_API_KEY` | ShipStation API authentication |
-| `SHIPSTATION_API_SECRET` | ShipStation API authentication |
-| `PRINTFUL_API_KEY` | Already discussed in prior plan |
-
-## Files to Create/Change
-
-| File | Change |
-|------|--------|
-| Migration | Add `shipping_details` and `fulfillment_details` jsonb to `orders` |
-| NEW: `supabase/functions/quote-shipping/index.ts` | Combines ShipStation + Printful shipping quotes into one price |
-| `supabase/functions/check-order-status/index.ts` | Query Printful, ShipStation, and GHL for real-time status per line item group |
-| `src/pages/app/PublicStorefront.tsx` | Call `quote-shipping` at checkout, display unified shipping price |
-| `src/pages/app/CustomerOrders.tsx` | Show per-item-group status, tracking numbers, carrier links, estimated delivery |
-| `supabase/functions/ghl-sync/index.ts` | Add custom field read for order status fallback |
-
-## Implementation Order
-1. Store ShipStation + Printful API keys as secrets
-2. Database migration (add shipping/fulfillment jsonb columns to orders)
-3. Build `quote-shipping` edge function
-4. Update checkout flow to show unified shipping
-5. Upgrade `check-order-status` to query Printful + ShipStation + GHL
-6. Update `CustomerOrders.tsx` with per-source tracking display
-
+After this fix:
+- the catalog grid will show real product images
+- the product detail modal will show real color images
+- the app will stop relying on inaccessible S&S URLs
+- nightly sync will keep the catalog updated without breaking images again
