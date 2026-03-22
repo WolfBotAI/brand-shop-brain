@@ -329,7 +329,11 @@ async function downloadAndUploadImage(
       // Try with auth, following redirects
       try {
         const resp = await fetch(imgUrl, { 
-          headers: { Authorization: authHeader, Accept: "image/*" },
+          headers: { 
+            Authorization: authHeader, 
+            Accept: "image/*",
+            "User-Agent": BROWSER_UA,
+          },
           redirect: "follow",
         });
         console.log(`Image fetch ${imgUrl}: status=${resp.status}, type=${resp.headers.get("content-type")}, size=${resp.headers.get("content-length")}`);
