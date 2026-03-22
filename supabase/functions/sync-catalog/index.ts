@@ -362,7 +362,7 @@ async function downloadAndUploadImage(
       // Try without auth
       try {
         const resp = await fetch(imgUrl, { 
-          headers: { Accept: "image/*" },
+          headers: { Accept: "image/*", "User-Agent": BROWSER_UA },
           redirect: "follow",
         });
         if (resp.ok) {
