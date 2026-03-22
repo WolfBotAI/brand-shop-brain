@@ -307,7 +307,6 @@ async function downloadAndUploadImage(
   storagePath: string
 ): Promise<string | null> {
   try {
-    // If it's already a full URL, use it directly; otherwise build URL
     let urls: string[];
     if (imagePath.startsWith("http")) {
       urls = [imagePath];
@@ -315,29 +314,46 @@ async function downloadAndUploadImage(
       const cleanPath = imagePath.replace(/^\//, "");
       urls = [
         `https://www.ssactivewear.com/${cleanPath}`,
-        `https://cdni.ssactivewear.com/${cleanPath}`,
       ];
     }
 
     let blob: Blob | null = null;
     for (const imgUrl of urls) {
+      // Try with auth, following redirects
       try {
         const resp = await fetch(imgUrl, { 
-          headers: { Authorization: authHeader, Accept: "image/*" } 
+          headers: { Authorization: authHeader, Accept: "image/*" },
+          redirect: "follow",
         });
+        console.log(`Image fetch ${imgUrl}: status=${resp.status}, type=${resp.headers.get("content-type")}, size=${resp.headers.get("content-length")}`);
         if (resp.ok) {
-          const b = await resp.blob();
-          if (b.size > 500) { // Must be a real image, not an error page
-            blob = b;
-            break;
+          const contentType = resp.headers.get("content-type") || "";
+          if (contentType.includes("image")) {
+            const b = await resp.blob();
+            if (b.size > 500) {
+              blob = b;
+              break;
+            }
+          } else {
+            // Read as array buffer to check size anyway
+            const b = await resp.blob();
+            if (b.size > 1000 && !contentType.includes("html") && !contentType.includes("text")) {
+              blob = b;
+              break;
+            }
+            console.log(`Skipped non-image response: ${contentType}, size=${b.size}`);
           }
         }
-      } catch {
-        continue;
+      } catch (e) {
+        console.warn(`Fetch failed for ${imgUrl}:`, e);
       }
+
       // Try without auth
       try {
-        const resp = await fetch(imgUrl, { headers: { Accept: "image/*" } });
+        const resp = await fetch(imgUrl, { 
+          headers: { Accept: "image/*" },
+          redirect: "follow",
+        });
         if (resp.ok) {
           const b = await resp.blob();
           if (b.size > 500) {
@@ -350,7 +366,10 @@ async function downloadAndUploadImage(
       }
     }
 
-    if (!blob) return null;
+    if (!blob) {
+      console.log(`No image downloaded for ${imagePath}`);
+      return null;
+    }
 
     const ext = blob.type?.includes("png") ? "png" : "jpg";
     const filePath = `${storagePath}.${ext}`;
