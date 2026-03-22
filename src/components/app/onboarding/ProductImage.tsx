@@ -9,6 +9,12 @@ interface ProductImageProps {
   iconSize?: "sm" | "md" | "lg";
 }
 
+const SUPABASE_STORAGE_HOST = "supabase.co/storage";
+
+function isHostedUrl(url: string): boolean {
+  return url.includes(SUPABASE_STORAGE_HOST);
+}
+
 const getCategoryIcon = (alt: string) => {
   const lower = alt.toLowerCase();
   if (lower.includes("cap") || lower.includes("hat") || lower.includes("beanie")) return HardHat;
@@ -29,8 +35,9 @@ const getCategoryGradient = (alt: string) => {
 
 export const ProductImage = ({ src, alt, className, iconSize = "md" }: ProductImageProps) => {
   const [failed, setFailed] = useState(false);
-  // Images from cache are already public Supabase Storage URLs
-  const imageUrl = src && src.startsWith("http") ? src : null;
+  
+  // Only show images from our own hosted storage — never raw S&S URLs
+  const imageUrl = src && isHostedUrl(src) ? src : null;
   const showImage = imageUrl && !failed;
 
   const iconSizes = { sm: "w-6 h-6", md: "w-10 h-10", lg: "w-16 h-16" };
@@ -39,9 +46,12 @@ export const ProductImage = ({ src, alt, className, iconSize = "md" }: ProductIm
 
   if (!showImage) {
     return (
-      <div className={cn(`bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-1`, className)}>
+      <div className={cn(`bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-1 relative`, className)}>
         <Icon className={cn("text-muted-foreground/40", iconSizes[iconSize])} />
         <span className="text-[10px] text-muted-foreground/50 truncate max-w-[80%] text-center">{alt}</span>
+        {src && !isHostedUrl(src) && (
+          <span className="absolute bottom-1 right-1 text-[8px] bg-muted/80 text-muted-foreground px-1 rounded">syncing</span>
+        )}
       </div>
     );
   }
