@@ -426,6 +426,7 @@ const StyleCard = ({ product, isSelected, onToggle, onViewDetails }: StyleCardPr
             src={product.styleImage}
             alt={product.title}
             className="w-full aspect-square rounded-t-lg"
+            primaryColorHex={product.availableColors?.[0]?.hex}
           />
           {isSelected && (
             <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
