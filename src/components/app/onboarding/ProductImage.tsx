@@ -7,6 +7,7 @@ interface ProductImageProps {
   alt: string;
   className?: string;
   iconSize?: "sm" | "md" | "lg";
+  primaryColorHex?: string;
 }
 
 const SUPABASE_STORAGE_HOST = "supabase.co/storage";
@@ -17,13 +18,16 @@ function isHostedUrl(url: string): boolean {
 
 const getCategoryIcon = (alt: string) => {
   const lower = alt.toLowerCase();
-  if (lower.includes("cap") || lower.includes("hat") || lower.includes("beanie")) return HardHat;
-  if (lower.includes("bag") || lower.includes("tote")) return ShoppingBag;
-  if (lower.includes("shoe") || lower.includes("sock")) return Footprints;
+  if (lower.includes("cap") || lower.includes("hat") || lower.includes("beanie") || lower.includes("visor")) return HardHat;
+  if (lower.includes("bag") || lower.includes("tote") || lower.includes("backpack")) return ShoppingBag;
+  if (lower.includes("shoe") || lower.includes("sock") || lower.includes("footwear")) return Footprints;
   return Shirt;
 };
 
-const getCategoryGradient = (alt: string) => {
+const getCategoryGradient = (alt: string, colorHex?: string) => {
+  if (colorHex) {
+    return undefined; // Will use inline style instead
+  }
   const lower = alt.toLowerCase();
   if (lower.includes("polo") || lower.includes("corporate")) return "from-blue-900/20 to-blue-800/10";
   if (lower.includes("hoodie") || lower.includes("fleece") || lower.includes("sweat")) return "from-slate-800/20 to-slate-700/10";
@@ -33,25 +37,41 @@ const getCategoryGradient = (alt: string) => {
   return "from-muted to-muted/60";
 };
 
-export const ProductImage = ({ src, alt, className, iconSize = "md" }: ProductImageProps) => {
+export const ProductImage = ({ src, alt, className, iconSize = "md", primaryColorHex }: ProductImageProps) => {
   const [failed, setFailed] = useState(false);
   
-  // Only show images from our own hosted storage — never raw S&S URLs
+  // Only show images from our own hosted storage
   const imageUrl = src && isHostedUrl(src) ? src : null;
   const showImage = imageUrl && !failed;
 
   const iconSizes = { sm: "w-6 h-6", md: "w-10 h-10", lg: "w-16 h-16" };
   const Icon = getCategoryIcon(alt);
-  const gradient = getCategoryGradient(alt);
+  const gradient = getCategoryGradient(alt, primaryColorHex);
 
   if (!showImage) {
+    // Build inline style for color-based gradient when we have a hex
+    const inlineStyle: React.CSSProperties = primaryColorHex
+      ? {
+          background: `linear-gradient(135deg, ${primaryColorHex}22 0%, ${primaryColorHex}11 50%, ${primaryColorHex}08 100%)`,
+        }
+      : {};
+
     return (
-      <div className={cn(`bg-gradient-to-br ${gradient} flex flex-col items-center justify-center gap-1 relative`, className)}>
-        <Icon className={cn("text-muted-foreground/40", iconSizes[iconSize])} />
-        <span className="text-[10px] text-muted-foreground/50 truncate max-w-[80%] text-center">{alt}</span>
-        {src && !isHostedUrl(src) && (
-          <span className="absolute bottom-1 right-1 text-[8px] bg-muted/80 text-muted-foreground px-1 rounded">syncing</span>
+      <div
+        className={cn(
+          `flex flex-col items-center justify-center gap-1.5 relative`,
+          !primaryColorHex && `bg-gradient-to-br ${gradient}`,
+          className
         )}
+        style={inlineStyle}
+      >
+        <Icon
+          className={cn("text-muted-foreground/40", iconSizes[iconSize])}
+          style={primaryColorHex ? { color: `${primaryColorHex}66` } : undefined}
+        />
+        <span className="text-[10px] text-muted-foreground/60 truncate max-w-[80%] text-center leading-tight">
+          {alt}
+        </span>
       </div>
     );
   }
