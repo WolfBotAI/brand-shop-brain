@@ -67,12 +67,14 @@ export const CTASection = () => {
               </a>
             </Button>
             <Button 
+              asChild
               size="lg"
               variant="ctaOutlineDark"
               className="px-12 py-7 text-xl rounded-full"
-              onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              See How It Works
+              <a href="https://hub.brand-shop.ai" target="_blank" rel="noopener noreferrer">
+                Sign Up Free
+              </a>
             </Button>
           </motion.div>
         </motion.div>

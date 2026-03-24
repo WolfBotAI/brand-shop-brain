@@ -31,10 +31,10 @@ export const FeatureCTA = ({ title, description }: FeatureCTAProps) => {
               size="lg" 
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
             >
-              <Link to="/assessment">
-                See How Much You Can Save
+              <a href="https://hub.brand-shop.ai" target="_blank" rel="noopener noreferrer">
+                Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </Link>
+              </a>
             </Button>
             <Button 
               asChild
@@ -42,8 +42,8 @@ export const FeatureCTA = ({ title, description }: FeatureCTAProps) => {
               variant="outline"
               className="px-8 py-6 text-lg rounded-full border-[hsl(var(--section-dark-foreground))]/30 text-[hsl(var(--section-dark-foreground))] hover:bg-[hsl(var(--section-dark-foreground))]/10"
             >
-              <Link to="/">
-                Back to Home
+              <Link to="/assessment">
+                See How Much You Can Save
               </Link>
             </Button>
           </div>
