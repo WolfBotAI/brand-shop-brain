@@ -140,7 +140,6 @@ export const Navbar = () => {
                   )}
                 </AnimatePresence>
               </div>
-            </div>
 
               {/* Auth Links */}
               <div className="flex items-center gap-3">
