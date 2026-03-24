@@ -142,6 +142,27 @@ export const Navbar = () => {
               </div>
             </div>
 
+              {/* Auth Links */}
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://hub.brand-shop.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
+                >
+                  Log In
+                </a>
+                <a
+                  href="https://hub.brand-shop.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Sign Up
+                </a>
+              </div>
+            </div>
+
             {/* Mobile Menu Button */}
             <button
               className="md:hidden text-foreground p-2"
@@ -190,6 +211,26 @@ export const Navbar = () => {
                     {link.label}
                   </Link>
                 ))}
+                <div className="flex flex-col gap-3 pt-6">
+                  <a
+                    href="https://hub.brand-shop.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-center py-3 text-lg text-foreground border border-border rounded-lg"
+                  >
+                    Log In
+                  </a>
+                  <a
+                    href="https://hub.brand-shop.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-center py-3 text-lg bg-primary text-primary-foreground rounded-lg font-medium"
+                  >
+                    Sign Up
+                  </a>
+                </div>
               </div>
             </div>
           </motion.div>
