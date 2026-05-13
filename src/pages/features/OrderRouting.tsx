@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
@@ -9,6 +10,14 @@ import { Route, Settings, Package, RefreshCw, Shield, SplitSquareVertical } from
 const OrderRouting = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="Automated Order Routing | Brand-Shop.AI" description="Auto-route every order to the best supplier or decorator — no more manual PO forwarding." path="/features/order-routing"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Automated Order Routing",
+          description: "Auto-route every order to the best supplier or decorator — no more manual PO forwarding.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
       <main>
         <FeatureHero

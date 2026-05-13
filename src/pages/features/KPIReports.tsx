@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
@@ -9,6 +10,14 @@ import { PieChart, TrendingUp, DollarSign, BarChart3, Filter, FileText } from "l
 const KPIReports = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="KPI Reports & Analytics | Brand-Shop.AI" description="Track best sellers, margins, and trends across all stores with detailed KPI reports." path="/features/kpi-reports"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "KPI Reports & Analytics",
+          description: "Track best sellers, margins, and trends across all stores with detailed KPI reports.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
 
       <FeatureHero

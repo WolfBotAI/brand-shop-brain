@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
@@ -9,6 +10,14 @@ import { MessageSquare, Phone, Globe, Brain, Languages, Mail } from "lucide-reac
 const AISupport = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="AI Customer Support Agent | Brand-Shop.AI" description="Always-on AI support that answers customer questions and order status across every store." path="/features/ai-support"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "AI Customer Support Agent",
+          description: "Always-on AI support that answers customer questions and order status across every store.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
       <main>
         <FeatureHero

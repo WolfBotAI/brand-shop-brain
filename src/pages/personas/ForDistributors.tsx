@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { SEO } from "@/components/seo/SEO";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
@@ -85,6 +86,7 @@ const fadeUp = {
 const ForDistributors = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="Brand-Shop.AI for Distributors | Brand-Shop.AI" description="Win more B2B clients and automate fulfillment. Brand-Shop.AI gives distributors AI store building, order routing, and reporting in one platform." path="/for/distributors" />
       <Navbar />
       <main>
         {/* Hero */}

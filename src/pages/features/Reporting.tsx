@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
@@ -9,6 +10,14 @@ import { BarChart3, Store, DollarSign, Settings, TrendingUp, Users } from "lucid
 const Reporting = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="Advanced Reporting | Brand-Shop.AI" description="Custom reports, exports, and scheduled deliveries to share performance with your team." path="/features/reporting"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Advanced Reporting",
+          description: "Custom reports, exports, and scheduled deliveries to share performance with your team.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
       <main>
         <FeatureHero

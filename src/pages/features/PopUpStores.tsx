@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
@@ -37,6 +38,14 @@ const howItWorks = [
 const PopUpStores = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Pop-Up Stores | Brand-Shop.AI" description="Launch time-bound branded pop-up stores for events, fundraisers, and team orders." path="/features/popup-stores"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Pop-Up Stores",
+          description: "Launch time-bound branded pop-up stores for events, fundraisers, and team orders.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
 
       <FeatureHero

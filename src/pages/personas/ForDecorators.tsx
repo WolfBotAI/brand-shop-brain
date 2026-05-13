@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { SEO } from "@/components/seo/SEO";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
@@ -64,6 +65,7 @@ const fadeUp = {
 const ForDecorators = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="Brand-Shop.AI for Decorators | Brand-Shop.AI" description="Automate artwork QA, order intake, and proofing. Grow margins as a decorator with Brand-Shop.AI's vision and workflow tools." path="/for/decorators" />
       <Navbar />
       <main>
         {/* Hero */}

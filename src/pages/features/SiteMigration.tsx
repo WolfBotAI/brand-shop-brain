@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
@@ -45,6 +46,14 @@ const zeroDowntimeFeatures = [
 const SiteMigration = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Site Migration | Brand-Shop.AI" description="Move existing client websites onto Brand-Shop.AI quickly with guided migration tools." path="/features/site-migration"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Site Migration",
+          description: "Move existing client websites onto Brand-Shop.AI quickly with guided migration tools.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
       
       <FeatureHero

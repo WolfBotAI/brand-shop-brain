@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
@@ -34,6 +35,14 @@ const storeOptions = [
 const StoreBuilder = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="AI Store Builder | Brand-Shop.AI" description="Spin up branded client stores in minutes with Brand-Shop.AI's AI-powered store builder." path="/features/store-builder"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "AI Store Builder",
+          description: "Spin up branded client stores in minutes with Brand-Shop.AI's AI-powered store builder.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
       <main>
         <FeatureHero

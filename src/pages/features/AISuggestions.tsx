@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
@@ -9,6 +10,14 @@ import { Sparkles, CloudSun, DollarSign, Palette, ShoppingBag, MessageSquare } f
 const AISuggestions = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="AI Product Suggestions | Brand-Shop.AI" description="Smart product recommendations and upsells that boost average order value automatically." path="/features/ai-suggestions"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "AI Product Suggestions",
+          description: "Smart product recommendations and upsells that boost average order value automatically.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
 
       <FeatureHero

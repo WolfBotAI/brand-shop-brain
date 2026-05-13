@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureCTA } from "@/components/features/FeatureCTA";
@@ -9,6 +10,14 @@ import { Eye, FileText, Mail, Image, AlertTriangle, Zap, ExternalLink } from "lu
 const AIVision = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="AI Vision for Artwork QA | Brand-Shop.AI" description="Automated artwork inspection, proofing, and quality checks powered by AI vision." path="/features/ai-vision"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "AI Vision for Artwork QA",
+          description: "Automated artwork inspection, proofing, and quality checks powered by AI vision.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
       <main>
         <FeatureHero
