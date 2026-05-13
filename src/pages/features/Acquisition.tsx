@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
@@ -8,6 +9,14 @@ import { Users, Target, Megaphone, Brain, Mail, TrendingUp } from "lucide-react"
 const Acquisition = () => {
   return (
     <div className="min-h-screen">
+      <SEO title="Customer Acquisition Engine | Brand-Shop.AI" description="AI-powered targeting, multi-channel ads, and lead nurturing built for distributors." path="/features/acquisition"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Customer Acquisition Engine",
+          description: "AI-powered targeting, multi-channel ads, and lead nurturing built for distributors.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
       <main>
         <FeatureHero

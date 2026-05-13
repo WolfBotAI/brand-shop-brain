@@ -1,3 +1,4 @@
+import { SEO } from "@/components/seo/SEO";
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { ThreeWaysSection } from "@/components/landing/ThreeWaysSection";
@@ -15,6 +16,26 @@ import { Footer } from "@/components/landing/Footer";
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Brand-Shop.AI — AI for Distributors & Decorators"
+        description="Launch AI-powered branded stores, automate order routing, and grow your distributor or decorator business with Brand-Shop.AI."
+        path="/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Brand-Shop.AI",
+            url: "https://brand-shop.ai",
+            description: "AI-powered platform for promotional product distributors and decorators.",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Brand-Shop.AI",
+            url: "https://brand-shop.ai",
+          },
+        ]}
+      />
       <Navbar />
       <main>
         <Hero />

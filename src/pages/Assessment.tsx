@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SEO } from "@/components/seo/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, CheckCircle, Users, Printer, Megaphone, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -244,6 +245,7 @@ const Assessment = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Savings Calculator | Brand-Shop.AI" description="Estimate how much time and money you can save by switching to Brand-Shop.AI for your distributor or decorator business." path="/assessment" />
       <Navbar />
       <main className="pt-20">
         {/* Progress bar */}

@@ -1,0 +1,29 @@
+# Brand-Shop.AI
+
+> AI-powered platform that helps promotional product distributors and decorators launch branded stores, automate order routing, and scale operations.
+
+Brand-Shop.AI gives distributors and decorators an AI store builder, vision-based artwork QA, automated supplier routing, multi-store management, and reporting in one platform.
+
+## Pages
+
+- [Home](/): Overview of the Brand-Shop.AI platform.
+- [Savings Calculator](/assessment): Estimate how much you can save by switching to Brand-Shop.AI.
+
+## Who We Serve
+
+- [For Distributors](/for/distributors): How distributors use Brand-Shop.AI to win and serve B2B clients.
+- [For Decorators](/for/decorators): How decorators automate fulfillment and grow margins.
+- [For Referral Partners](/for/referral-partners): Earn by referring distributors and decorators.
+
+## Features
+
+- [AI Store Builder](/features/store-builder): Spin up branded client stores in minutes.
+- [AI Vision](/features/ai-vision): Automated artwork inspection and proofing.
+- [AI Support](/features/ai-support): Always-on AI customer support agent.
+- [AI Suggestions](/features/ai-suggestions): Smart product and upsell recommendations.
+- [Order Routing](/features/order-routing): Auto-route orders to the best supplier or decorator.
+- [Multi-Store Management](/features/multi-store): Manage all client stores from one dashboard.
+- [KPI Reports](/features/kpi-reports): Best sellers, margins, and trends across stores.
+- [Reporting](/features/reporting): Advanced reporting and exports.
+- [Site Migration](/features/site-migration): Move existing client sites onto the platform.
+- [Pop-Up Stores](/features/popup-stores): Launch time-bound branded pop-up stores.

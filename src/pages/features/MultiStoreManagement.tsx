@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/landing/Navbar";
+import { SEO } from "@/components/seo/SEO";
 import { Footer } from "@/components/landing/Footer";
 import { FeatureHero } from "@/components/features/FeatureHero";
 import { FeatureSection } from "@/components/features/FeatureSection";
@@ -9,6 +10,14 @@ import { LayoutGrid, Settings, Globe, Layers, RefreshCw, Database } from "lucide
 const MultiStoreManagement = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Multi-Store Management | Brand-Shop.AI" description="Manage every client store from a single dashboard. Bulk pricing, sync, and theming included." path="/features/multi-store"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Multi-Store Management",
+          description: "Manage every client store from a single dashboard. Bulk pricing, sync, and theming included.",
+          provider: { "@type": "Organization", name: "Brand-Shop.AI", url: "https://brand-shop.ai" },
+        }} />
       <Navbar />
 
       <FeatureHero
