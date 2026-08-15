@@ -39,6 +39,7 @@ import PublicStorefront from "./pages/app/PublicStorefront";
 import Reporting from "./pages/app/Reporting";
 import SiteMigrationWizard from "./pages/app/SiteMigrationWizard";
 import CustomerOrders from "./pages/app/CustomerOrders";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/features/store-builder" element={<StoreBuilder />} />
             <Route path="/features/ai-support" element={<AISupport />} />
             <Route path="/features/ai-vision" element={<AIVision />} />
