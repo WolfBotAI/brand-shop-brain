@@ -20,7 +20,9 @@ export default function Login() {
   const location = useLocation();
   const { toast } = useToast();
 
-  const from = (location.state as any)?.from?.pathname || "/app/dashboard";
+  const nextParam = new URLSearchParams(location.search).get("next");
+  const safeNext = nextParam && /^\/(?!\/)/.test(nextParam) ? nextParam : null;
+  const from = safeNext || (location.state as any)?.from?.pathname || "/app/dashboard";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +39,7 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: safeNext ? window.location.origin + safeNext : window.location.origin,
     });
     setGoogleLoading(false);
     if (error) {
