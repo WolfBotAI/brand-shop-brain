@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.2",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://zqjfpolkmfzzgszmlifq.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "brand-shop-ai",
+      "version": "0.1.0",
+      "title": "Brand-Shop AI"
+    },
+    "tools": [
+      {
+        "name": "list_stores",
+        "title": "List stores",
+        "description": "List the signed-in distributor's storefronts with status, slug and type.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "description": "Maximum number of stores to return."
+            },
+            "status": {
+              "type": "string",
+              "description": "Optional status filter, e.g. 'active'."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_store",
+        "title": "Get store details",
+        "description": "Fetch full configuration for one storefront by id or slug.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "store_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Store id (uuid)."
+            },
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Store slug, used when no id is given."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_orders",
+        "title": "List orders",
+        "description": "List orders across the signed-in distributor's storefronts, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "store_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Restrict to a single store id."
+            },
+            "status": {
+              "type": "string",
+              "description": "Optional status filter, e.g. 'pending'."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "description": "Maximum number of orders to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_order_status",
+        "title": "Update order status",
+        "description": "Set the status of one order belonging to the signed-in distributor.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "order_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Order id (uuid)."
+            },
+            "status": {
+              "type": "string",
+              "minLength": 1,
+              "description": "New status value, e.g. 'pending', 'in_production', 'shipped', 'delivered', 'cancelled'."
+            }
+          },
+          "required": [
+            "order_id",
+            "status"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_catalog",
+        "title": "Search product catalog",
+        "description": "Search the Brand-Shop Catalog of blank apparel by title, brand or category.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Search text matched against product title and brand."
+            },
+            "category": {
+              "type": "string",
+              "description": "Optional base category filter."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "description": "Maximum number of products to return."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
