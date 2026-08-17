@@ -40,6 +40,8 @@ import Reporting from "./pages/app/Reporting";
 import SiteMigrationWizard from "./pages/app/SiteMigrationWizard";
 import CustomerOrders from "./pages/app/CustomerOrders";
 import OAuthConsent from "./pages/OAuthConsent";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +94,10 @@ const App = () => (
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="settings" element={<Settings />} />
             </Route>
+
+            {/* Blog */}
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -26,6 +26,8 @@ const entries: SitemapEntry[] = [
   { path: "/features/site-migration", changefreq: "monthly", priority: "0.7" },
   { path: "/features/popup-stores", changefreq: "monthly", priority: "0.7" },
   { path: "/features/acquisition", changefreq: "monthly", priority: "0.7" },
+  { path: "/blog", changefreq: "weekly", priority: "0.8" },
+  { path: "/blog/ai-product-designer-custom-apparel-storefronts-2026", changefreq: "monthly", priority: "0.7" },
 ];
 
 const xml = [

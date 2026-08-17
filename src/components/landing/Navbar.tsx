@@ -141,6 +141,10 @@ export const Navbar = () => {
                 </AnimatePresence>
               </div>
 
+              <Link to="/blog" className="text-foreground/80 hover:text-primary transition-colors font-medium">
+                Blog
+              </Link>
+
               {/* Auth Links */}
               <div className="flex items-center gap-3">
                 <a
@@ -210,6 +214,9 @@ export const Navbar = () => {
                     {link.label}
                   </Link>
                 ))}
+                <Link to="/blog" onClick={() => setIsMobileMenuOpen(false)} className="py-4 text-xl text-foreground border-b border-border">
+                  Blog
+                </Link>
                 <div className="flex flex-col gap-3 pt-6">
                   <a
                     href="https://hub.brand-shop.ai"
