@@ -141,6 +141,10 @@ export const Navbar = () => {
                 </AnimatePresence>
               </div>
 
+              <Link to="/blog" className="text-foreground/80 hover:text-primary transition-colors font-medium">
+                Blog
+              </Link>
+
               {/* Auth Links */}
               <div className="flex items-center gap-3">
                 <a
