@@ -95,6 +95,10 @@ const App = () => (
               <Route path="settings" element={<Settings />} />
             </Route>
 
+            {/* Blog */}
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
