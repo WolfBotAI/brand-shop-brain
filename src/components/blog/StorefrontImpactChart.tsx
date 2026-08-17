@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
 const TRADITIONAL = "#9ca3af";
 const AI_COLOR = "hsl(var(--primary))";
@@ -50,6 +50,9 @@ export const StorefrontImpactChart = () => {
                   <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                   <YAxis hide domain={[0, chart.domainMax]} />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={44} isAnimationActive={false}>
+                    {chart.data.map((entry) => (
+                      <Cell key={entry.name} fill={entry.fill} />
+                    ))}
                     <LabelList
                       dataKey="label"
                       position="top"
