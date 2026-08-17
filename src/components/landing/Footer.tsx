@@ -23,6 +23,7 @@ const services = {
     { label: "AI Suggestions", href: "/features/ai-suggestions" },
     { label: "KPI Reports", href: "/features/kpi-reports" },
     { label: "Site Migration", href: "/features/site-migration" },
+    { label: "Blog", href: "/blog" },
   ],
 };
 
