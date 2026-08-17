@@ -214,6 +214,9 @@ export const Navbar = () => {
                     {link.label}
                   </Link>
                 ))}
+                <Link to="/blog" onClick={() => setIsMobileMenuOpen(false)} className="py-4 text-xl text-foreground border-b border-border">
+                  Blog
+                </Link>
                 <div className="flex flex-col gap-3 pt-6">
                   <a
                     href="https://hub.brand-shop.ai"
