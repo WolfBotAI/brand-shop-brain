@@ -40,6 +40,8 @@ import Reporting from "./pages/app/Reporting";
 import SiteMigrationWizard from "./pages/app/SiteMigrationWizard";
 import CustomerOrders from "./pages/app/CustomerOrders";
 import OAuthConsent from "./pages/OAuthConsent";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
