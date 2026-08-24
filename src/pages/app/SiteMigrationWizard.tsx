@@ -178,7 +178,7 @@ export default function SiteMigrationWizard() {
               {scraped.logoUrl && (
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium">Logo:</span>
-                  <img src={scraped.logoUrl} alt="Logo" className="h-8 w-8 rounded object-contain border border-border" />
+                  <img src={scraped.logoUrl} alt="Logo detected on the scraped website" className="h-8 w-8 rounded object-contain border border-border" />
                 </div>
               )}
             </CardContent>

@@ -52,7 +52,7 @@ export const StorefrontPreview = ({ storeName, products, theme, logoUrl }: Store
       <div className="px-6 py-4 flex items-center justify-between" style={{ backgroundColor: theme.primary, color: "#fff" }}>
         <div className="flex items-center gap-3">
           {logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded object-contain bg-white/20 p-0.5" />
+            <img src={logoUrl} alt={`${storeName} store logo`} className="w-8 h-8 rounded object-contain bg-white/20 p-0.5" />
           ) : (
             <Store className="w-6 h-6" />
           )}

@@ -303,7 +303,7 @@ const StoreWorkspace = () => {
             <CardContent className="space-y-6">
               <div className="flex items-center gap-4">
                 {mockupLogo ? (
-                  <img src={mockupLogo} alt="Logo" className="w-16 h-16 rounded-lg object-contain bg-muted p-2 border border-border" />
+                  <img src={mockupLogo} alt="Uploaded brand logo used for product mockups" className="w-16 h-16 rounded-lg object-contain bg-muted p-2 border border-border" />
                 ) : (
                   <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center border border-border">
                     <Upload className="w-6 h-6 text-muted-foreground" />
@@ -323,12 +323,12 @@ const StoreWorkspace = () => {
                         <div className="relative">
                           <img src={p.styleImage} alt={p.title} className="w-full h-40 object-cover" />
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <img src={mockupLogo} alt="Logo overlay" className="w-12 h-12 object-contain opacity-80 drop-shadow-lg" />
+                            <img src={mockupLogo} alt={`Brand logo placed on ${p.title}`} className="w-12 h-12 object-contain opacity-80 drop-shadow-lg" />
                           </div>
                         </div>
                       ) : (
                         <div className="w-full h-40 bg-muted flex items-center justify-center">
-                          <img src={mockupLogo} alt="Logo overlay" className="w-12 h-12 object-contain" />
+                          <img src={mockupLogo} alt={`Brand logo mockup for ${p.title}`} className="w-12 h-12 object-contain" />
                         </div>
                       )}
                       <div className="p-2">

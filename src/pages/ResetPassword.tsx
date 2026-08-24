@@ -58,7 +58,7 @@ export default function ResetPassword() {
         {resetSeo}
         <Card className="w-full max-w-md text-center">
           <CardHeader>
-            <CardTitle>Invalid Reset Link</CardTitle>
+            <h1 className="text-2xl font-semibold leading-none tracking-tight">Invalid reset link</h1>
             <CardDescription>This link is invalid or has expired. Please request a new one.</CardDescription>
           </CardHeader>
         </Card>
@@ -72,7 +72,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />
-          <CardTitle className="text-2xl">Set new password</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">Set a new password</h1>
           <CardDescription>Enter your new password below</CardDescription>
         </CardHeader>
         <CardContent>

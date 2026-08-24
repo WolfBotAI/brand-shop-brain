@@ -132,7 +132,7 @@ export const DistributorProfileStep = ({ onNext, onBack }: DistributorProfileSte
             <Label>Company Logo</Label>
             {logoUrl ? (
               <div className="flex items-center gap-4">
-                <img src={logoUrl} alt="Logo" className="w-16 h-16 object-contain rounded-lg border border-border" />
+                <img src={logoUrl} alt="Your uploaded company logo" className="w-16 h-16 object-contain rounded-lg border border-border" />
                 <Button variant="ghost" size="sm" onClick={() => setLogoUrl(null)}>
                   <X className="w-4 h-4 mr-1" /> Remove
                 </Button>
