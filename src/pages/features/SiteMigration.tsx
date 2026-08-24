@@ -59,7 +59,7 @@ const SiteMigration = () => {
       <FeatureHero
         icon={ArrowRightLeft}
         badge="Site Migration"
-        title="Migrate Your Sites —"
+        title="Site Migration: Move Your Client Stores —"
         highlight="Without the Headache"
         description="Bring your existing client stores to Brand-Shop.AI with our guided migration tools. We handle the complexity so you can focus on growing."
       />

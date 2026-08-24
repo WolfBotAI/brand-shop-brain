@@ -23,7 +23,7 @@ const Reporting = () => {
         <FeatureHero
           icon={BarChart3}
           badge="Reporting & Analytics"
-          title="Distributor & Store-Level —"
+          title="Reporting & Analytics: Distributor and Store-Level —"
           highlight="Reporting"
           description="Monitor performance across all stores or drill into individual store metrics. Real-time data to help you make smarter business decisions."
         />

@@ -23,7 +23,7 @@ const AISuggestions = () => {
       <FeatureHero
         icon={Sparkles}
         badge="AI Merch Advisor"
-        title="Your Clients Tell AI What They Need —"
+        title="AI Merch Advisor: Clients Say What They Need —"
         highlight="It Finds the Perfect Merch"
         description="End customers describe their event, budget, and style preferences. AI searches your connected catalogs and recommends the best apparel — ready to add to their store with mockups."
       />

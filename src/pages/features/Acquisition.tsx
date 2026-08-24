@@ -22,7 +22,7 @@ const Acquisition = () => {
         <FeatureHero
           icon={Users}
           badge="Acquisition Engine"
-          title="Find Buyers. Learn Personalities."
+          title="Acquisition Engine: Find Buyers, Learn Personalities,"
           highlight="Convert Automatically."
           description="AI-powered customer acquisition that creates buyer avatars, tests hundreds of ad variations, and nurtures leads with personality-aware messaging."
         />

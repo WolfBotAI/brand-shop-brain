@@ -51,7 +51,7 @@ const PopUpStores = () => {
       <FeatureHero
         icon={Zap}
         badge="Pop-Up Stores"
-        title="Launch Pop-Up Stores"
+        title="Pop-Up Stores: Launch Branded Event Stores"
         highlight="in Minutes"
         description="Fundraisers, team events, corporate campaigns — spin up a branded store with a few clicks. Set it and forget it. When the event ends, customers are redirected to the main store."
         primaryCta="See How Much You Can Save"
