@@ -23,7 +23,7 @@ const KPIReports = () => {
       <FeatureHero
         icon={PieChart}
         badge="KPI Reports"
-        title="Know Your Numbers —"
+        title="KPI Reports: Know Your Numbers —"
         highlight="Down to Every Detail"
         description="Track best sellers, analyze margins, and drill down into performance by product, store, or category. Data-driven decisions made easy."
       />

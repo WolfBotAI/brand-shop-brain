@@ -23,7 +23,7 @@ const OrderRouting = () => {
         <FeatureHero
           icon={Route}
           badge="Smart Order Routing"
-          title="One Invoice —"
+          title="Smart Order Routing: One Invoice,"
           highlight="Multiple Destinations"
           description="A single customer order can contain products from different suppliers needing different decoration methods. Our AI splits that one invoice and routes each line item to the right supplier and decorator automatically."
         />

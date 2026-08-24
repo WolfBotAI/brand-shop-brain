@@ -23,7 +23,7 @@ const MultiStoreManagement = () => {
       <FeatureHero
         icon={LayoutGrid}
         badge="Multi-Store Management"
-        title="One Dashboard —"
+        title="Multi-Store Management: One Dashboard,"
         highlight="Every Store"
         description="Manage all your client websites from a single, centralized command center. No more switching between accounts or losing track of orders."
       />
