@@ -12,12 +12,17 @@ const painPoints = [
   {
     icon: FileText,
     title: "Every PO Looks Different",
-    description: "Every client sends POs in a different format — PDFs, emails, photos, phone calls. There's no consistency.",
+    description: "Every distributor and company sends POs in a different format — PDFs, emails, photos, phone calls. There's no consistency.",
+  },
+  {
+    icon: AlertTriangle,
+    title: "Half of Them Are Incomplete",
+    description: "Missing sizes, no ink colors, no due date, art referenced but not attached. Every gap means another email and another delay.",
   },
   {
     icon: Copy,
     title: "Manual Data Entry All Day",
-    description: "Your staff opens emails, copies PO data line by line into your system. It's slow, tedious, and error-prone.",
+    description: "Your staff opens emails and copies PO data line by line into your own system. It's slow, tedious, and error-prone.",
   },
   {
     icon: CheckSquare,
@@ -25,9 +30,9 @@ const painPoints = [
     description: "Supervisors re-check every entry for accuracy. One wrong size or color means reprints and lost profit.",
   },
   {
-    icon: AlertTriangle,
+    icon: Phone,
     title: "Overwhelmed by Status Calls",
-    description: "Clients and distributors call and email nonstop asking for order updates. You can't answer them all — and neither can they.",
+    description: "Clients and distributors call and email nonstop asking for order updates. You can't answer them all — so calls go unanswered and emails sit for days.",
   },
 ];
 
@@ -35,22 +40,22 @@ const solutions = [
   {
     icon: Eye,
     title: "AI Vision Agent",
-    description: "Reads any PO format — PDF, photo, email — and extracts all fields automatically. No more manual entry.",
+    description: "Reads any PO format — PDF, photo, email, even handwritten — extracts every field automatically, and flags what's missing before it hits your floor.",
+  },
+  {
+    icon: Phone,
+    title: "AI Voice Receptionist",
+    description: "Answers calls and texts around the clock with order tracking and product info, resolves support issues like returns, takes messages, and transfers calls when a human is needed.",
   },
   {
     icon: Bot,
     title: "AI Support Agent",
-    description: "Handles client inquiries 24/7 across web chat, SMS, email, Facebook, and Instagram.",
-  },
-  {
-    icon: Phone,
-    title: "AI Voice Agent",
-    description: "Answers phone calls for order status so your team can focus on production.",
+    description: "Handles client inquiries 24/7 across web chat, SMS, email, Facebook Messenger, and Instagram Messenger — so nothing sits unanswered.",
   },
   {
     icon: Plug,
     title: "Plugs Into Your System",
-    description: "Our AI integrates into your existing platform — no need to switch systems.",
+    description: "Our AI integrates into your existing platform — even if you run your shop off spreadsheets. No need to switch systems.",
   },
 ];
 
@@ -65,7 +70,7 @@ const fadeUp = {
 const ForDecorators = () => {
   return (
     <div className="min-h-screen">
-      <SEO title="Brand-Shop.AI for Decorators | Brand-Shop.AI" description="Automate artwork QA, order intake, and proofing. Grow margins as a decorator with Brand-Shop.AI's vision and workflow tools." path="/for/decorators" />
+      <SEO title="For Decorators: AI That Reads Every PO and Answers the Phone | Brand-Shop.AI" description="Mismatched, incomplete POs and nonstop status calls. AI Vision reads any PO format and our AI receptionist answers calls, texts, and Messenger 24/7." path="/for/decorators" />
       <Navbar />
       <main>
         {/* Hero */}
