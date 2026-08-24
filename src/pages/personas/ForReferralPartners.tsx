@@ -5,10 +5,12 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import {
-  Users, Store, Tag, DollarSign, ArrowRight, Megaphone, Palette, TrendingUp
+  Users, Store, Tag, DollarSign, ArrowRight, Megaphone, Palette, TrendingUp,
+  Rocket, Globe, Phone, MessageSquare, Share2, Search, Star, Repeat
 } from "lucide-react";
 
 const whoThisIsFor = [
+  { icon: Rocket, label: "Entrepreneurs" },
   { icon: Megaphone, label: "Agencies" },
   { icon: Users, label: "Micro & Macro Influencers" },
   { icon: TrendingUp, label: "Industry Leaders with an Audience" },
@@ -17,8 +19,8 @@ const whoThisIsFor = [
 const valueProps = [
   {
     icon: Store,
-    title: "Company Stores for Any Vertical",
-    description: "Offer branded online stores to your audience — corporate, schools, sports, nonprofits, and more.",
+    title: "B2B Merch Stores for Any Vertical",
+    description: "Offer branded online stores to your clients and audience — corporate, schools, sports, nonprofits, and more.",
   },
   {
     icon: Palette,
@@ -28,12 +30,55 @@ const valueProps = [
   {
     icon: Tag,
     title: "White-Label Under Your Brand",
-    description: "Every store is branded to you — your logo, your domain, your client relationship.",
+    description: "Full white-label access to the platform — your logo, your domain, your client relationship. We stay invisible.",
   },
   {
     icon: DollarSign,
-    title: "Revenue Share & Commissions",
-    description: "Earn on every order. The more stores you bring, the more you make.",
+    title: "Up to 40% Commissions",
+    description: "Earn up to 40% on all apparel sold through your stores.",
+  },
+  {
+    icon: Repeat,
+    title: "Recurring Monthly Revenue",
+    description: "Earn up to 40% on the monthly subscriptions your clients pay — income that keeps arriving after the sale.",
+  },
+  {
+    icon: Users,
+    title: "Zero Inventory, Zero Fulfillment",
+    description: "We source, decorate, and ship. You keep the relationship and the commission.",
+  },
+];
+
+const acquisitionStack = [
+  {
+    icon: Globe,
+    title: "Custom Acquisition Website",
+    description: "A full website built for you and branded to you — designed to bring in and convert your own clients.",
+  },
+  {
+    icon: Phone,
+    title: "AI Voice",
+    description: "Answers your calls and texts, books appointments, tracks orders, takes messages, and transfers calls when needed.",
+  },
+  {
+    icon: MessageSquare,
+    title: "AI Chat",
+    description: "24/7 chat on your site and stores that answers questions and captures leads while you sleep.",
+  },
+  {
+    icon: Share2,
+    title: "AI Social",
+    description: "Content and inbound Facebook and Instagram Messenger handled for you, so your channels stay active.",
+  },
+  {
+    icon: Search,
+    title: "AI SEO",
+    description: "Ongoing search optimization so the clients looking for branded merch find you first.",
+  },
+  {
+    icon: Star,
+    title: "AI Reputation",
+    description: "Review requests and responses managed automatically to build the trust that closes deals.",
   },
 ];
 
