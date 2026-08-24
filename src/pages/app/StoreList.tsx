@@ -10,9 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow, isPast, parseISO } from "date-fns";
 import {
-import { SEO } from "@/components/seo/SEO";
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { SEO } from "@/components/seo/SEO";
 
 async function fetchStores() {
   const { data, error } = await supabase
