@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      demo_bookings: {
+        Row: {
+          company: string | null
+          confirmation_sent_at: string | null
+          created_at: string
+          email: string
+          first_name: string
+          ghl_appointment_id: string | null
+          ghl_contact_id: string | null
+          ghl_opportunity_id: string | null
+          id: string
+          last_name: string | null
+          notes: string | null
+          phone: string
+          reminder_1h_sent_at: string | null
+          reminder_24h_sent_at: string | null
+          reminder_48h_sent_at: string | null
+          role: string | null
+          slot_end: string | null
+          slot_start: string
+          status: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          confirmation_sent_at?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          ghl_appointment_id?: string | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
+          id?: string
+          last_name?: string | null
+          notes?: string | null
+          phone: string
+          reminder_1h_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
+          reminder_48h_sent_at?: string | null
+          role?: string | null
+          slot_end?: string | null
+          slot_start: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          confirmation_sent_at?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          ghl_appointment_id?: string | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
+          id?: string
+          last_name?: string | null
+          notes?: string | null
+          phone?: string
+          reminder_1h_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
+          reminder_48h_sent_at?: string | null
+          role?: string | null
+          slot_end?: string | null
+          slot_start?: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       distributor_catalogs: {
         Row: {
           catalog_name: string
