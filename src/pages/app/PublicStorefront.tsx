@@ -251,6 +251,15 @@ export default function PublicStorefront() {
 
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: theme.fontFamily || "'Inter', system-ui, sans-serif" }}>
+      <SEO
+        title={`${storeName} | Custom Branded Apparel Store`}
+        description={
+          (metadata.description as string) ||
+          `Shop custom branded apparel and merchandise from the ${storeName} online store. Pick your styles, colors, and sizes — decorated and shipped for you.`
+        }
+        path={`/store/${slug}`}
+        image={logoUrl}
+      />
       {/* Pop-up countdown */}
       {storeType === "popup" && expiresAt && !isExpired && (
         <div className="text-center text-sm py-2 px-4" style={{ backgroundColor: theme.primary, color: "#fff" }}>
