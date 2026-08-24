@@ -129,8 +129,8 @@ const ForDistributors = () => {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-6xl font-bold mb-6"
             >
-              Centralize Your Stores.{" "}
-              <span className="text-primary">Automate Everything Else.</span>
+              Company Store Software for Apparel Distributors.{" "}
+              <span className="text-primary">Centralize Stores, Automate Everything Else.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}

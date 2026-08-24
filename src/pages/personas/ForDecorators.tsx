@@ -82,8 +82,8 @@ const ForDecorators = () => {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-6xl font-bold mb-6"
             >
-              Stop Copy-Pasting POs.{" "}
-              <span className="text-primary">Let AI Handle It.</span>
+              AI Order Automation Platform for Decorators.{" "}
+              <span className="text-primary">Stop Copy-Pasting POs.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
