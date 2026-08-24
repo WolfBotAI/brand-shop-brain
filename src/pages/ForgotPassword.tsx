@@ -42,6 +42,7 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+        {forgotSeo}
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
