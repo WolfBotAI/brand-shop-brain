@@ -57,7 +57,7 @@ export default function PublicStorefront() {
     queryKey: ["public-store", slug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("stores")
+        .from("public_storefronts")
         .select("*")
         .eq("slug", slug!)
         .single();

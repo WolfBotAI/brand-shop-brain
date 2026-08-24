@@ -68,7 +68,7 @@ export default function CustomerOrders() {
     queryKey: ["customer-store", slug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("stores")
+        .from("public_storefronts")
         .select("id, store_name, logo_url, ai_chat_enabled, ai_voice_enabled, ai_voice_number, theme_config, metadata")
         .eq("slug", slug!)
         .single();
