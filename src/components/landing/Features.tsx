@@ -140,7 +140,7 @@ export const Features = () => {
                   </div>
 
                   <span className="inline-flex items-center text-primary font-medium">
-                    Learn more <ArrowRight className="w-4 h-4 ml-1" />
+                    Explore {product.title} <ArrowRight className="w-4 h-4 ml-1" />
                   </span>
                 </div>
               </Link>
@@ -226,7 +226,7 @@ export const Features = () => {
                   </p>
 
                   <span className="inline-flex items-center text-primary text-sm font-medium">
-                    Learn more <ArrowRight className="w-3 h-3 ml-1" />
+                    Explore {feature.title} <ArrowRight className="w-3 h-3 ml-1" />
                   </span>
                 </div>
               </Link>

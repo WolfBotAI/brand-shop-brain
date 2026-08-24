@@ -58,7 +58,7 @@ export const PopUpStoresSection = () => {
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-full group"
             >
               <Link to="/features/popup-stores">
-                Learn More
+                Explore pop-up store features
                 <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
