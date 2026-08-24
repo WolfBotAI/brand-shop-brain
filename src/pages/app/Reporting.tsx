@@ -12,6 +12,7 @@ import {
   XAxis, YAxis, CartesianGrid, ResponsiveContainer,
 } from "recharts";
 import { format, subDays, isAfter, parseISO } from "date-fns";
+import { SEO } from "@/components/seo/SEO";
 
 const COLORS = [
   "hsl(var(--primary))",
@@ -120,6 +121,7 @@ export default function Reporting() {
 
   return (
     <div className="p-6 space-y-6">
+      <SEO title="Reporting | Brand-Shop.AI" description="Revenue, order, and margin reporting across every Brand-Shop.AI storefront you manage." path="/app/reporting" noIndex />
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Reporting</h1>

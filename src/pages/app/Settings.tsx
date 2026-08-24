@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { SEO } from "@/components/seo/SEO";
 
 export default function Settings() {
   const { profile, user, refreshProfile } = useAuth();
@@ -65,6 +66,7 @@ export default function Settings() {
 
   return (
     <div className="p-6 space-y-6 max-w-2xl">
+      <SEO title="Settings | Brand-Shop.AI" description="Manage your Brand-Shop.AI account, profile, and platform preferences." path="/app/settings" noIndex />
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground text-sm">Manage your account and platform preferences</p>

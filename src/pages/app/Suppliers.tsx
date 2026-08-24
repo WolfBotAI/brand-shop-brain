@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Truck, Plus, CheckCircle2, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
 import { fetchSupplierAccounts } from "@/lib/api/suppliers";
 import { fetchIntegrationStatus } from "@/lib/api/dashboard";
+import { SEO } from "@/components/seo/SEO";
 
 export default function Suppliers() {
   const integrations = useQuery({
@@ -31,6 +32,7 @@ export default function Suppliers() {
 
   return (
     <div className="p-6 space-y-6">
+      <SEO title="Integrations | Brand-Shop.AI" description="Connect suppliers, decorators, and fulfillment integrations powering your branded stores." path="/app/suppliers" noIndex />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Integrations</h1>

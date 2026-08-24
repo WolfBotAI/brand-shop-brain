@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow, isPast, parseISO } from "date-fns";
 import {
+import { SEO } from "@/components/seo/SEO";
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
@@ -94,6 +95,7 @@ export default function StoreList() {
 
   return (
     <div className="p-6 space-y-6">
+      <SEO title="Stores | Brand-Shop.AI" description="Manage every branded company store you run, from pop-ups to permanent client storefronts." path="/app/stores" noIndex />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Stores</h1>

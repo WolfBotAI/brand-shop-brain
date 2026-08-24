@@ -13,6 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { StorefrontChatWidget } from "@/components/app/store/StorefrontChatWidget";
+import { SEO } from "@/components/seo/SEO";
 
 interface StatusStep {
   label: string;
@@ -147,6 +148,7 @@ export default function CustomerOrders() {
 
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <SEO title="Order Status | Brand-Shop.AI" description="Track your branded merchandise order status, production progress, and shipping updates." path="/store/orders" noIndex />
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
