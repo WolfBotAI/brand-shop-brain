@@ -198,6 +198,47 @@ const ForReferralPartners = () => {
           </div>
         </section>
 
+        {/* Acquisition Stack */}
+        <section className="py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <motion.h2
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-3xl md:text-4xl font-bold text-center mb-4"
+            >
+              We Help You <span className="text-primary">Win the Clients</span>, Too
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-muted-foreground text-center mb-12 max-w-xl mx-auto"
+            >
+              Every partner gets the full acquisition stack — branded to you, working for your clients.
+            </motion.p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {acquisitionStack.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  custom={i}
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="border border-border rounded-xl p-6 bg-card"
+                >
+                  <item.icon className="w-8 h-8 text-primary mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground text-sm">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+
+
         {/* CTA */}
         <section className="py-20 bg-secondary text-secondary-foreground">
           <div className="container mx-auto px-4 text-center">
