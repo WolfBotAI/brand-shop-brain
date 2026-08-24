@@ -114,8 +114,8 @@ const ForReferralPartners = () => {
               transition={{ duration: 0.6, delay: 0.15 }}
               className="text-lg md:text-xl text-secondary-foreground/70 max-w-2xl mx-auto mb-8"
             >
-              You've built an audience. Now monetize it with white-labeled company stores — 
-              no inventory, no fulfillment, just commissions.
+              Entrepreneurs, agencies, and influencers get white-label access to our platform — offer B2B merch
+              stores to your clients and earn up to 40% on apparel and monthly recurring subscriptions.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
