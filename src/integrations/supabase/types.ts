@@ -358,6 +358,7 @@ export type Database = {
           id: string
           logo_url: string | null
           metadata: Json | null
+          public_metadata: Json
           slug: string | null
           status: string
           store_name: string
@@ -383,6 +384,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           metadata?: Json | null
+          public_metadata?: Json
           slug?: string | null
           status?: string
           store_name: string
@@ -408,6 +410,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           metadata?: Json | null
+          public_metadata?: Json
           slug?: string | null
           status?: string
           store_name?: string
@@ -480,7 +483,7 @@ export type Database = {
           ai_voice_number?: string | null
           id?: string | null
           logo_url?: string | null
-          metadata?: never
+          metadata?: Json | null
           slug?: string | null
           status?: string | null
           store_name?: string | null
@@ -493,7 +496,7 @@ export type Database = {
           ai_voice_number?: string | null
           id?: string | null
           logo_url?: string | null
-          metadata?: never
+          metadata?: Json | null
           slug?: string | null
           status?: string | null
           store_name?: string | null
