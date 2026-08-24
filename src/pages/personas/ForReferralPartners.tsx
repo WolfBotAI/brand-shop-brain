@@ -93,7 +93,7 @@ const fadeUp = {
 const ForReferralPartners = () => {
   return (
     <div className="min-h-screen">
-      <SEO title="Referral Partner Program | Brand-Shop.AI" description="Earn recurring revenue by referring distributors and decorators to Brand-Shop.AI." path="/for/referral-partners" />
+      <SEO title="Referral Partner Program: Up to 40% on Merch & Subscriptions | Brand-Shop.AI" description="Entrepreneurs, agencies, and influencers get white-label B2B merch stores, up to 40% commissions on apparel and recurring subscriptions, plus a full AI acquisition stack." path="/for/referral-partners" />
       <Navbar />
       <main>
         {/* Hero */}
