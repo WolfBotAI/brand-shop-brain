@@ -228,8 +228,30 @@ const Assessment = () => {
     setState((s) => ({ ...s, discPriority: priority, step: 7 }));
   };
 
-  const submitContact = () => {
+  const submitContact = async () => {
     setState((s) => ({ ...s, step: 8 }));
+    const discType = state.discPace && state.discPriority ? getDISCType(state.discPace, state.discPriority)?.type : "";
+    try {
+      const { error } = await supabase.functions.invoke("capture-lead", {
+        body: {
+          name: state.contact.name,
+          email: state.contact.email,
+          phone: state.contact.phone,
+          smsConsent: state.contact.smsConsent,
+          persona: state.persona ?? "",
+          painPoints: state.painPoints,
+          discType: discType ?? "",
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("Lead capture failed", err);
+      toast({
+        title: "We couldn't save your details",
+        description: "Your results are ready — please book a demo so we can follow up.",
+        variant: "destructive",
+      });
+    }
   };
 
   const goBack = () => {
