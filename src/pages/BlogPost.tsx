@@ -40,7 +40,7 @@ const BlogPostPage = () => {
       image: `${SITE}${post.heroImage}`,
       datePublished: post.publishedAt,
       dateModified: post.updatedAt,
-      author: { "@type": "Organization", name: post.author.name },
+      author: { "@type": "Person", name: post.author.name, jobTitle: post.author.role },
       publisher: { "@type": "Organization", name: "Brand-Shop AI" },
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
       keywords: post.tags.join(", "),

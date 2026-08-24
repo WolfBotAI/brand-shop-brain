@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { SEO } from "@/components/seo/SEO";
 
 interface RoutingRule {
   id: string;
@@ -118,6 +119,7 @@ export default function OrderRoutingManager() {
 
   return (
     <div className="p-6 space-y-6">
+      <SEO title="Order Routing | Brand-Shop.AI" description="Configure how orders split automatically across suppliers and decorators." path="/app/routing" noIndex />
       <div>
         <h1 className="text-2xl font-bold">Order Routing</h1>
         <p className="text-muted-foreground text-sm">One Invoice, Multiple Destinations — configure how orders split across suppliers &amp; decorators</p>

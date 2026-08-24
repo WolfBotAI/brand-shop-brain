@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchDashboardSummary, fetchIntegrationStatus } from "@/lib/api/dashboard";
+import { SEO } from "@/components/seo/SEO";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -55,6 +56,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <SEO title="Dashboard | Brand-Shop.AI" description="Your Brand-Shop.AI distributor dashboard: store activity, order volume, and integration status at a glance." path="/app/dashboard" noIndex />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>

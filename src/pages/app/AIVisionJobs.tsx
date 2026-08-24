@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { SEO } from "@/components/seo/SEO";
 
 type JobStatus = "pending" | "extracting" | "needs_review" | "approved" | "pushed";
 
@@ -111,6 +112,7 @@ export default function AIVisionJobs() {
 
   return (
     <div className="p-6 space-y-6">
+      <SEO title="AI Vision Jobs | Brand-Shop.AI" description="Track purchase orders and documents processed automatically by the AI Vision agent." path="/app/ai-vision" noIndex />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">AI Vision Jobs</h1>

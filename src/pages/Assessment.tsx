@@ -206,6 +206,7 @@ const Assessment = () => {
     discPriority: null,
     contact: { name: "", email: "", phone: "", smsConsent: false },
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const progress = (state.step / TOTAL_STEPS) * 100;
 
@@ -233,8 +234,8 @@ const Assessment = () => {
   };
 
   const submitContact = async () => {
-    setState((s) => ({ ...s, step: 8 }));
     const discType = state.discPace && state.discPriority ? getDISCType(state.discPace, state.discPriority)?.type : "";
+    setSubmitting(true);
     try {
       const { error } = await supabase.functions.invoke("capture-lead", {
         body: {
@@ -255,6 +256,9 @@ const Assessment = () => {
         description: "Your results are ready — please book a demo so we can follow up.",
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
+      setState((s) => ({ ...s, step: 8 }));
     }
   };
 
@@ -445,10 +449,10 @@ const Assessment = () => {
                   </label>
                   <Button
                     onClick={submitContact}
-                    disabled={!state.contact.name || !state.contact.email}
+                    disabled={!state.contact.name || !state.contact.email || submitting}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg rounded-full group"
                   >
-                    See My Results
+                    {submitting ? "Saving..." : "See My Results"}
                     <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </div>

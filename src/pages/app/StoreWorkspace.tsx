@@ -15,6 +15,7 @@ import { StorefrontPreview, type ThemeConfig } from "@/components/app/store/Stor
 import { fetchStyleById, type SSStyle } from "@/lib/api/ssProducts";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/seo/SEO";
 
 // --- Pricing helpers ---
 interface PricingConfig {
@@ -106,6 +107,7 @@ const StoreWorkspace = () => {
 
   return (
     <div className="space-y-6">
+      <SEO title="Store Workspace | Brand-Shop.AI" description="Configure catalog, pricing, mockups, theme, and billing for an individual branded store." path="/app/stores" noIndex />
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/app/stores")}>
           <ArrowLeft className="w-5 h-5" />

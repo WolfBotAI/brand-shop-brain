@@ -10,6 +10,7 @@ import { PricingStep, type PricingRules } from "@/components/app/onboarding/Pric
 import { AddClientStep } from "@/components/app/onboarding/AddClientStep";
 import { CompletionStep } from "@/components/app/onboarding/CompletionStep";
 import type { ThemeConfig } from "@/components/app/store/StorefrontPreview";
+import { SEO } from "@/components/seo/SEO";
 
 const steps = [
   { title: "Welcome", icon: Rocket },
@@ -48,6 +49,7 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8">
+      <SEO title="Get Started | Brand-Shop.AI" description="Guided setup to launch your first Brand-Shop.AI branded company store in a few steps." path="/app/onboarding" noIndex />
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 space-y-2">
           <h1 className="text-3xl font-bold text-foreground">Get Started</h1>
