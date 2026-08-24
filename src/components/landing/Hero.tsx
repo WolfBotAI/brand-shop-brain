@@ -59,12 +59,12 @@ export const Hero = () => {
                 </a>
               </Button>
               <Button 
+                asChild
                 size="lg" 
                 variant="ctaOutlineLight"
                 className="px-8 py-6 text-lg rounded-full"
-                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Book a Demo
+                <a href="/demo">Book a Demo</a>
               </Button>
             </div>
           </motion.div>

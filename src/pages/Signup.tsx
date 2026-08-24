@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle } from "lucide-react";
 import brandLogo from "@/assets/brand-logo.png";
+import { SEO } from "@/components/seo/SEO";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -73,6 +74,11 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+      <SEO
+        title="Create Your Free Account | Brand-Shop.AI"
+        description="Start free with Brand-Shop.AI and launch AI-built custom apparel storefronts connected to your suppliers and decorators."
+        path="/signup"
+      />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />

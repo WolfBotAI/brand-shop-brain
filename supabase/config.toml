@@ -20,3 +20,12 @@ verify_jwt = false
 
 [functions.quote-shipping]
 verify_jwt = false
+
+[functions.ghl-calendar]
+verify_jwt = false
+
+[functions.book-demo]
+verify_jwt = false
+
+[functions.demo-reminders]
+verify_jwt = false

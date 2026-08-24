@@ -70,12 +70,12 @@ export const FeatureHero = ({
               </Link>
             </Button>
             <Button 
+              asChild
               size="lg" 
               variant="outline"
               className="px-8 py-6 text-lg rounded-full"
-              onClick={() => document.getElementById('platform')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              {secondaryCta}
+              <Link to="/demo">{secondaryCta}</Link>
             </Button>
           </div>
         </motion.div>
