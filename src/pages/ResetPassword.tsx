@@ -55,6 +55,7 @@ export default function ResetPassword() {
   if (!valid) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+        {resetSeo}
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CardTitle>Invalid Reset Link</CardTitle>
