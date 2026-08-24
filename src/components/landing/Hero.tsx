@@ -35,8 +35,8 @@ export const Hero = () => {
             </motion.div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
-              Launch a Store in{" "}
-              <span className="text-primary">Minutes</span>
+              Company Store Software for Apparel Distributors.{" "}
+              <span className="text-primary">Launch in Minutes.</span>
             </h1>
             
             <p className="text-xl text-muted-foreground mb-4 max-w-xl">
