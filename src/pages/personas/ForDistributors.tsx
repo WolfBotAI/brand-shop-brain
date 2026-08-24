@@ -6,7 +6,8 @@ import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import {
   Store, ArrowRightLeft, MessageSquare, Phone, ShieldCheck,
-  BarChart3, Layout, Bot, ArrowRight, AlertTriangle, Globe, Bell
+  BarChart3, Layout, Bot, ArrowRight, AlertTriangle, Globe, Bell,
+  Tags, Boxes, Plug
 } from "lucide-react";
 
 const painPoints = [
