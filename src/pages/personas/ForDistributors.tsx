@@ -13,7 +13,22 @@ const painPoints = [
   {
     icon: Store,
     title: "Too Many Stores, Too Many Platforms",
-    description: "You're managing dozens of client stores across different platforms — manually updating products, pricing, and content on each one.",
+    description: "Your clients' websites live on a different platform each — Shopify here, WordPress there, a homegrown store somewhere else. There's no single place to see or manage them.",
+  },
+  {
+    icon: Layout,
+    title: "You Build and Maintain Them Yourself",
+    description: "Every client site is yours to design, launch, and babysit. New logo, new landing page, broken checkout — it all lands on your desk.",
+  },
+  {
+    icon: Tags,
+    title: "Pricing and Catalog Upkeep Never Ends",
+    description: "Supplier prices move, styles get discontinued, colors sell out. Keeping pricing and catalogs current across every store is a full-time job nobody wants.",
+  },
+  {
+    icon: Boxes,
+    title: "A Different Portal for Every Supplier",
+    description: "Ordering means jumping between supplier sites and vendor portals, each with its own logins, formats, and lead times — then reconciling it all by hand.",
   },
   {
     icon: ArrowRightLeft,
@@ -39,14 +54,29 @@ const solutions = [
     description: "Centralize all client stores in one place. AI creates, updates, and manages them — or give clients access to preconfigured stores with your pricing, or let them build their own from catalogs like S&S, SanMar, and more.",
   },
   {
+    icon: Tags,
+    title: "Pricing & Catalog on Autopilot",
+    description: "Catalogs and pricing stay current automatically across every store. Set your markup rules once and every client site reflects them — no manual updates, no stale styles.",
+  },
+  {
+    icon: Plug,
+    title: "Connected to Every Supplier & Decorator",
+    description: "We connect to all the major suppliers and to virtually any decorator — including the ones still running their shop off spreadsheets. One workflow instead of a dozen portals.",
+  },
+  {
     icon: Globe,
     title: "AI Website Assistant",
     description: "Embedded chat on every store provides 24/7 support — tracking requests, return/refund info based on your guidelines, and product recommendations by price, brand, and material.",
   },
   {
+    icon: Phone,
+    title: "AI Voice Receptionist",
+    description: "Answers calls and texts around the clock with order tracking and product info, resolves support issues like returns, takes messages, and transfers calls to the right person when it needs to.",
+  },
+  {
     icon: Bot,
     title: "AI Support Agent",
-    description: "Handles the same requests via text, phone, Facebook Messenger, Instagram Messenger, and email — all trained on your company, clients, brand, and goals. 24/7 omnichannel support.",
+    description: "Handles the same requests via text, email, Facebook Messenger, and Instagram Messenger — all trained on your company, clients, brand, and goals. 24/7 omnichannel support.",
   },
   {
     icon: ArrowRightLeft,
