@@ -8,18 +8,21 @@ const personas = [
     title: "Distributors",
     summary: "Centralize all your client stores. AI manages them, routes orders, and provides 24/7 omnichannel support.",
     href: "/for/distributors",
+    cta: "Explore distributor features",
   },
   {
     icon: Printer,
     title: "Decorators",
     summary: "Stop copy-pasting PO data and fielding status calls. Let AI read POs, enter data, and answer clients for you.",
     href: "/for/decorators",
+    cta: "View decorator solutions",
   },
   {
     icon: Users,
     title: "Referral Partners",
     summary: "Offer branded company stores to your audience. Earn commissions with zero inventory or fulfillment.",
     href: "/for/referral-partners",
+    cta: "See referral partner benefits",
   },
 ];
 
