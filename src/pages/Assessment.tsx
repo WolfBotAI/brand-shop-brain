@@ -490,11 +490,14 @@ const Assessment = () => {
 
                 <div className="text-center">
                   <Button
+                    asChild
                     size="lg"
                     className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-7 text-xl rounded-full group"
                   >
-                    Book Your Demo
-                    <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
+                    <Link to="/demo">
+                      Book Your Demo
+                      <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
+                    </Link>
                   </Button>
                 </div>
               </motion.div>
