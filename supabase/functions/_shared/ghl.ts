@@ -49,11 +49,35 @@ export async function ghlFetch(
   }
 }
 
-/** Fire a GHL inbound webhook so GHL sends the SMS from the account's own number. */
-export async function triggerGhlSms(payload: Record<string, unknown>) {
+/**
+ * Sends the SMS from the CRM so it lands in the contact's conversation thread.
+ * Uses the conversations API; falls back to an inbound webhook when one is configured.
+ */
+export async function triggerGhlSms(payload: {
+  contactId?: string | null;
+  message: string;
+  [key: string]: unknown;
+}) {
   const { smsWebhookUrl } = ghlEnv();
+
+  if (payload.contactId) {
+    try {
+      await ghlFetch("/conversations/messages", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "SMS",
+          contactId: payload.contactId,
+          message: payload.message,
+        }),
+      });
+      return true;
+    } catch (err) {
+      console.error("CRM SMS send failed:", err);
+    }
+  }
+
   if (!smsWebhookUrl) {
-    console.warn("GHL_SMS_WEBHOOK_URL not configured — SMS trigger skipped");
+    console.warn("No SMS webhook configured — SMS not sent");
     return false;
   }
   try {
