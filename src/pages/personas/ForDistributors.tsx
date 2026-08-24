@@ -117,7 +117,7 @@ const fadeUp = {
 const ForDistributors = () => {
   return (
     <div className="min-h-screen">
-      <SEO title="Brand-Shop.AI for Distributors | Brand-Shop.AI" description="Win more B2B clients and automate fulfillment. Brand-Shop.AI gives distributors AI store building, order routing, and reporting in one platform." path="/for/distributors" />
+      <SEO title="For Distributors: One Platform for Every Client Store | Brand-Shop.AI" description="Stop building and maintaining client sites on five platforms. Brand-Shop.AI connects every supplier and decorator, keeps pricing and catalogs current, and answers status calls 24/7." path="/for/distributors" />
       <Navbar />
       <main>
         {/* Hero */}
