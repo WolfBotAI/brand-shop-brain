@@ -169,6 +169,8 @@ export const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               className="md:hidden text-foreground p-2"
+              aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

@@ -8,6 +8,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle, ArrowLeft } from "lucide-react";
 import brandLogo from "@/assets/brand-logo.png";
+import { SEO } from "@/components/seo/SEO";
+
+const forgotSeo = (
+  <SEO
+    title="Reset Your Password | Brand-Shop.AI"
+    description="Request a secure password reset link for your Brand-Shop.AI distributor account and get back to managing your storefronts."
+    path="/forgot-password"
+    noIndex
+  />
+);
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -32,6 +42,7 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+        {forgotSeo}
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
@@ -48,6 +59,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+      {forgotSeo}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />

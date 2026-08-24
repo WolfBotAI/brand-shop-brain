@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { SEO } from "@/components/seo/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, CheckCircle, Users, Printer, Megaphone, Zap } from "lucide-react";
@@ -6,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type Persona = "distributor" | "decorator" | "referral";
 type DISCPace = "outgoing" | "reserved" | null;
@@ -194,6 +197,7 @@ const personaValueProps: Record<Persona, { headline: string; points: string[] }>
 const TOTAL_STEPS = 8;
 
 const Assessment = () => {
+  const { toast } = useToast();
   const [state, setState] = useState<AssessmentState>({
     step: 1,
     persona: null,
@@ -228,8 +232,30 @@ const Assessment = () => {
     setState((s) => ({ ...s, discPriority: priority, step: 7 }));
   };
 
-  const submitContact = () => {
+  const submitContact = async () => {
     setState((s) => ({ ...s, step: 8 }));
+    const discType = state.discPace && state.discPriority ? getDISCType(state.discPace, state.discPriority)?.type : "";
+    try {
+      const { error } = await supabase.functions.invoke("capture-lead", {
+        body: {
+          name: state.contact.name,
+          email: state.contact.email,
+          phone: state.contact.phone,
+          smsConsent: state.contact.smsConsent,
+          persona: state.persona ?? "",
+          painPoints: state.painPoints,
+          discType: discType ?? "",
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("Lead capture failed", err);
+      toast({
+        title: "We couldn't save your details",
+        description: "Your results are ready — please book a demo so we can follow up.",
+        variant: "destructive",
+      });
+    }
   };
 
   const goBack = () => {
@@ -464,11 +490,14 @@ const Assessment = () => {
 
                 <div className="text-center">
                   <Button
+                    asChild
                     size="lg"
                     className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-7 text-xl rounded-full group"
                   >
-                    Book Your Demo
-                    <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
+                    <Link to="/demo">
+                      Book Your Demo
+                      <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
+                    </Link>
                   </Button>
                 </div>
               </motion.div>

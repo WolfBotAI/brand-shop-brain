@@ -5,25 +5,36 @@ interface SEOProps {
   description: string;
   path: string;
   type?: "website" | "article";
+  image?: string;
+  noIndex?: boolean;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const SITE = "https://brand-shop.ai";
 
-export const SEO = ({ title, description, path, type = "website", jsonLd }: SEOProps) => {
+export const SEO = ({ title, description, path, type = "website", image, noIndex, jsonLd }: SEOProps) => {
   const url = `${SITE}${path}`;
+  const absoluteImage = image
+    ? image.startsWith("http")
+      ? image
+      : `${SITE}${image.startsWith("/") ? "" : "/"}${image}`
+    : undefined;
   const schemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={url} />
+      {noIndex && <meta name="robots" content="noindex, nofollow" />}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />
       <meta property="og:type" content={type} />
+      {absoluteImage && <meta property="og:image" content={absoluteImage} />}
+      <meta name="twitter:card" content={absoluteImage ? "summary_large_image" : "summary"} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
+      {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
       {schemas.map((s, i) => (
         <script key={i} type="application/ld+json">{JSON.stringify(s)}</script>
       ))}

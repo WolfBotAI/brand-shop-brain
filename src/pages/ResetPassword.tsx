@@ -8,6 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import brandLogo from "@/assets/brand-logo.png";
+import { SEO } from "@/components/seo/SEO";
+
+const resetSeo = (
+  <SEO
+    title="Set a New Password | Brand-Shop.AI"
+    description="Choose a new password for your Brand-Shop.AI account to securely restore access to your storefronts, orders, and client stores."
+    path="/reset-password"
+    noIndex
+  />
+);
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -45,6 +55,7 @@ export default function ResetPassword() {
   if (!valid) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+        {resetSeo}
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CardTitle>Invalid Reset Link</CardTitle>
@@ -57,6 +68,7 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+      {resetSeo}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />
