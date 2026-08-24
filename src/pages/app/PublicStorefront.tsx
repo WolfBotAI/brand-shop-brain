@@ -15,6 +15,7 @@ import { StorefrontChatWidget } from "@/components/app/store/StorefrontChatWidge
 import { ProductImage } from "@/components/app/onboarding/ProductImage";
 import { isPast, parseISO, formatDistanceToNow } from "date-fns";
 import type { SSStyle } from "@/lib/api/ssProducts";
+import { SEO } from "@/components/seo/SEO";
 
 interface ThemeConfig {
   primary: string;
