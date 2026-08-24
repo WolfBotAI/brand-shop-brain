@@ -197,6 +197,7 @@ const personaValueProps: Record<Persona, { headline: string; points: string[] }>
 const TOTAL_STEPS = 8;
 
 const Assessment = () => {
+  const { toast } = useToast();
   const [state, setState] = useState<AssessmentState>({
     step: 1,
     persona: null,
