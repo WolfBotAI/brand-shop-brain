@@ -70,7 +70,7 @@ const fadeUp = {
 const ForDecorators = () => {
   return (
     <div className="min-h-screen">
-      <SEO title="Brand-Shop.AI for Decorators | Brand-Shop.AI" description="Automate artwork QA, order intake, and proofing. Grow margins as a decorator with Brand-Shop.AI's vision and workflow tools." path="/for/decorators" />
+      <SEO title="For Decorators: AI That Reads Every PO and Answers the Phone | Brand-Shop.AI" description="Mismatched, incomplete POs and nonstop status calls. AI Vision reads any PO format and our AI receptionist answers calls, texts, and Messenger 24/7." path="/for/decorators" />
       <Navbar />
       <main>
         {/* Hero */}
