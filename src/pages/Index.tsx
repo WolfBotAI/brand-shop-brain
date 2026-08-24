@@ -17,8 +17,8 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEO
-        title="Brand-Shop.AI — AI for Distributors & Decorators"
-        description="Launch AI-powered branded stores, automate order routing, and grow your distributor or decorator business with Brand-Shop.AI."
+        title="Branded Merch Store Software for Apparel Distributors"
+        description="Brand-Shop.AI runs company stores for apparel distributors and decorators: one catalog across every supplier, automated order routing, and AI voice, chat and vision agents. Book a demo."
         path="/"
         jsonLd={[
           {
