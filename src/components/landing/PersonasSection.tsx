@@ -72,7 +72,7 @@ export const PersonasSection = () => {
                 <h3 className="text-xl font-semibold mb-2">{p.title}</h3>
                 <p className="text-muted-foreground text-sm mb-4">{p.summary}</p>
                 <span className="inline-flex items-center gap-1 text-primary font-medium text-sm group-hover:gap-2 transition-all">
-                  Learn More <ArrowRight className="w-4 h-4" />
+                  {p.cta} <ArrowRight className="w-4 h-4" />
                 </span>
               </Link>
             </motion.div>
