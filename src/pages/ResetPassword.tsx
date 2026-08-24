@@ -68,6 +68,7 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+      {resetSeo}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />
