@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import brandLogo from "@/assets/brand-logo.png";
+import { SEO } from "@/components/seo/SEO";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -49,6 +50,11 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+      <SEO
+        title="Sign In | Brand-Shop.AI Distributor Dashboard"
+        description="Sign in to your Brand-Shop.AI account to manage AI-powered apparel storefronts, orders, suppliers, and client stores."
+        path="/login"
+      />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />
