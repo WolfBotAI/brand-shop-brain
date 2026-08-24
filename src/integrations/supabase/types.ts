@@ -167,6 +167,13 @@ export type Database = {
             foreignKeyName: "orders_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "public_storefronts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -453,7 +460,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_storefronts: {
+        Row: {
+          ai_chat_enabled: boolean | null
+          ai_voice_enabled: boolean | null
+          ai_voice_number: string | null
+          id: string | null
+          logo_url: string | null
+          metadata: Json | null
+          slug: string | null
+          status: string | null
+          store_name: string | null
+          store_type: string | null
+          theme_config: Json | null
+        }
+        Insert: {
+          ai_chat_enabled?: boolean | null
+          ai_voice_enabled?: boolean | null
+          ai_voice_number?: string | null
+          id?: string | null
+          logo_url?: string | null
+          metadata?: never
+          slug?: string | null
+          status?: string | null
+          store_name?: string | null
+          store_type?: string | null
+          theme_config?: Json | null
+        }
+        Update: {
+          ai_chat_enabled?: boolean | null
+          ai_voice_enabled?: boolean | null
+          ai_voice_number?: string | null
+          id?: string | null
+          logo_url?: string | null
+          metadata?: never
+          slug?: string | null
+          status?: string | null
+          store_name?: string | null
+          store_type?: string | null
+          theme_config?: Json | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
