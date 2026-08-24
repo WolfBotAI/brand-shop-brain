@@ -233,8 +233,8 @@ const Assessment = () => {
   };
 
   const submitContact = async () => {
-    setState((s) => ({ ...s, step: 8 }));
     const discType = state.discPace && state.discPriority ? getDISCType(state.discPace, state.discPriority)?.type : "";
+    setSubmitting(true);
     try {
       const { error } = await supabase.functions.invoke("capture-lead", {
         body: {
@@ -255,6 +255,9 @@ const Assessment = () => {
         description: "Your results are ready — please book a demo so we can follow up.",
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
+      setState((s) => ({ ...s, step: 8 }));
     }
   };
 
