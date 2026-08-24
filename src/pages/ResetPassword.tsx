@@ -8,6 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import brandLogo from "@/assets/brand-logo.png";
+import { SEO } from "@/components/seo/SEO";
+
+const resetSeo = (
+  <SEO
+    title="Set a New Password | Brand-Shop.AI"
+    description="Choose a new password for your Brand-Shop.AI account to securely restore access to your storefronts, orders, and client stores."
+    path="/reset-password"
+    noIndex
+  />
+);
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
