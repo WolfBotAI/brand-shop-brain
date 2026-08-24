@@ -46,7 +46,7 @@ export default function ForgotPassword() {
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
-            <CardTitle>Check your email</CardTitle>
+            <h1 className="text-2xl font-semibold leading-none tracking-tight">Check your email</h1>
             <CardDescription>We sent a password reset link to <strong>{email}</strong>.</CardDescription>
           </CardHeader>
           <CardFooter className="justify-center">
@@ -63,7 +63,7 @@ export default function ForgotPassword() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />
-          <CardTitle className="text-2xl">Reset password</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">Reset your Brand-Shop.AI password</h1>
           <CardDescription>Enter your email and we'll send a reset link</CardDescription>
         </CardHeader>
         <CardContent>

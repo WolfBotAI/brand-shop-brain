@@ -82,7 +82,7 @@ export default function Signup() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <img src={brandLogo} alt="Brand-Shop.AI" className="h-8 mx-auto" />
-          <CardTitle className="text-2xl">Create your account</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight">Create your Brand-Shop.AI account</h1>
           <CardDescription>Get started with Brand-Shop.AI</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
 
@@ -61,10 +62,10 @@ export const CTASection = () => {
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-7 text-xl rounded-full group shadow-lg"
             >
-              <a href="/assessment">
+              <Link to="/assessment">
                 See How Much You Can Save
                 <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
-              </a>
+              </Link>
             </Button>
             <Button 
               asChild

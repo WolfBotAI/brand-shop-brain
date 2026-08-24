@@ -129,7 +129,7 @@ export const LogoUploadStep = ({
                     <div className="absolute inset-0 flex items-center justify-center">
                       <img
                         src={logoUrl}
-                        alt="Logo overlay"
+                        alt={`Your logo previewed on ${product.title}`}
                         className="w-1/3 h-1/3 object-contain opacity-80 drop-shadow-lg"
                       />
                     </div>
