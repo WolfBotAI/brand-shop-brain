@@ -105,8 +105,8 @@ const ForReferralPartners = () => {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-6xl font-bold mb-6"
             >
-              Offer Branded Stores to Your Audience.{" "}
-              <span className="text-primary">Earn While You Grow.</span>
+              White-Label B2B Merch Storefront Software for Partners.{" "}
+              <span className="text-primary">Earn Up to 40% While You Grow.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}

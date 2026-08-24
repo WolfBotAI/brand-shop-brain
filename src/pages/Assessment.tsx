@@ -293,8 +293,8 @@ const Assessment = () => {
                     <Zap className="w-4 h-4" />
                     <span className="text-sm font-medium">Free Savings Calculator</span>
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">Which best describes you?</h1>
-                  <p className="text-muted-foreground">We'll customize your experience based on your role.</p>
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">Brand-Shop.AI Savings Calculator for Distributors &amp; Decorators</h1>
+                  <p className="text-muted-foreground">Which best describes you? We'll customize your experience based on your role.</p>
                 </div>
                 <div className="grid gap-4">
                   {personaOptions.map((opt) => {
