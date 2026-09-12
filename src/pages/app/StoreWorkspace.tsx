@@ -107,7 +107,7 @@ const StoreWorkspace = () => {
 
   return (
     <div className="space-y-6">
-      <SEO title="Store Workspace | Brand-Shop.AI" description="Configure catalog, pricing, mockups, theme, and billing for an individual branded store." path="/app/stores" noIndex />
+      <SEO title={`${storeName} Workspace | Brand-Shop.AI`} description="Configure catalog, pricing, mockups, theme, and billing for an individual branded store." path={`/app/stores/${storeId ?? ""}`} noIndex />
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/app/stores")}>
           <ArrowLeft className="w-5 h-5" />

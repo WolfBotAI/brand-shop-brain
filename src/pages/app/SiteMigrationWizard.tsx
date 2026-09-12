@@ -109,7 +109,7 @@ export default function SiteMigrationWizard() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <SEO title="Site Migration | Brand-Shop.AI" description="Import an existing client store into Brand-Shop.AI with the guided migration wizard." path="/app/migrate" noIndex />
+      <SEO title="Store Migration Wizard | Brand-Shop.AI" description="Import an existing client store into Brand-Shop.AI with the guided migration wizard." path="/app/migrate" noIndex />
       <div>
         <h1 className="text-2xl font-bold">Site Migration</h1>
         <p className="text-muted-foreground text-sm">Import an existing store into Brand-Shop.AI</p>
