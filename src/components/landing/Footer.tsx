@@ -48,7 +48,7 @@ export const Footer = () => {
 
           {Object.entries(services).map(([title, items]) => (
             <div key={title}>
-              <h4 className="font-bold text-secondary-foreground mb-4">{title}</h4>
+              <h3 className="font-bold text-secondary-foreground mb-4">{title}</h3>
               <ul className="space-y-3">
                 {items.map((item) => (
                   <li key={item.label}>
