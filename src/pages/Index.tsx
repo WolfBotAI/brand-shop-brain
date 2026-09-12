@@ -17,8 +17,9 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEO
-        title="Company Store Software with Automated Order Routing | Brand-Shop.AI"
-        description="Company store software for apparel distributors and decorators: launch branded stores in minutes, merge every supplier into one catalog, and route orders automatically. Calculate your savings or book a 15-minute demo."
+        title="Company Store Software for Apparel Distributors | Brand-Shop.AI"
+        description="Launch branded company stores in minutes, merge S&S, SanMar and more into one catalog, and route every order automatically. See your savings or book a 15-minute demo."
+
 
         path="/"
         jsonLd={[
